@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 
@@ -6,21 +7,11 @@ import requests
 from bs4 import BeautifulSoup
 from feedparser.util import FeedParserDict
 
-
-def run_subprocess(command: str) -> str:
-    command_to_run = command.replace("/subprocess", "").strip()
-    args = command_to_run.split(" ")
-
-    try:
-        process = subprocess.run(args, check=True, text=True, capture_output=True)
-        return process.stdout
-    except subprocess.CalledProcessError as e:
-        return (
-            f"Command '{' '.join(args)}' returned non-zero exit status {e.returncode}."
-        )
+# Load the configuration
+with open("config.json", "r") as f:
+    config = json.load(f)
 
 
-# TODO: Add configuration management
 def read_file(command: str) -> str:
     args = command.replace("/read", "").strip().split(" ")
 
@@ -31,10 +22,11 @@ def read_file(command: str) -> str:
 
     abs_path = os.path.abspath(filename)
 
-    forbidden_paths = [".env"]
-    allowed_paths = [f"/home/{os.getenv('USER')}/Documents/code"]
+    # Get allowed and denied paths from the configuration
+    allowed_paths = config["allowed_paths"]
+    denied_paths = config["denied_paths"]
 
-    if any(abs_path.startswith(path) for path in forbidden_paths):
+    if any(abs_path.startswith(path) for path in denied_paths):
         return "RoleError: Accessed denied! You shouldn't snoop in private places."
 
     if not any(abs_path.startswith(path) for path in allowed_paths):
@@ -72,6 +64,19 @@ def list_directory(command: str) -> str:
         return "\n".join(files)
     except Exception as e:
         return f"Error listing directory {directory}: {str(e)}."
+
+
+def run_subprocess(command: str) -> str:
+    command_to_run = command.replace("/subprocess", "").strip()
+    args = command_to_run.split(" ")
+
+    try:
+        process = subprocess.run(args, check=True, text=True, capture_output=True)
+        return process.stdout
+    except subprocess.CalledProcessError as e:
+        return (
+            f"Command '{' '.join(args)}' returned non-zero exit status {e.returncode}."
+        )
 
 
 def fetch_robots_txt(command: str) -> str:
