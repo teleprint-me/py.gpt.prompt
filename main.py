@@ -31,6 +31,7 @@ def main():
     # Usage
     max_tokens: int = config["max_tokens"]
     model: str = config["model"]
+    temperature = config["temperature"]
     api_key: str = os.getenv("OPENAI_API_KEY") or ""
     openai = OpenAI(api_key)
 
@@ -98,6 +99,7 @@ def main():
             messages,
             model=model,
             max_tokens=max_tokens,
+            temperature=temperature,
         )
 
         # Handle command if assistant message starts with "/"
@@ -117,7 +119,7 @@ def main():
                 encoding,
             )
 
-        print("\n")  # output newline characters
+        print()  # output newline character
 
         # Save the updated messages to the session file
         save_session(session_name, messages)
