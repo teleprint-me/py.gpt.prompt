@@ -1,12 +1,17 @@
 import os
 
-import tiktoken
 from dotenv import load_dotenv
 from prompt_toolkit import prompt
 from prompt_toolkit.history import FileHistory
 
 from pygptprompt.command import config, handle_command
 from pygptprompt.openai import OpenAI
+from pygptprompt.session import (
+    create_sessions_directory,
+    name_session,
+    read_session,
+    save_session,
+)
 from pygptprompt.token import (
     get_token_count,
     get_token_limit,
@@ -28,8 +33,10 @@ def main():
     api_key: str = os.getenv("OPENAI_API_KEY") or ""
     openai = OpenAI(api_key)
 
-    # Initialize the conversation with a system message
-    messages: list[dict[str, str]] = [config["system_message"]]
+    # Ask the user to enter a session name or choose an existing one
+    create_sessions_directory()
+    session_name = name_session()
+    messages = read_session(session_name)
 
     # gpt-3.5-turbo context window: `upper_limit = 4096 - max_tokens`
     # gpt-4 context window: `upper_limit = 8192 - max_tokens`
@@ -46,7 +53,7 @@ def main():
                 "You: ",
                 multiline=True,
                 prompt_continuation=prompt_continuation,
-                history=FileHistory("sessions/.prompt_history"),
+                history=FileHistory(f"sessions/{session_name}.history"),
             )
         except (KeyboardInterrupt, EOFError):
             exit()
@@ -57,6 +64,7 @@ def main():
 
         # Allow user to exit normally
         if user_message == "quit":
+            save_session(session_name, messages)
             exit()
 
         if user_message.startswith("/"):
@@ -100,6 +108,9 @@ def main():
                 upper_limit,
                 encoding,
             )
+
+        # Save the updated messages to the session file
+        save_session(session_name, messages)
 
         print("\n")  # output newline characters
 
