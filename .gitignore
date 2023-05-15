@@ -2,6 +2,7 @@
 /config.json
 /prompts
 /sessions
+/storage
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
