@@ -19,7 +19,7 @@ class OpenAI:
         model: str = "gpt-3.5-turbo",
         max_tokens: int = 512,
         temperature: float = 0.7,
-    ) -> dict[str, str] | None:
+    ) -> dict[str, str]:
         data = {
             "model": model,
             "max_tokens": max_tokens,
@@ -40,7 +40,7 @@ class OpenAI:
             return message
         else:
             print(f"Error: {response.status_code} {response.text}")
-            return None  # Return None in case of an error
+            return {}  # Return empty dict in case of an error
 
     def stream_chat_completions(
         self,
@@ -48,7 +48,7 @@ class OpenAI:
         model: str = "gpt-3.5-turbo",
         max_tokens: int = 512,
         temperature: float = 0.7,
-    ) -> dict[str, str] | None:
+    ) -> dict[str, str]:
         data = {
             "model": model,
             "max_tokens": max_tokens,
@@ -98,4 +98,4 @@ class OpenAI:
             return {"role": "assistant", "content": message}
         else:
             print(f"Error: {response.status_code} {response.text}")
-            return None  # Return None in case of an error
+            return {}  # Return empty dict in case of an error
