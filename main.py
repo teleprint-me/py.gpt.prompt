@@ -2,7 +2,8 @@ import os
 
 import tiktoken
 from dotenv import load_dotenv
-from prompt_toolkit import prompt as input
+from prompt_toolkit import prompt
+from prompt_toolkit.history import FileHistory
 
 from pygptprompt.command import handle_command
 from pygptprompt.openai import OpenAI
@@ -43,13 +44,26 @@ def main():
         }
     ]
 
+    # gpt-3.5-turbo context window: `upper_limit = 4096 - max_tokens`
+    # gpt-4 context window: `upper_limit = 8192 - max_tokens`
+    encoding = tiktoken.encoding_for_model(model)
+    if model == "gpt-3.5-turbo":
+        upper_limit = 4096 - max_tokens
+    else:
+        upper_limit = 8192 - max_tokens
+
     while True:
+        # Calculate the total number of tokens enqueued
+        token_count = get_token_count(encoding.name, messages=messages)
+        print(f"Consumed {token_count} tokens.\n")
+
         # Ask the user for their message
         try:
-            user_message = input(
+            user_message = prompt(
                 "You: ",
                 multiline=True,
                 prompt_continuation=prompt_continuation,
+                history=FileHistory("sessions/.prompt_history"),
             )
         except (KeyboardInterrupt, EOFError):
             exit()
@@ -69,6 +83,11 @@ def main():
 
         # Enqueue the user message to the conversation
         messages.append({"role": "user", "content": user_message})
+
+        # Dequeue older messages to prevent overflow.
+        #   - pop the second element to preserve the system prompt.
+        while token_count >= upper_limit:
+            messages.pop(1)
 
         # Use a prompt to identify GPT's output
         print("\nGPT:", end=" ")
@@ -93,23 +112,6 @@ def main():
             messages.append(assistant_message)
 
         print("\n")  # output newline characters
-
-        # Calculate the total number of tokens enqueued
-        encoding = tiktoken.encoding_for_model(model)
-        token_count = get_token_count(encoding.name, messages=messages)
-        print(f"Consumed {token_count} tokens.\n")
-
-        # gpt-3.5-turbo context window: `upper_limit = 4096 - max_tokens`
-        # gpt-4 context window: `upper_limit = 8192 - max_tokens`
-        if model == "gpt-3.5-turbo":
-            upper_limit = 4096 - max_tokens
-        else:
-            upper_limit = 8192 - max_tokens
-
-        # Dequeue messages to prevent overflow
-        #   - pop the second element to preserve the system prompt.
-        while token_count >= upper_limit:
-            messages.pop(1)
 
 
 if __name__ == "__main__":
