@@ -20,6 +20,7 @@ def run_subprocess(command: str) -> str:
         )
 
 
+# TODO: Add configuration management
 def read_file(command: str) -> str:
     args = command.replace("/read", "").strip().split(" ")
 
@@ -27,6 +28,17 @@ def read_file(command: str) -> str:
     filename = args[0]
     if not os.path.isfile(filename):
         return f"Error: File {filename} not found."
+
+    abs_path = os.path.abspath(filename)
+
+    forbidden_paths = [".env"]
+    allowed_paths = [f"/home/{os.getenv('USER')}/Documents/code"]
+
+    if any(abs_path.startswith(path) for path in forbidden_paths):
+        return "RoleError: Accessed denied! You shouldn't snoop in private places."
+
+    if not any(abs_path.startswith(path) for path in allowed_paths):
+        return "RoleError: Accessed denied! You shouldn't snoop in private places."
 
     # Optional starting line number
     start_line = (
