@@ -1,14 +1,11 @@
-# NOTE: This is just a prototype to work out the details of interacting with
-# the chat completions API using the `stream` flag while set to `True`.
-# This will be the basis for the C++ port of this implementation.
-import json
 import os
-import sys
 
-import requests
 import tiktoken
 from dotenv import load_dotenv
 from prompt_toolkit import prompt as input
+
+from pygptprompt.command import handle_command
+from pygptprompt.openai import OpenAI
 
 load_dotenv()
 
@@ -31,87 +28,18 @@ def get_token_count(encoding_name: str, messages: list[dict[str, str]]) -> int:
     return total_tokens
 
 
-class OpenAI:
-    def __init__(self, api_key):
-        self.api_key = api_key
-        self.headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
-        self.chat_completions_url = "https://api.openai.com/v1/chat/completions"
-
-    def stream_chat_completions(
-        self,
-        messages,
-        model="gpt-3.5-turbo",
-        max_tokens=512,
-        temperature=0.7,
-    ):
-        data = {
-            "model": model,
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-            "stream": True,  # Enable REST API streaming
-            "messages": messages,
-        }
-
-        response = requests.post(
-            self.chat_completions_url,
-            headers=self.headers,
-            json=data,
-            stream=True,  # Enable HTTP token streaming
-        )
-
-        if response.status_code == 200:
-            message = ""
-            # Iterate over the response data one line at a time
-            for line in response.iter_lines():
-                # If the line is not empty
-                if line:
-                    # Decode it to string
-                    line = line.decode("utf-8")
-
-                    # Check if the line starts with 'data: '
-                    if line.startswith("data: "):
-                        # If it does, strip it out
-                        line = line[6:]
-
-                    # If the line is '[DONE]', stop processing
-                    if line == "[DONE]":
-                        break
-
-                    json_line = json.loads(line)
-
-                    # Aggregate and flush the tokens to output
-                    try:
-                        token = json_line["choices"][0]["delta"]["content"]
-                        if token:
-                            message += token
-                            print(token, end="")
-                            sys.stdout.flush()
-                    except (KeyError,):
-                        continue
-
-            # Return the assistant's message after the loop
-            return {"role": "assistant", "content": message}
-        else:
-            print(f"Error: {response.status_code}")
-            print(f"Error message: {response.text}")
-            return None  # Return None in case of an error
-
-
 def main():
     # Usage
     max_tokens = 1024
     model = "gpt-3.5-turbo"
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("OPENAI_API_KEY") or ""
     openai = OpenAI(api_key)
 
     # Initialize the conversation with a system message
     messages = [
         {
             "role": "system",
-            "content": "Your name is GPT. You are a helpful assistant.",
+            "content": "Your name is py-gpt-prompt. You are a pair programming assistant. Your current goal is to develop a command-line system, using prompt-toolkit, to allow you to integrate with the project. This will give you access to the projects contents and apply actions to them.",
         }
     ]
 
@@ -134,6 +62,11 @@ def main():
         if user_message == "quit":
             exit()
 
+        if user_message.startswith("/"):
+            command_response = handle_command(user_message)
+            print(command_response)
+            user_message = f"{user_message}\n{command_response}"
+
         # Enqueue the user message to the conversation
         messages.append({"role": "user", "content": user_message})
 
@@ -147,8 +80,16 @@ def main():
             max_tokens=max_tokens,
         )
 
-        # Enqueue the assistant message.
+        # Handle command if assistant message starts with "/"
         if assistant_message is not None:
+            assistant_content = assistant_message["content"]
+            if assistant_content.startswith("/"):
+                command_response = handle_command(assistant_content)
+                print(command_response)
+                assistant_content = f"{assistant_content}\n{command_response}"
+                assistant_message = {"role": "assistant", "content": assistant_content}
+
+            # Enqueue the assistant message.
             messages.append(assistant_message)
 
         print("\n")  # output newline characters
