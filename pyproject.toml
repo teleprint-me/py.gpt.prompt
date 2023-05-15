@@ -15,6 +15,8 @@ tiktoken = "^0.4.0"
 prompt-toolkit = "^3.0.38"
 peewee = "^3.16.2"
 langchain = "^0.0.169"
+beautifulsoup4 = "^4.12.2"
+feedparser = "^6.0.10"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^6.0.0"
