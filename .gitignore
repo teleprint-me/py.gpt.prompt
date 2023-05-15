@@ -1,6 +1,7 @@
 # Local
-/sessions
 /config.json
+/prompts
+/sessions
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
