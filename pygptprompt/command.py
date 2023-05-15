@@ -129,12 +129,32 @@ def handle_rss_command(command: str) -> str:
     return "\n---\n".join(feed_entries)
 
 
+def clean_html(html):
+    soup = BeautifulSoup(html, "html.parser")
+
+    # kill all script and style elements
+    for script in soup(["script", "style"]):
+        script.extract()  # rip it out
+
+    # get text
+    text = soup.get_text()
+
+    # break into lines and remove leading and trailing space on each
+    lines = (line.strip() for line in text.splitlines())
+    # break multi-headlines into a line each
+    chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+    # drop blank lines
+    text = "\n".join(chunk for chunk in chunks if chunk)
+
+    return text
+
+
 def scrape_website(command: str) -> str:
     url = command.replace("/scrape", "").strip()
     try:
         response = requests.get(url)
-        soup = BeautifulSoup(response.text, "html.parser")
-        return soup.get_text()
+        cleaned_html = clean_html(response.text)
+        return cleaned_html
     except Exception as e:
         return f"Error scraping website {url}: {str(e)}."
 

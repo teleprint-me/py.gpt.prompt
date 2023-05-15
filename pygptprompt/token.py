@@ -31,6 +31,7 @@ def truncate_messages_for_token_limit(
     new_message: dict[str, str],
     upper_limit: int,
     encoding: Encoding,
+    token_offset: int = 512,
 ) -> list[dict[str, str]]:
     # Calculate the token count for the new message
     new_message_token_count = get_token_count(encoding.name, [new_message])
@@ -43,18 +44,17 @@ def truncate_messages_for_token_limit(
         )
         return messages
 
-    # Add the new message to the messages list
-    messages.append(new_message)
-
-    # If the total token count is within the limit, return the messages
+    # Calculate the total token count for the current messages
     total_token_count = get_token_count(encoding.name, messages)
-    if total_token_count <= upper_limit:
-        return messages
 
-    # Otherwise, remove the oldest messages until the total is within the limit
-    while total_token_count > upper_limit:
+    # Remove the oldest messages until the total token count plus the new message's
+    # token count plus the offset is within the limit
+    while total_token_count + new_message_token_count + token_offset > upper_limit:
         # Remove the oldest message (after the initial system message)
         messages.pop(1)
         total_token_count = get_token_count(encoding.name, messages)
+
+    # Now that there's enough space, add the new message to the messages list
+    messages.append(new_message)
 
     return messages

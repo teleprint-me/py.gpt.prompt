@@ -5,6 +5,7 @@ from prompt_toolkit import prompt
 from prompt_toolkit.history import FileHistory
 
 from pygptprompt.command import config, handle_command
+from pygptprompt.format import print_bold
 from pygptprompt.openai import OpenAI
 from pygptprompt.session import (
     create_sessions_directory,
@@ -22,7 +23,7 @@ load_dotenv()
 
 
 def prompt_continuation(width, line_number, is_soft_wrap):
-    return "." * width
+    return ">" * width
     # Or: return [('', '.' * width)]
 
 
@@ -37,6 +38,12 @@ def main():
     create_sessions_directory()
     session_name = name_session()
     messages = read_session(session_name) or [config["system_message"]]
+    print()
+
+    # Print message history
+    for message in messages:
+        print_bold(message["role"])
+        print(message["content"])
 
     # gpt-3.5-turbo context window: `upper_limit = 4096 - max_tokens`
     # gpt-4 context window: `upper_limit = 8192 - max_tokens`
@@ -49,8 +56,9 @@ def main():
 
         # Ask the user for their message
         try:
+            print_bold("user")
             user_message = prompt(
-                "You: ",
+                "> ",
                 multiline=True,
                 prompt_continuation=prompt_continuation,
                 history=FileHistory(f"sessions/{session_name}.history"),
@@ -83,7 +91,7 @@ def main():
         )
 
         # Use a prompt to identify GPT's output
-        print("\nGPT:", end=" ")
+        print_bold("\nassistant")
 
         # Call the streaming API
         assistant_message = openai.stream_chat_completions(
@@ -93,7 +101,7 @@ def main():
         )
 
         # Handle command if assistant message starts with "/"
-        if assistant_message is not None:
+        if assistant_message:
             assistant_content = assistant_message["content"]
             if assistant_content.startswith("/"):
                 command_response = handle_command(assistant_content)
@@ -109,10 +117,10 @@ def main():
                 encoding,
             )
 
+        print("\n")  # output newline characters
+
         # Save the updated messages to the session file
         save_session(session_name, messages)
-
-        print("\n")  # output newline characters
 
 
 if __name__ == "__main__":
