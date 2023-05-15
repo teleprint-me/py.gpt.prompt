@@ -2,15 +2,16 @@ import tiktoken
 from tiktoken import Encoding
 
 
-def get_token_limit(model_name: str, max_tokens: int) -> tuple[Encoding, int]:
+def get_token_limit(model_name: str, max_tokens: int) -> int:
     # gpt-3.5-turbo context window: `upper_limit = 4096 - max_tokens`
     # gpt-4 context window: `upper_limit = 8192 - max_tokens`
-    encoding = tiktoken.encoding_for_model(model_name)
     if model_name == "gpt-3.5-turbo":
         upper_limit = 4096 - max_tokens
-    else:
+    elif model_name == "gpt-4":
         upper_limit = 8192 - max_tokens
-    return (encoding, upper_limit)
+    else:
+        upper_limit = 2048 - max_tokens
+    return upper_limit
 
 
 def get_token_count(encoding_name: str, messages: list[dict[str, str]]) -> int:
