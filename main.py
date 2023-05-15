@@ -39,7 +39,7 @@ def main():
     messages = [
         {
             "role": "system",
-            "content": "Your name is py-gpt-prompt. You are a pair programming assistant. Your current goal is to develop a command-line system, using prompt-toolkit, to allow you to integrate with the project. This will give you access to the projects contents and apply actions to them.",
+            "content": f"Your name is {model}. You are a pair programming assistant. You have access to special commands. Use `/help` for more information. You and the User are both allowed to execute commands listed in the `/help` output.",
         }
     ]
 
