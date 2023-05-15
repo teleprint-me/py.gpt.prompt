@@ -36,7 +36,7 @@ def main():
     # Ask the user to enter a session name or choose an existing one
     create_sessions_directory()
     session_name = name_session()
-    messages = read_session(session_name)
+    messages = read_session(session_name) or [config["system_message"]]
 
     # gpt-3.5-turbo context window: `upper_limit = 4096 - max_tokens`
     # gpt-4 context window: `upper_limit = 8192 - max_tokens`
@@ -63,7 +63,7 @@ def main():
             continue
 
         # Allow user to exit normally
-        if user_message == "quit":
+        if user_message in ["/quit", "/q", "/exit", "/e"]:
             save_session(session_name, messages)
             exit()
 
