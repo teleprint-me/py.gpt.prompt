@@ -1,4 +1,5 @@
 from pygptprompt.command.feed import handle_rss_command
+from pygptprompt.command.git import run_git_command
 from pygptprompt.command.help import display_help
 from pygptprompt.command.process import list_directory
 from pygptprompt.command.read import read_file
@@ -13,6 +14,8 @@ def command_factory(command: str) -> str:
         content = list_directory(command)
     elif command.startswith("/tree"):
         content = display_tree(command)
+    elif command.startswith("/git"):
+        content = run_git_command(command)
     elif command.startswith("/browse"):
         content = fetch_and_store_website(command)
     elif command.startswith("/robots"):
