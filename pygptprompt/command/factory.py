@@ -1,6 +1,8 @@
 from pygptprompt.command.feed import handle_rss_command
 from pygptprompt.command.help import display_help
-from pygptprompt.command.process import list_directory, read_file
+from pygptprompt.command.process import list_directory
+from pygptprompt.command.read import read_file
+from pygptprompt.command.tree import display_tree
 from pygptprompt.command.web import fetch_and_store_website, fetch_robots_txt
 
 
@@ -9,6 +11,8 @@ def command_factory(command: str) -> str:
         content = read_file(command)
     elif command.startswith("/ls"):
         content = list_directory(command)
+    elif command.startswith("/tree"):
+        content = display_tree(command)
     elif command.startswith("/browse"):
         content = fetch_and_store_website(command)
     elif command.startswith("/robots"):
