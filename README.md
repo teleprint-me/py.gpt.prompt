@@ -12,6 +12,8 @@ PyGPTPrompt is a Python-based project that allows for interactive command execut
 
 PyGPTPrompt supports a range of commands for interacting with web pages, RSS feeds, and the local file system:
 
+![Demo Gif](./assets/gpt-3.5-turbo.gif)
+
 ### Web Pages
 
 -   `/robots <url>`: Get the robots.txt of a specified URL.

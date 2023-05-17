@@ -2,6 +2,7 @@
 /config.json
 /sessions
 /storage
+/assets/*.*cast
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
