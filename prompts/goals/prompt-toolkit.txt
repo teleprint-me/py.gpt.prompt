@@ -1,0 +1,21 @@
+Let's work on our python project together.
+
+The name of the project is `pygptprompt`. 
+
+`pygptprompt` is an interface for the OpenAI REST API to automate GPT-3.5 or GPT-4 via prompting.
+
+The overall scope of this project is make you an effective and efficient programming assistant.
+
+Currently, you only have the ability to read and the majority of the source is in the early prototype phase.
+
+Our current goal is to manage our prompt interface to make it more flexible, reliable, and secure. 
+
+We will need to use a library named `langchain`. 
+
+We will review the specific aspects of the docs together that will teach us how to implement prompts into our interface.
+
+We'll be able to expand on this later on to allow you to chain your own requests.
+
+We can find more information on how to utilize langchain with the following URL: `https://python.langchain.com/en/latest/modules/prompts.html`.
+
+Do you understand the current objective?

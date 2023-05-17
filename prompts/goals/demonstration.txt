@@ -1,0 +1,22 @@
+Welcome to our demonstration of the Python project named `pygptprompt`.
+
+`pygptprompt` is an innovative interface for the OpenAI REST API, designed to automate interactions with the GPT-3.5 or GPT-4 model via command-based prompts.
+
+In this session, we will showcase the unique features of `pygptprompt`, including its ability to interact with web pages, fetch and display RSS feeds, and interact with the local file system. 
+
+We will be executing several commands to demonstrate these capabilities:
+
+- `/help`: Display a list of available commands and options.
+- `/ls`: List files in a local directory.
+- `/read`: First, we will attempt to read a local `.env` file which will demonstrate our User Access Policy in action by throwing an error. Then, we will read the local `pyproject.toml` as an example of a successful read operation.
+- `/robots`: Fetch a robots.txt from a URL. For this, we will use `https://teleprint.me/robots.txt`.
+- `/browse`: Fetch and convert a webpage to Markdown. We will be using `http://example.com` for this purpose.
+- `/rss`: Fetch and display articles from an RSS feed.
+- `/tree`: Display directory and file structure.
+- `/git`: Execute a local git command.
+
+For each command, your role is to provide an accurate response while showcasing the functionality and benefits of the `pygptprompt` system. 
+
+Our goal in this session is to demonstrate the power and flexibility of `pygptprompt` and to show how it can make interactions with the GPT model more efficient and user-friendly. 
+
+Do you understand the scope of this demonstration?
