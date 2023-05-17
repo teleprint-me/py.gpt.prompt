@@ -1,30 +1,24 @@
+# pygptprompt/command/factory.py
 from pygptprompt.command.feed import handle_rss_command
-from pygptprompt.command.git import run_git_command
 from pygptprompt.command.help import display_help
 from pygptprompt.command.list import list_directory
-from pygptprompt.command.read import read_file
-from pygptprompt.command.tree import display_tree
+from pygptprompt.command.process import run_subprocess
 from pygptprompt.command.web import fetch_and_store_website, fetch_robots_txt
+
+COMMAND_MAP = {
+    "/": run_subprocess,
+    "/ls": list_directory,
+    "/browse": fetch_and_store_website,
+    "/robots": fetch_robots_txt,
+    "/rss": handle_rss_command,
+    "/help": display_help,
+}
 
 
 def command_factory(command: str) -> str:
-    if command.startswith("/read"):
-        content = read_file(command)
-    elif command.startswith("/ls"):
-        content = list_directory(command)
-    elif command.startswith("/tree"):
-        content = display_tree(command)
-    elif command.startswith("/git"):
-        content = run_git_command(command)
-    elif command.startswith("/browse"):
-        content = fetch_and_store_website(command)
-    elif command.startswith("/robots"):
-        content = fetch_robots_txt(command)
-    elif command.startswith("/rss"):
-        content = handle_rss_command(command)
-    elif command.startswith("/help"):
-        content = display_help(command)
-    else:
-        content = "Command not recognized."
+    for command_prefix, handler in COMMAND_MAP.items():
+        if command == command_prefix or command.startswith(command_prefix + " "):
+            return handler(command)
 
-    return content
+    # If no specific command matches, treat it as a subprocess command
+    return COMMAND_MAP["/"](command)
