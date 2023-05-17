@@ -32,7 +32,7 @@ load_dotenv()
 
 def prompt_continuation(width, line_number, is_soft_wrap):
     return ">" * width
-    # Or: return [('', '.' * width)]
+    # Or: return [('', '>' * width)]
 
 
 def main():
@@ -139,6 +139,7 @@ def main():
         if assistant_message:
             assistant_content = assistant_message["content"]
             if assistant_content.startswith("/"):
+                print()  # pad with a newline to avoid mangling
                 command_response = command_factory(assistant_content)
                 print(command_response)
                 assistant_content = f"{assistant_content}\n{command_response}"
