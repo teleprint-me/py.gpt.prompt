@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 from urllib.parse import urlparse
 
 import html2text
@@ -15,36 +16,66 @@ STORAGE_DIR = __config__.get(
 )  # default to 'storage' if not set
 
 
-def fetch_robots_txt(command: str) -> str:
-    url = command.replace("/robots", "").strip()
-    if not url.startswith(("http://", "https://")):
-        url = "http://" + url
-
-    try:
-        response = requests.get(url + "/robots.txt")
-        response.raise_for_status()
-        return response.text
-    except RequestException as e:
-        return f"Error fetching robots.txt from {url}: {str(e)}."
+# Function to read from cache
+def read_from_cache(cache_path: str) -> Optional[str]:
+    if os.path.exists(cache_path):
+        with open(cache_path, "r") as f:
+            return f.read()
+    return None
 
 
-def fetch_html_content(url: str) -> str:
+# Function to write to cache
+def write_to_cache(cache_path: str, content: str) -> None:
+    os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+    with open(cache_path, "w") as f:
+        f.write(content)
+
+
+# Function to fetch content from the web
+def fetch_content(url: str) -> str:
     try:
         response = requests.get(url)
         response.raise_for_status()
         return response.text
     except RequestException as e:
-        return f"Error fetching HTML content from {url}: {str(e)}."
+        return f"Error fetching content from {url}: {str(e)}."
 
 
-def store_content(directory: str, filename: str, content: str):
-    os.makedirs(directory, exist_ok=True)
-    with open(os.path.join(directory, filename), "w") as file:
-        file.write(content)
+# Function to fetch and cache robots.txt
+def fetch_robots_txt(command: str) -> str:
+    # Command is split into parts
+    args = command.split()
+    # URL is the second part (index 1)
+    url = args[1].strip()
+
+    # Ensure URL starts with "http://" or "https://", and ends with "/robots.txt"
+    if not url.startswith(("http://", "https://")):
+        url = "http://" + url
+    if not url.endswith("/robots.txt"):
+        url += "/robots.txt"
+
+    # Create a path for the cache
+    parsed_url = urlparse(url)
+    domain = parsed_url.netloc
+    cache_path = os.path.join(STORAGE_DIR, "robots", domain, "robots.txt")
+
+    # Try to read from cache
+    cached_content = read_from_cache(cache_path)
+    if cached_content is not None:
+        return f"```txt\n{cached_content}```"
+
+    # If the cache does not exist, fetch the robots.txt
+    content = fetch_content(url)
+
+    # Cache the response
+    write_to_cache(cache_path, content)
+
+    return f"```txt\n{content}```"
 
 
 def convert_html_to_markdown(html: str) -> str:
     h = html2text.HTML2Text()
+    # Configure html2text
     h.wrap_links = True
     h.single_line_break = True
     h.mark_code = True
@@ -55,54 +86,41 @@ def convert_html_to_markdown(html: str) -> str:
 
 
 def fetch_and_store_website(command: str) -> str:
-    url = command.replace("/browse", "").strip()
+    # Command is first argument
+    args = command.split()
+    # URL is second argument
+    url = args[1].strip()
 
-    # Check if the URL is valid
+    # Ensure URL starts with "http://" or "https://"
     if not url.startswith(("http://", "https://")):
-        return "Error: Invalid URL."
+        url = "https://" + url
 
-    # Check if the content already exists locally
+    # Create paths for the cache
     parsed_url = urlparse(url)
     domain = parsed_url.netloc
     path = parsed_url.path.lstrip("/")  # remove leading slash
+    html_path = os.path.join(STORAGE_DIR, "html", domain, path)
+    markdown_path = os.path.join(
+        STORAGE_DIR, "markdown", domain, f"{os.path.splitext(path)[0]}.md"
+    )
 
-    # Deduce file names
-    html_filename = f"{os.path.splitext(os.path.basename(path))[0]}.html"
-    md_filename = f"{os.path.splitext(os.path.basename(path))[0]}.md"
-
-    # Deduce directory paths without filename
-    html_dir = os.path.join(STORAGE_DIR, "html", domain, os.path.dirname(path))
-    markdown_dir = os.path.join(STORAGE_DIR, "markdown", domain, os.path.dirname(path))
-
-    html_exists = os.path.exists(os.path.join(html_dir, html_filename))
-    md_exists = os.path.exists(os.path.join(markdown_dir, md_filename))
-
-    if html_exists and md_exists:
-        # Return the locally stored content
-        with open(os.path.join(markdown_dir, md_filename), "r") as f:
-            markdown_content = f.read()
+    # Try to read from cache
+    markdown_content = read_from_cache(markdown_path)
+    if markdown_content is not None:
         return f"```md\n{markdown_content}\n```"
 
-    try:
-        # Check if the HTML content already exists locally
-        if html_exists:
-            # Read the HTML content from the local file
-            with open(os.path.join(html_dir, html_filename), "r") as f:
-                html_content = f.read()
-        else:
-            # Fetch the HTML content
-            html_content = fetch_html_content(url)
+    # If the cache does not exist, fetch the HTML content
+    html_content = read_from_cache(html_path)
+    if html_content is None:
+        html_content = fetch_content(url)
 
-            # Store the HTML content
-            store_content(html_dir, html_filename, html_content)
+        # Cache the HTML content
+        write_to_cache(html_path, html_content)
 
-        # Convert HTML to markdown
-        markdown_content = convert_html_to_markdown(html_content)
+    # Convert HTML to markdown
+    markdown_content = convert_html_to_markdown(html_content)
 
-        # Store the markdown content
-        store_content(markdown_dir, md_filename, markdown_content)
+    # Cache the markdown content
+    write_to_cache(markdown_path, markdown_content)
 
-        return f"```md\n{markdown_content}\n```"
-
-    except Exception as e:
-        return f"Error fetching request for {url}: {str(e)}."
+    return f"```md\n{markdown_content}\n```"
