@@ -27,12 +27,12 @@ PyGPTPrompt supports a range of commands for interacting with web pages, RSS fee
 
 ### Sub-Process
 
-- `/ <command>`: Execute a shell command (restricted by configuration). 
+- `/<command>`: Execute a shell command (restricted by configuration). 
 
 For example: 
 
-- `/ cat <file>`: Read content from a local file.
-- `/ git status`: Display the status of a git repository.
+- `/cat <file>`: Read content from a local file.
+- `/git status`: Display the status of a git repository.
 
 ### Filesystem
 
