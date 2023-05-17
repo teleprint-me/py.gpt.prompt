@@ -1,8 +1,9 @@
+import shlex
 import subprocess
 
 
 def run_git_command(command: str) -> str:
-    args = command.split()
+    args = shlex.split(command)
 
     # Check that the command starts with /git
     if args[0] != "/git":
