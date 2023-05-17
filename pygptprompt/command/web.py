@@ -1,3 +1,4 @@
+# pygptprompt/command/web.py
 import os
 from typing import Optional
 from urllib.parse import urlparse
@@ -98,7 +99,9 @@ def fetch_and_store_website(command: str) -> str:
     # Create paths for the cache
     parsed_url = urlparse(url)
     domain = parsed_url.netloc
-    path = parsed_url.path.lstrip("/")  # remove leading slash
+    # Remove leading slash
+    # If path is empty, use 'index' as the default filename
+    path = parsed_url.path.lstrip("/") or "index.html"
     html_path = os.path.join(STORAGE_DIR, "html", domain, path)
     markdown_path = os.path.join(
         STORAGE_DIR, "markdown", domain, f"{os.path.splitext(path)[0]}.md"
