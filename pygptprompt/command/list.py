@@ -1,5 +1,10 @@
 import os
 
+from pygptprompt.config import get_config
+from pygptprompt.policy import is_accessible
+
+__config__ = get_config()
+
 
 def get_file_info(file_path: str) -> str:
     is_dir = os.path.isdir(file_path)
@@ -13,13 +18,27 @@ def get_file_info(file_path: str) -> str:
 
 
 def list_directory(command: str) -> str:
-    directory = command.replace("/ls", "").strip()
+    allowed_paths = [] if not __config__ else __config__["allowed_paths"]
+    denied_paths = [] if not __config__ else __config__["denied_paths"]
+
+    # The command is the first argument.
+    args = command.split()[1:]
+
+    # The directory path is the second argument
+    directory = args[0].strip()
+
+    if not is_accessible(directory, allowed_paths, denied_paths):
+        return "RoleError: Access denied! You shouldn't snoop in private places."
 
     if not os.path.isdir(directory):
-        return f"Error: Directory {directory} not found."
+        return f"Error: Directory '{directory}' not found."
 
     try:
-        files = os.listdir(directory)
+        files = [
+            file
+            for file in os.listdir(directory)
+            if is_accessible(os.path.join(directory, file), allowed_paths, denied_paths)
+        ]
         file_info_list = [
             get_file_info(os.path.join(directory, file)) for file in files
         ]
