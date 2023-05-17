@@ -156,7 +156,7 @@ I welcome feedback and ideas on these planned features, as well as suggestions f
 
 As of May 17, 2023, several major changes and updates have been made:
 
-1. The `read_file`, `list_directory`, `git`, and `tree` commands have been deprecated. These functionalities are now provided by the more flexible and robust subprocess command, which uses `/` as a prefix to detect a command. The `read_file` and `list_directory` commands have improved security features that prevent unauthorized access to sensitive files and directories. Only the paths specified in the allowed paths of the configuration can be accessed.
+1. The `read_file`, `git`, and `tree` commands have been deprecated. These functionalities are now provided by the more flexible and robust subprocess command, which uses `/` as a prefix to detect a command. The `list_directory` and `/` commands have improved security features that prevent unauthorized access to sensitive files and directories. Only the paths specified in the allowed paths of the configuration can be accessed.
 
 2. User Access Control (UAC) has been improved to provide more secure command execution. The security policy now better restricts the execution of potentially unsafe commands, providing an additional layer of security for the system.
 
