@@ -15,5 +15,6 @@ def display_help(command: str) -> str:
     /ls <dir>: List files in local directory.
     /read <file> [start_line] [end_line]: Read local file content from start_line to end_line (end_line is optional and line numbers start at 1).
     /tree <directory> [--ignore dir1,dir2,...]: Display directory and file structure in a tree format. Optionally, ignore specified directories.
+    /git <params>: Access and execute local git commands.
     """
     return help_text.strip()

@@ -3,10 +3,10 @@ import os
 from pygptprompt.config import get_config
 from pygptprompt.policy import is_accessible
 
-__config__ = get_config()
-
 
 def read_file(command: str) -> str:
+    __config__ = get_config()
+
     allowed_paths = [] if not __config__ else __config__["allowed_paths"]
     denied_paths = [] if not __config__ else __config__["denied_paths"]
 
