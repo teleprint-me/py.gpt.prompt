@@ -143,10 +143,6 @@ assistant
 It looks like you ran the `/git status` command. The output shows that you have made changes to some files and those changes are yet to be committed. Additionally, it also suggests that your local branch is ahead of the 'origin/main' branch by one commit. Please consider committing your changes by running the `git commit` command and push them to the remote branch using `git push`, if you haven't already.
 ```
 
-## Updates
-
-As of 2023-05-16, security features have been added to the `read_file` and `list_directory` functions. This prevents access to sensitive files and directories that are not specified in the allowed paths of the configuration.
-
 ## Roadmap
 
 While PyGPTPrompt is still in its prototype phase, I have future plans for its development. Here are some of the features I plan to implement in the future:
@@ -155,3 +151,17 @@ While PyGPTPrompt is still in its prototype phase, I have future plans for its d
 -   Integration with more third-party APIs and services.
 
 I welcome feedback and ideas on these planned features, as well as suggestions for new ones!
+
+## Updates
+
+As of May 17, 2023, several major changes and updates have been made:
+
+1. The `read_file`, `list_directory`, `git`, and `tree` commands have been deprecated. These functionalities are now provided by the more flexible and robust subprocess command, which uses `/` as a prefix to detect a command. The `read_file` and `list_directory` commands have improved security features that prevent unauthorized access to sensitive files and directories. Only the paths specified in the allowed paths of the configuration can be accessed.
+
+2. User Access Control (UAC) has been improved to provide more secure command execution. The security policy now better restricts the execution of potentially unsafe commands, providing an additional layer of security for the system.
+
+3. The `/browse` command has been introduced. This feature fetches HTML from a specified URL, converts it into Markdown format, and caches it locally. If the content has been previously fetched and exists in the local cache, the command will return the cached content.
+
+4. Improvements to the `/rss` command. It now fetches and displays full-text articles from an RSS feed. The fetched content is processed to ensure improved readability, removing excess whitespace and preserving important formatting.
+
+5. The help message (`/help` command) has been updated to reflect these changes and provide clear, concise explanations of the available commands.
