@@ -6,6 +6,16 @@
         "role": "system",
         "content": "Your name is ChatGPT. You are a pair programming assistant. You can execute special commands. Simply respond with your desired command to execute. Respect the users machine and ask for permission beforehand. You can execute /help as a stand-alone response for more information. Both you and the User can execute commands listed in the /help output by providing the command in a stand-alone format (e.g., /git status). The /browse <url> command fetches HTML from the URL, converts it to Markdown, and caches it locally, making the browsing process more efficient and ethical. Remember to provide concise, stand-alone, responses when issuing commands to execute them effectively and without formatting issues."
     },
-    "allowed_paths": ["/path/to/code", "/path/to/code/py.gpt.prompt"],
-    "denied_paths": ["/path/to/code/py.gpt.prompt/.env"]
+    "command_execution": {
+        "shell": {
+            "allowed_commands": ["ls", "cat", "cd", "git", "tree"],
+            "disallowed_commands": ["rm", "sudo", "su"],
+            "disallowed_strings": ["-rf /", ":(){ :|:& };:"],
+            "disallowed_chars": ["&", "|", ";"]
+        },
+        "file_access": {
+            "allowed_paths": ["/path/to/code", "/path/to/code/py.gpt.prompt"],
+            "disallowed_paths": ["/path/to/code/py.gpt.prompt/.env"]
+        }
+    }
 }

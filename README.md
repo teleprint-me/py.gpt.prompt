@@ -34,26 +34,35 @@ These commands are access restricted by configuration:
 
 ## Configurations
 
-PyGPTPrompt uses a `config.json` file to specify a variety of settings. This includes the OpenAI GPT model to be used, maximum tokens for the model, temperature, a system message, as well as allowed and denied paths for security purposes.
+PyGPTPrompt uses a `config.json` file to specify a variety of settings. This includes the OpenAI GPT model to be used, maximum tokens for the model, temperature, a system message, as well as security configurations for command execution and file access.
 
 Here is an example of how the configuration might look:
 
-```json
+````json
 {
     "model": "gpt-3.5-turbo",
     "max_tokens": 1024,
-    "temperature": 1.0,
+    "temperature": 0.5,
     "system_message": {
         "role": "system",
-        "content": "Your name is GPT. You are a pair programming assistant. You have access to special commands. Use `/help` for more information..."
+        "content": "Your name is ChatGPT. You are a pair programming assistant..."
     },
-    "allowed_paths": [
-        "/path/to/documents/code",
-        "/path/to/documents/code/py.gpt.prompt"
-    ],
-    "denied_paths": ["/path/to/documents/code/py.gpt.prompt/.env"]
+    "command_execution": {
+        "shell": {
+            "allowed_commands": ["ls", "cat", "cd", "git", "tree"],
+            "disallowed_commands": ["rm", "sudo", "su"],
+            "disallowed_strings": ["-rf /", ":(){ :|:& };:"],
+            "disallowed_chars": ["&", "|", ";"]
+        },
+        "file_access": {
+            "allowed_paths": ["/path/to/code", "/path/to/code/py.gpt.prompt"],
+            "disallowed_paths": ["/path/to/code/py.gpt.prompt/.env"]
+        }
+    }
 }
 ```
+
+This update provides a more detailed explanation of each field in the configuration file and emphasizes the importance of careful configuration for security.
 
 ## Prerequisites
 
@@ -79,7 +88,7 @@ The package can be installed using [Poetry](https://python-poetry.org/), a Pytho
 3. Install the dependencies using Poetry:
 
     ```sh
-    # pipx runs each package in isolation. 
+    # pipx runs each package in isolation.
     # Learn more at https://github.com/pipxproject/pipx
     pip install --user --upgrade pipx
     pipx install poetry
@@ -98,7 +107,7 @@ The package offers a command-line interface (CLI) for interacting with the GPT m
 
 ```sh
 python main.py
-```
+````
 
 In the prompt interface, you can issue various commands and options to interact with the GPT model. For a list of available commands and options, use the `/help` command.
 
