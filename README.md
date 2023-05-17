@@ -4,6 +4,8 @@
 
 A Python interface for the OpenAI REST API to automate GPT via prompts.
 
+**Note:** Please be aware that this project is still in its experimental prototype phase. It currently has certain limitations, such as handling API keys, environment variables, and configuration files, which are yet to be fully addressed. The project functions well in isolation, but it's not yet production-ready.
+
 ## Overview
 
 PyGPTPrompt is a Python-based project that allows for interactive command execution within a controlled environment. It provides a sandbox for executing commands, with enhanced security features that restrict access to sensitive directories.
@@ -99,6 +101,12 @@ The package can be installed using [Poetry](https://python-poetry.org/), a Pytho
 
     ```sh
     poetry shell
+    ```
+
+5. Setup your API Key.
+
+    ```sh
+    echo "OPENAI_API_KEY=<API_KEY_GOES_HERE> > .env"
     ```
 
 ## Usage
