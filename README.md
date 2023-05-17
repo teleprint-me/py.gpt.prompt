@@ -12,27 +12,33 @@ PyGPTPrompt is a Python-based project that allows for interactive command execut
 
 ## Features
 
-PyGPTPrompt supports a range of commands for interacting with web pages, RSS feeds, and the local file system:
+PyGPTPrompt supports a range of commands for interacting with web pages, RSS feeds, shell processes, and the local file system:
 
 ![GPT-3.5 Turbo Demo](./assets/gpt-3.5-turbo.gif)
 
 ### Web Pages
 
--   `/robots <url>`: Get the robots.txt of a specified URL.
--   `/browse <url>`: Fetch HTML from a specified URL, convert it to Markdown, and cache it locally. If the content already exists in the cache, it will return the cached version.
+- `/robots <url>`: Get the robots.txt of a specified URL.
+- `/browse <url>`: Fetch HTML from a specified URL, convert it to Markdown, and cache it locally. If the content already exists in the cache, it will return the cached version.
 
 ### RSS Feeds
 
--   `/rss <url>`: Fetch and display full text articles from an RSS feed.
+- `/rss <url>`: Fetch and display full text articles from an RSS feed.
+
+### Sub-Process
+
+- `/ <command>`: Execute a shell command (restricted by configuration). 
+
+For example: 
+
+- `/ cat <file>`: Read content from a local file.
+- `/ git status`: Display the status of a git repository.
 
 ### Filesystem
 
-These commands are access restricted by configuration:
+Access to filesystem commands is restricted by configuration for enhanced privacy:
 
--   `/ls <dir>`: List files in a local directory. For example, `/ls Documents/` lists all files and directories within the `Documents/` directory.
--   `/read <file> [start_line] [end_line]`: Read local file content from `start_line` to `end_line` (if specified). The line numbers start at 1. For example, `/read test.txt 10 20` reads lines 10 to 20 from the `test.txt` file.
--   `/tree <directory> [--ignore dir1,dir2,...]`: Display the directory and file structure in a tree format. Optionally, ignore specified directories. For instance, `/tree /path/to/directory --ignore dir1,dir2` displays the file structure excluding `dir1` and `dir2`.
--   `/git <params>`: Access and execute local git commands. For example, `/git status` will show the current status of your git repository.
+- `/ls <dir>`: List files in a local directory without revealing user names, ownership, or other sensitive details. For example, `/ls Documents/` lists all files and directories within the `Documents/` directory.
 
 ## Configurations
 
