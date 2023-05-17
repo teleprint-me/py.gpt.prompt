@@ -38,7 +38,7 @@ PyGPTPrompt uses a `config.json` file to specify a variety of settings. This inc
 
 Here is an example of how the configuration might look:
 
-````json
+```json
 {
     "model": "gpt-3.5-turbo",
     "max_tokens": 1024,
