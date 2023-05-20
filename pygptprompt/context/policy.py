@@ -1,9 +1,9 @@
 # pygptprompt/policy.py
 import os
 
-from pygptprompt.config import get_config
+from pygptprompt.context.config import get_configuration
 
-__config__ = get_config()
+__config__ = get_configuration()
 
 
 def is_traversable(path: str) -> bool:

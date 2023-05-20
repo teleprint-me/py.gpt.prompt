@@ -7,10 +7,10 @@ import html2text
 import requests
 from requests.exceptions import RequestException
 
-from pygptprompt.config import get_config
+from pygptprompt.context.config import get_configuration
 
 # Load the configuration
-__config__ = get_config()
+__config__ = get_configuration()
 
 STORAGE_DIR = __config__.get(
     "storage_dir", "storage"

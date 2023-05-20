@@ -1,6 +1,6 @@
 import os
 
-from pygptprompt.policy import is_accessible
+from pygptprompt.context.policy import is_accessible
 
 
 def get_file_info(file_path: str) -> str:

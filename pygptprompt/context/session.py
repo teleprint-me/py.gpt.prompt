@@ -1,20 +1,23 @@
+# pygptprompt/session.py
 import json
 import os
+from typing import Optional
 
 from prompt_toolkit import prompt
 
 
-def create_sessions_directory() -> None:
-    if not os.path.exists("sessions"):
-        os.makedirs("sessions")
-
-
-def name_session() -> str:
+def get_session_name() -> str:
     session_name = prompt("Enter a name for the session: ")
     return session_name
 
 
-def read_session(session_name: str) -> list[dict[str, str]]:
+def create_directory(dir_path: Optional[str] = None) -> None:
+    dir_path = dir_path if dir_path else "sessions"
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+
+
+def load_session(session_name: str) -> list[dict[str, str]]:
     try:
         with open(f"sessions/{session_name}.json", "r") as file:
             session_data = json.load(file)

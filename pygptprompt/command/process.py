@@ -2,10 +2,10 @@
 import shlex
 import subprocess
 
-from pygptprompt.config import get_config
-from pygptprompt.policy import is_accessible, is_command_allowed, is_traversable
+from pygptprompt.context.config import get_configuration
+from pygptprompt.context.policy import is_accessible, is_command_allowed, is_traversable
 
-__config__ = get_config()
+__config__ = get_configuration()
 
 
 def run_subprocess(command: str) -> str:
