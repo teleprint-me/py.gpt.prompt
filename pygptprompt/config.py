@@ -8,7 +8,7 @@ import dotenv
 from pygptprompt.singleton import Singleton
 
 
-class ConfigContext(Singleton):
+class Configuration(Singleton):
     def __init__(self, filepath: Optional[str] = None):
         self.filepath = filepath if filepath else "config.json"
         self.config = self._load_configuration()
@@ -32,8 +32,8 @@ class ConfigContext(Singleton):
         if isinstance(data, dict):
             if key in data:
                 return data[key]
-            for k, v in data.items():
-                result = self._get_value_by_key(v, key)
+            for val in data.values():
+                result = self._get_value_by_key(val, key)
                 if result is not None:
                     return result
         return None
