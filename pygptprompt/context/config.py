@@ -5,8 +5,10 @@ from typing import Any, Optional, Union
 
 import dotenv
 
+from pygptprompt.singleton import Singleton
 
-class ConfigContext:
+
+class ConfigContext(Singleton):
     def __init__(self, filepath: Optional[str] = None):
         self.filepath = filepath if filepath else "config.json"
         self.config = self._load_configuration()

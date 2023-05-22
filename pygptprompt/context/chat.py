@@ -15,6 +15,7 @@ from pygptprompt.context.session import (
 )
 from pygptprompt.format import print_bold
 from pygptprompt.openai import OpenAI
+from pygptprompt.singleton import Singleton
 from pygptprompt.token import (
     get_token_count,
     get_token_limit,
@@ -22,7 +23,7 @@ from pygptprompt.token import (
 )
 
 
-class ChatContext:
+class ChatContext(Singleton):
     def __init__(self, config_path: Optional[str] = None):
         # Initialize settings
         # Configuration defaults to `./config.json`.
