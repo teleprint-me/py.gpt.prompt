@@ -1,5 +1,6 @@
 import os
 
+from pygptprompt.context.config import ConfigContext
 from pygptprompt.context.policy import is_accessible
 
 
@@ -16,7 +17,7 @@ def get_file_info(file_path: str) -> str:
     return f"{file_path:30} {type_info:10} {file_size}"
 
 
-def list_directory(command: str) -> str:
+def list_directory(command: str, config: ConfigContext) -> str:
     # The command is the first argument.
     args = command.split()[1:]
 
@@ -28,7 +29,7 @@ def list_directory(command: str) -> str:
     except (IndexError,):
         directory = "."
 
-    if not is_accessible(directory):
+    if not is_accessible(directory, config):
         return "RoleError: Access denied! You shouldn't snoop in private places."
 
     if not os.path.isdir(directory):
@@ -39,7 +40,7 @@ def list_directory(command: str) -> str:
         files = [
             file
             for file in os.listdir(directory)
-            if is_accessible(os.path.join(directory, file))
+            if is_accessible(os.path.join(directory, file), config)
         ]
         file_info_list = [
             get_file_info(os.path.join(directory, file)) for file in files

@@ -1,5 +1,4 @@
-import re
-
+# pygptprompt/command/feed.py
 import feedparser
 import requests
 from bs4 import BeautifulSoup

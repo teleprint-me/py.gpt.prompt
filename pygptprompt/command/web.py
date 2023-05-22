@@ -7,14 +7,7 @@ import html2text
 import requests
 from requests.exceptions import RequestException
 
-from pygptprompt.context.config import get_configuration
-
-# Load the configuration
-__config__ = get_configuration()
-
-STORAGE_DIR = __config__.get(
-    "storage_dir", "storage"
-)  # default to 'storage' if not set
+from pygptprompt.context.config import ConfigContext
 
 
 # Function to read from cache
@@ -43,11 +36,13 @@ def fetch_content(url: str) -> str:
 
 
 # Function to fetch and cache robots.txt
-def fetch_robots_txt(command: str) -> str:
+def fetch_robots_txt(command: str, config: ConfigContext) -> str:
     # Command is split into parts
     args = command.split()
     # URL is the second part (index 1)
     url = args[1].strip()
+    # Get the storage path
+    storage_path = config.get_value("path.storage", "storage")
 
     # Ensure URL starts with "http://" or "https://", and ends with "/robots.txt"
     if not url.startswith(("http://", "https://")):
@@ -58,7 +53,7 @@ def fetch_robots_txt(command: str) -> str:
     # Create a path for the cache
     parsed_url = urlparse(url)
     domain = parsed_url.netloc
-    cache_path = os.path.join(STORAGE_DIR, "robots", domain, "robots.txt")
+    cache_path = os.path.join(storage_path, "robots", domain, "robots.txt")
 
     # Try to read from cache
     cached_content = read_from_cache(cache_path)
@@ -86,11 +81,13 @@ def convert_html_to_markdown(html: str) -> str:
     return h.handle(html).strip()
 
 
-def fetch_and_store_website(command: str) -> str:
+def fetch_and_store_website(command: str, config: ConfigContext) -> str:
     # Command is first argument
     args = command.split()
     # URL is second argument
     url = args[1].strip()
+    # Get the storage path
+    storage_path = config.get_value("path.storage", "storage")
 
     # Ensure URL starts with "http://" or "https://"
     if not url.startswith(("http://", "https://")):
@@ -102,9 +99,9 @@ def fetch_and_store_website(command: str) -> str:
     # Remove leading slash
     # If path is empty, use 'index' as the default filename
     path = parsed_url.path.lstrip("/") or "index.html"
-    html_path = os.path.join(STORAGE_DIR, "html", domain, path)
+    html_path = os.path.join(storage_path, "html", domain, path)
     markdown_path = os.path.join(
-        STORAGE_DIR, "markdown", domain, f"{os.path.splitext(path)[0]}.md"
+        storage_path, "markdown", domain, f"{os.path.splitext(path)[0]}.md"
     )
 
     # Try to read from cache

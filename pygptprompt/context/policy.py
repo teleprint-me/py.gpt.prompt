@@ -1,9 +1,7 @@
-# pygptprompt/policy.py
+# pygptprompt/context/policy.py
 import os
 
-from pygptprompt.context.config import get_configuration
-
-__config__ = get_configuration()
+from pygptprompt.context.config import ConfigContext
 
 
 def is_traversable(path: str) -> bool:
@@ -11,12 +9,11 @@ def is_traversable(path: str) -> bool:
     return os.path.isabs(path) or os.path.exists(path)
 
 
-def is_accessible(path: str) -> bool:
-    """Check if the filepath is allowed according to the configuration."""
+def is_accessible(path: str, config: ConfigContext) -> bool:
+    """Check if the filepath is allowed according to the file access configuration."""
     path = os.path.abspath(path)
-    file_access = __config__.get("command_execution", {}).get("file_access", {})
-    denied_paths = file_access.get("disallowed_paths", [])
-    allowed_paths = file_access.get("allowed_paths", [])
+    denied_paths = config.get_value("access.file.disallowed_paths", [])
+    allowed_paths = config.get_value("access.file.allowed_paths", [])
 
     for denied_path in denied_paths:
         if path.startswith(os.path.abspath(denied_path)):
@@ -27,13 +24,12 @@ def is_accessible(path: str) -> bool:
     return False
 
 
-def is_command_allowed(command) -> tuple[bool, str]:
-    """Check if the command is allowed according to the configuration."""
-    shell_config = __config__.get("command_execution", {}).get("shell", {})
-    allowed_commands = shell_config.get("allowed_commands", [])
-    disallowed_commands = shell_config.get("disallowed_commands", [])
-    disallowed_strings = shell_config.get("disallowed_strings", [])
-    disallowed_chars = shell_config.get("disallowed_chars", [])
+def is_command_allowed(command: str, config: ConfigContext) -> tuple[bool, str]:
+    """Check if the command is allowed according to the shell configuration."""
+    allowed_commands = config.get_value("access.shell.allowed_commands", [])
+    disallowed_commands = config.get_value("access.shell.disallowed_commands", [])
+    disallowed_strings = config.get_value("access.shell.disallowed_strings", [])
+    disallowed_chars = config.get_value("access.shell.disallowed_chars", [])
 
     # Check if the command is explicitly allowed
     if command.split()[0] in allowed_commands:

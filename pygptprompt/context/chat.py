@@ -1,16 +1,16 @@
 # pygptprompt/chat.py
-from typing import Optional
+from typing import Any, Optional
 
 import prompt_toolkit
 import tiktoken
 from prompt_toolkit.history import FileHistory
 
 from pygptprompt.command.factory import command_factory
-from pygptprompt.context.config import get_api_key, get_configuration
+from pygptprompt.context.config import ConfigContext
 from pygptprompt.context.session import (
-    create_directory,
     get_session_name,
     load_session,
+    make_session_directory,
     save_session,
 )
 from pygptprompt.format import print_bold
@@ -26,27 +26,33 @@ class ChatContext:
     def __init__(self, config_path: Optional[str] = None):
         # Initialize settings
         # Configuration defaults to `./config.json`.
-        self.config = get_configuration(config_path)
-        # API Key defaults to `./.env`.
-        self.api_key = get_api_key(self.config)
-        # Sessions defaults to `./sessions` (defined in config)
-        self.session_path = self.config.get("session_path", "sessions")
+        self.config: ConfigContext = ConfigContext(config_path)
+        # API Key defaults to `./.env`. (defined in config)
+        self.api_key: str = self.config.get_api_key()
         # Setup OpenAI REST Interface
         self.openai: OpenAI = OpenAI(self.api_key)
         # Setup GPT Model settings
-        self.model: str = self.config.get("model", "gpt-3.5-turbo")
-        self.max_tokens: int = self.config.get("max_tokens", 1024)
-        self.temperature: float = self.config.get("temperature", 0.5)
-
+        self.model: str = self.config.get_value(
+            "chat_completions.model", "gpt-3.5-turbo"
+        )
+        self.max_tokens: int = self.config.get_value(
+            "chat_completions.max_tokens", 1024
+        )
+        self.temperature: float = self.config.get_value(
+            "chat_completions.temperature", 0.5
+        )
+        self.system_message: dict[str, str] = self.config.get_value(
+            "chat_completions.system_message"
+        )
         # Initialize session
-        create_directory(self.session_path)
-        # NOTE: The user needs be prompted for the session name.
+        # NOTE: Sessions defaults to `./sessions` (defined in config)
+        make_session_directory(self)
         # Ask the user to enter a session name or choose an existing one.
+        # NOTE: The user needs be prompted for the session name.
         self.session_name: str = get_session_name()
-        self.messages: list[dict[str, str]] = load_session(self.session_name) or [
-            self.config["system_message"]
+        self.messages: list[dict[str, str]] = load_session(self) or [
+            self.system_message
         ]
-
         # Initialize model
         # gpt-3.5-turbo context window: `upper_limit = 4096 - max_tokens`
         # gpt-4 context window: `upper_limit = 8192 - max_tokens`
@@ -71,6 +77,32 @@ class ChatContext:
         # Output updated token count
         print(f"Consumed {token_count} tokens.\n")
 
+    def message_interpreter(self, message):
+        # Break the message into lines
+        lines = message.split("\n")
+
+        # Loop through each line
+        for line in lines:
+            # If a line starts with '/', treat it as a command
+            if line.strip().startswith("/"):
+                # Execute the command using command factory and get the result
+                command_result = command_factory(line)
+
+                # If the command_result is too large, write it to a file
+                # and replace command_result with file information
+                # (this is a placeholder for your actual implementation)
+                if len(command_result) > self.upper_limit:
+                    file_information = write_result_to_file(command_result)
+                    command_result = file_information
+
+                # Step 8: Inject the result back into the message
+                lines[i] = f"{line}\n{command_result}"
+
+        # Step 9: Recombine the lines into a single string
+        message = "\n".join(lines)
+
+        return message, line_positions
+
     def prompt_user(self) -> bool:
         def prompt_continuation(width, line_number, is_soft_wrap):
             return ">" * width
@@ -86,7 +118,7 @@ class ChatContext:
             )
         except (KeyboardInterrupt, EOFError):
             # Auto save session on interrupt
-            save_session(self.session_name, self.messages)
+            save_session(self)
             exit()
 
         # Block and prompt user again if the input is empty
@@ -127,7 +159,7 @@ class ChatContext:
         # Use a prompt to identify GPT's output
         print_bold("assistant")
 
-        # Call the streaming API
+        # Call the custom streaming API
         assistant_message = self.openai.stream_chat_completions(
             self.messages,
             model=self.model,
@@ -155,9 +187,6 @@ class ChatContext:
 
         print("\n")  # pad output with newline characters
 
-        # Save the updated messages to the session file
-        save_session(self.session_name, self.messages)
-
     def loop(self) -> None:
         self.print_message_history()
 
@@ -167,8 +196,9 @@ class ChatContext:
             # Handle user input
             if self.prompt_user():
                 continue
-            else:
-                save_session(self.session_name, self.messages)
 
-            # 4. Prompt model - Call custom streaming API
+            # Prompt model - Call custom streaming API
             self.prompt_gpt()
+
+            # Save the updated messages to the session file
+            save_session(self.session_name, self.messages)
