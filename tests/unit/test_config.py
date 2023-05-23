@@ -40,3 +40,7 @@ class TestConfiguration:
         assert hasattr(config, "get_value")
         assert config.get_value("chat_completions") is not None
         assert config.get_value("non_existent_key", "default") == "default"
+        assert isinstance(
+            config.get_value_by_key(config.data, "allowed_commands"), list
+        )
+        assert isinstance(config.get_value("access.shell.allowed_commands"), list)
