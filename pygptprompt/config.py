@@ -1,4 +1,4 @@
-# pygptprompt/context/config.py
+# pygptprompt/config.py
 import json
 import os
 from typing import Any, Optional, Union

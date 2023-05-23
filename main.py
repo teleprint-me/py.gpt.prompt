@@ -1,11 +1,11 @@
 import argparse
 
-from pygptprompt.context.chat import ChatContext
+from pygptprompt.chat.context import ChatContext
 
 
 def main(config_path):
-    chat_context = ChatContext(config_path=config_path)
-    chat_context.loop()
+    chat = ChatContext(config_path=config_path)
+    chat.loop()
 
 
 if __name__ == "__main__":
