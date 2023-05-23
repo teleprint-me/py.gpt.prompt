@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from openai.requests import OpenAIRequests
+from pygptprompt.openai.requests import OpenAIRequests
 
 
 class OpenAICompletions(OpenAIRequests):
@@ -9,7 +9,7 @@ class OpenAICompletions(OpenAIRequests):
         prompt: str | list[str],
         model: Optional[str] = "text-davinci-003",
         max_tokens: Optional[int] = 256,
-        temperature: Optional[float] = 1,
+        temperature: Optional[float] = 0.5,
         **params,
     ) -> dict[str, Any]:
         keys = ["prompt", "model", "max_tokens", "temperature"]
@@ -22,7 +22,7 @@ class OpenAICompletions(OpenAIRequests):
         self,
         messages: list[dict[str, str]],
         model: Optional[str] = "gpt-3.5-turbo",
-        max_tokens: Optional[int] = 256,
+        max_tokens: Optional[int] = 512,
         temperature: Optional[float] = 0.5,
         **params,
     ) -> dict[str, Any]:
@@ -37,9 +37,9 @@ class OpenAICompletions(OpenAIRequests):
         messages: list[dict[str, str]],
         model: str = "gpt-3.5-turbo",
         max_tokens: int = 512,
-        temperature: float = 0.7,
+        temperature: float = 0.5,
         **params,
-    ) -> dict[str, str]:
+    ) -> dict[str, Any]:
         # `{"stream": True}` enables REST API streaming
         keys = ["messages", "model", "max_tokens", "temperature", "stream"]
         values = [messages, model, max_tokens, temperature, True]
