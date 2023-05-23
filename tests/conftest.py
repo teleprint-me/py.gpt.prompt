@@ -5,6 +5,7 @@ import pytest
 
 from pygptprompt.chat.token import ChatToken
 from pygptprompt.config import Configuration
+from pygptprompt.openai import OpenAI
 
 
 def pytest_addoption(parser):
@@ -29,6 +30,17 @@ def pytest_collection_modifyitems(config, items):
 
 @pytest.fixture(scope="module")
 def messages():
+    return [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {
+            "role": "user",
+            "content": "Translate the following English text to French: 'The quick brown fox jumped over the lazy dog.'",
+        },
+    ]
+
+
+@pytest.fixture(scope="module")
+def dialog():
     return [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Who won the world series in 2020?"},
@@ -56,3 +68,8 @@ def config(config_filepath: str) -> Configuration:
 @pytest.fixture(scope="module")
 def chat_token(config: Configuration) -> ChatToken:
     return ChatToken(config)
+
+
+@pytest.fixture(scope="module")
+def openai(config: Configuration) -> OpenAI:
+    return OpenAI(config.get_api_key())
