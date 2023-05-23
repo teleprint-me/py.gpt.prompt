@@ -1,6 +1,6 @@
 from typing import Any
 
-from .requests import OpenAIRequests
+from pygptprompt.openai.requests import OpenAIRequests
 
 
 class OpenAIModel(OpenAIRequests):
