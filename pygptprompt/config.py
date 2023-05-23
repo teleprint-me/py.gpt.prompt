@@ -11,9 +11,9 @@ from pygptprompt.singleton import Singleton
 class Configuration(Singleton):
     def __init__(self, filepath: Optional[str] = None):
         self.filepath = filepath if filepath else "config.json"
-        self.config = self._load_configuration()
+        self.data = self.load_configuration()
 
-    def _load_configuration(self) -> dict[str, Any]:
+    def load_configuration(self) -> dict[str, Any]:
         with open(self.filepath, "r") as f:
             config = json.load(f)
 
@@ -22,24 +22,25 @@ class Configuration(Singleton):
 
         return config
 
-    def _get_value_by_key(
+    def get_value_by_key(
         self,
         data: Union[list[Any], dict[str, Any]],
         key: str,
     ) -> Any:
-        if isinstance(data, list):
-            return data
         if isinstance(data, dict):
             if key in data:
                 return data[key]
+
             for val in data.values():
-                result = self._get_value_by_key(val, key)
-                if result is not None:
-                    return result
+                if isinstance(val, dict):
+                    result = self.get_value_by_key(val, key)
+
+                    if result is not None:
+                        return result
         return None
 
     def get_api_key(self) -> str:
-        env = self._get_value_by_key(self.config, "path.environment")
+        env = self.get_value_by_key(self.data, "path.environment")
 
         if not dotenv.load_dotenv(env):
             raise ValueError("EnvironmentError: Failed to load `.env`")
@@ -52,4 +53,13 @@ class Configuration(Singleton):
         return api_key
 
     def get_value(self, key: str, default: Optional[Any] = None) -> Any:
-        return self._get_value_by_key(self.config, key) or default
+        keys = key.split(".")
+        data = self.data
+
+        for key in keys:
+            data = self.get_value_by_key(data, key)
+
+            if data is None:
+                return default
+
+        return data
