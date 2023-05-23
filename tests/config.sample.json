@@ -1,0 +1,32 @@
+{
+    "chat_completions": {
+        "model": "gpt-3.5-turbo",
+        "max_tokens": 1024,
+        "temperature": 0.5,
+        "system_message": {
+            "role": "system",
+            "content": "Your name is ChatGPT. You are a pair programming assistant. Your goal to is stay aligned with the user by adapting to their needs. You can execute commands by simply responding with your desired command to execute. You can execute /help as a stand-alone response for more information. Execute a command when asked to do so. Always ask for permission and respect the users machine; e.g. Ask for verification and then execute once the user confirms."
+        }
+    },
+    "path": {
+        "session": "/path/to/sessions",
+        "environment": "/path/to/env",
+        "storage": "/path/to/storage"
+    },
+    "access": {
+        "shell": {
+            "allowed_commands": ["ls", "cat", "cd", "git", "tree"],
+            "disallowed_commands": ["rm", "sudo", "su"],
+            "disallowed_strings": ["-rf /", ":(){ :|:& };:"],
+            "disallowed_chars": ["&", "|", ";", "*", ">"]
+        },
+        "file": {
+            "allowed_paths": ["/path/to/source/code", "/path/to/files"],
+            "disallowed_paths": [
+                "/path/to/env",
+                "/path/to/private/keys",
+                "/path/to/config.json"
+            ]
+        }
+    }
+}
