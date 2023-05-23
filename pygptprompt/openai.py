@@ -6,12 +6,11 @@ import requests
 
 class OpenAI:
     def __init__(self, api_key: str):
-        self.api_key = api_key
-        self.headers = {
-            "Authorization": f"Bearer {self.api_key}",
+        self._headers: dict[str, str] = {
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
         }
-        self.chat_completions_url = "https://api.openai.com/v1/chat/completions"
+        self._chat_completions_url: str = "https://api.openai.com/v1/chat/completions"
 
     def chat_completions(
         self,
@@ -28,8 +27,8 @@ class OpenAI:
         }
 
         response = requests.post(
-            self.chat_completions_url,
-            headers=self.headers,
+            self._chat_completions_url,
+            headers=self._headers,
             json=data,
         )
 
@@ -58,8 +57,8 @@ class OpenAI:
         }
 
         response = requests.post(
-            self.chat_completions_url,
-            headers=self.headers,
+            self._chat_completions_url,
+            headers=self._headers,
             json=data,
             stream=True,  # Enable HTTP token streaming
         )
