@@ -1,16 +1,18 @@
 # pygptprompt/chat/assistant_interface.py
 from pygptprompt.chat.session import ChatSession
-from pygptprompt.command.factory import command_factory
+
+# from pygptprompt.command.factory import command_factory
 from pygptprompt.format import print_bold
 from pygptprompt.openai import OpenAI
-from pygptprompt.token import truncate_messages_for_token_limit
+from pygptprompt.session.token import ChatToken
 
 
 class AssistantInterface:
     def __init__(self, session: ChatSession):
+        api_key = session.config.get_api_key()
+        self.openai: OpenAI = OpenAI(api_key)
+        self.token: ChatToken = session.token
         self.session: ChatSession = session
-        # API Key defaults to `./.env`. (defined in config)
-        self.openai: OpenAI = OpenAI(session.config.get_api_key())
 
     @staticmethod
     def print_assistant_prompt():
@@ -24,19 +26,21 @@ class AssistantInterface:
     def is_command(message: str) -> bool:
         return message.startswith("/")
 
-    @staticmethod
-    def execute_command(command: str) -> str:
-        print()  # pad with a newline to avoid mangling
-        command_response = command_factory(command)
-        print(command_response)
-        return command_response
+    def execute_command(self, command: str) -> str:
+        # print()  # pad with a newline to avoid mangling
+        # command_response = command_factory(self.session.config, command)
+        # print(command_response)
+        # return command_response
+        # NOTE: Temporary placeholder until chat is fixed
+        return "Commands are under construction..."
 
     @staticmethod
     def append_command_response(message: str, command_response: str) -> str:
+        print(command_response)
         return f"{message}\n{command_response}"
 
     def get_assistant_message(self):
-        return self.openai.stream_chat_completions(
+        return self.openai.completions.stream_chat_completions(
             self.session.messages,
             model=self.session.model.name,
             max_tokens=self.session.model.max_tokens,
@@ -44,14 +48,13 @@ class AssistantInterface:
         )
 
     def add_message_to_conversation(self, message: str):
-        self.session.messages = truncate_messages_for_token_limit(
+        self.session.messages = self.token.enqueue(
             self.session.messages,
             {"role": "assistant", "content": message},
-            self.session.model.upper_limit,
-            self.session.model.encoding,
         )
+        self.session.transcript.append(self.session.messages[-1])
 
-    def prompt_gpt(self) -> None:
+    def prompt(self) -> None:
         self.print_assistant_prompt()
         assistant_message = self.get_assistant_message()
 
@@ -64,6 +67,6 @@ class AssistantInterface:
                 )
                 assistant_message = {"role": "assistant", "content": assistant_content}
 
-            self.add_message_to_conversation(assistant_message)
+            self.add_message_to_conversation(assistant_content)
 
         self.print_newline()

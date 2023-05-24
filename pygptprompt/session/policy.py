@@ -1,12 +1,12 @@
 # pygptprompt/chat/policy.py
 import os
 
-from pygptprompt.config import Configuration
-from pygptprompt.singleton import Singleton
+from pygptprompt.pattern.singleton import Singleton
+from pygptprompt.setting.config import GlobalConfiguration
 
 
-class ChatPolicy(Singleton):
-    def __init__(self, config: Configuration):
+class SessionPolicy(Singleton):
+    def __init__(self, config: GlobalConfiguration):
         self.config = config
 
     @staticmethod

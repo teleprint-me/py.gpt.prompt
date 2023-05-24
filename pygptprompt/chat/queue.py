@@ -2,29 +2,24 @@
 from typing import Any, Optional
 
 from pygptprompt.chat.assistant import AssistantInterface
-from pygptprompt.chat.interpreter import ChatInterpreter
+
+# from pygptprompt.chat.interpreter import ChatInterpreter
 from pygptprompt.chat.session import ChatSession
 from pygptprompt.chat.user import UserInterface
-from pygptprompt.config import Configuration
 from pygptprompt.format import print_bold
+from pygptprompt.session.token import ChatToken
+from pygptprompt.setting.config import GlobalConfiguration
 
 
-class ChatContext:
+class ChatQueue:
     def __init__(self, config_path: Optional[str] = None):
-        # Configuration defaults to `./config.json` (defined in config)
-        self.config: Configuration = Configuration(config_path)
+        # GlobalConfiguration defaults to `./config.json` (defined in config)
+        self.config: GlobalConfiguration = GlobalConfiguration(config_path)
         # Session defaults to `./sessions` (defined in config)
         self.session: ChatSession = ChatSession(self.config)
-        self.interpreter = ChatInterpreter(self.session.model)
+        self.token: ChatToken = self.session.token
         self.user: UserInterface = UserInterface(self.session)
         self.assistant: AssistantInterface = AssistantInterface(self.session)
-        # Setup subprocesses for managing I/O
-        self.subprocess: dict[str, Any] = {
-            "input": "",
-            "output": "",
-            "original_message": {"role": "", "content": ""},
-            "modified_message": {"role": "", "content": ""},
-        }
 
     def setup_session(self) -> None:
         # NOTE: Sessions defaults to `./sessions` (defined in config)
@@ -45,14 +40,14 @@ class ChatContext:
         self.print_message_history()
 
         while True:
-            self.session.print_token_count()
+            self.token.print_token_count(self.session.messages)
 
             # Handle user input
-            if self.user.prompt_user():
+            if self.user.prompt():
                 continue
 
             # Prompt model - Call custom streaming API
-            self.assistant.prompt_gpt()
+            self.assistant.prompt()
 
             # Save the updated messages to the session file
             self.session.save()
