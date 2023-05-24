@@ -15,13 +15,13 @@ class GlobalConfiguration(Singleton, MappingTemplate):
     def __init__(self, filepath: Optional[str] = None):
         super()
         self.filepath = Path(filepath if filepath else "config.json")
-        self._dataset = self.load()
+        self._data = self.load()
 
     def load(self) -> dict[str, Any]:
         return read_json(self.filepath)
 
     def save(self) -> None:
-        write_json(self.filepath, self._dataset)
+        write_json(self.filepath, self.data)
 
     def backup(self) -> None:
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
