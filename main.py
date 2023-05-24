@@ -1,3 +1,4 @@
+# main.py
 import argparse
 
 from pygptprompt.chat.context import ChatContext
