@@ -16,7 +16,7 @@ class TestConfiguration:
 
     def test_attributes(self, config: GlobalConfiguration):
         assert hasattr(config, "filepath")
-        assert hasattr(config, "_dataset")
+        assert hasattr(config, "_data")
         assert hasattr(config, "load")
         assert hasattr(config, "get_api_key")
         assert hasattr(config, "get_value")
@@ -25,12 +25,12 @@ class TestConfiguration:
         assert os.path.exists(config.filepath)
 
     def test_configuration(self, config: GlobalConfiguration):
-        assert isinstance(config._dataset, dict)
+        assert isinstance(config._data, dict)
 
     def test_load_configuration(self, config: GlobalConfiguration):
         with open(config.filepath, "r") as f:
             expected_config = json.load(f)
-        assert config._dataset == expected_config
+        assert config._data == expected_config
 
     @pytest.mark.private
     def test_api_key(self, config: GlobalConfiguration):

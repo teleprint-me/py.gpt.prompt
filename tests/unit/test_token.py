@@ -42,9 +42,9 @@ class TestChatToken:
     def test_get_token_count(
         self,
         chat_token: ChatToken,
-        messages: list[dict[str, str]],
+        dialog: list[dict[str, str]],
     ):
-        assert chat_token.get_token_count(messages) == 29
+        assert chat_token.get_token_count(dialog) == 29
 
     def test_enqueue(
         self,
