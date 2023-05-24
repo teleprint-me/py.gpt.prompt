@@ -1,122 +1,114 @@
+# pygptprompt/openai/requests.py
 import json
 import sys
 import time
 from typing import Any, Optional
 
 import requests
-from openai.api import OpenAIAPI, get_api_key
 from requests.exceptions import HTTPError
+
+from pygptprompt.openai.api import OpenAIAPI, get_api_key
 
 
 class OpenAIRequests:
+    MAX_RETRIES = 5
+
     def __init__(self, api_key: Optional[str] = "") -> None:
         self.api = OpenAIAPI(get_api_key(api_key))
         self.session = requests.Session()
 
+    def _handle_rate_limit(
+        self,
+        method: str,
+        url: str,
+        headers: dict[str, Any],
+        params: Optional[dict[str, Any]] = None,
+        stream: bool = False,
+    ) -> requests.Response:
+        for i in range(self.MAX_RETRIES):
+            delay = 2**i
+            print(f"OpenAIAPIError: Retry {i + 1} in {delay} seconds...")
+            time.sleep(delay)
+            try:
+                response = self.session.request(
+                    method, url, headers=headers, json=params, stream=stream
+                )
+                response.raise_for_status()
+                return response
+            except HTTPError as e:
+                print(f"OpenAIAPIError: Retry failed: {e}")
+        raise HTTPError("Max retries exceeded")
+
+    def _send_request(
+        self,
+        method: str,
+        url: str,
+        headers: dict[str, Any],
+        params: Optional[dict[str, Any]] = None,
+        stream: bool = False,
+    ) -> requests.Response:
+        response = self.session.request(
+            method, url, headers=headers, json=params, stream=stream
+        )
+        if response.status_code == 429:
+            response = self._handle_rate_limit(method, url, headers, params, stream)
+        response.raise_for_status()
+        return response
+
+    def _process_stream_response(self, response: requests.Response) -> dict[str, Any]:
+        message = ""
+        for line in response.iter_lines():
+            if line:
+                line = line.decode("utf-8")
+                if line.startswith("data: "):
+                    line = line[6:]
+                if line == "[DONE]":
+                    break
+                json_line = json.loads(line)
+                try:
+                    token = json_line["choices"][0]["delta"]["content"]
+                    if token:
+                        message += token
+                        print(token, end="")
+                        sys.stdout.flush()
+                except KeyError:
+                    continue
+        return {"role": "assistant", "content": message}
+
     def get(
-        self, endpoint: str, params: Optional[dict[str, Any]] = None
+        self,
+        endpoint: str,
+        params: Optional[dict[str, Any]] = None,
+        stream: bool = False,
     ) -> dict[str, Any]:
         url = self.api.url(endpoint)
         headers = self.api.headers
-        response = self.session.get(url, headers=headers, params=params)
-
-        # rate limit error
-        if response.status_code == 429:
-            # retry with exponential back-off
-            for i in range(5):
-                delay = 2**i
-                print(f"Retry {i + 1} in {delay} seconds...")
-                time.sleep(delay)
-                try:
-                    response = self.session.get(url, headers=headers, params=params)
-                    response.raise_for_status()
-                    break
-                except HTTPError as e:
-                    print(f"Retry failed: {e}")
+        response = self._send_request("GET", url, headers, params, stream)
+        if stream:
+            return self._process_stream_response(response)
         else:
-            response.raise_for_status()
-        return response.json()
+            return response.json()
 
     def post(
         self,
         endpoint: str,
         params: Optional[dict[str, Any]] = None,
+        stream: bool = False,
     ) -> dict[str, Any]:
-        if not params:
-            params = {}
-
         url = self.api.url(endpoint)
         headers = self.api.headers
-        response = self.session.post(url, headers=headers, json=params)
-        # rate limit error
-        if response.status_code == 429:
-            # retry with exponential back-off
-            for i in range(5):
-                delay = 2**i
-                print(f"Retry {i + 1} in {delay} seconds...")
-                time.sleep(delay)
-                try:
-                    response = self.session.post(url, headers=headers, json=params)
-                    response.raise_for_status()
-                    break
-                except HTTPError as e:
-                    print(f"Retry failed: {e}")
+        response = self._send_request("POST", url, headers, params, stream)
+        if stream:
+            return self._process_stream_response(response)
         else:
-            response.raise_for_status()
-        return response.json()
+            return response.json()
 
     def stream(
         self,
         endpoint: str,
         params: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
-        # NOTE:
-        # This method assumes chat completions endpoint is being used
-        # This method may not operate as expected with other endpoints as a result
-        if not params:
-            params = {}
-
         url = self.api.url(endpoint)
         headers = self.api.headers
-        response = self.session.post(
-            url,
-            headers=headers,
-            json=params,
-            stream=True,  # Enable HTTP token streaming
-        )
-
-        if response.status_code == 200:
-            message = ""
-            # Iterate over the response data one line at a time
-            for line in response.iter_lines():
-                # If the line is not empty
-                if line:
-                    # Decode it to string
-                    line = line.decode("utf-8")
-
-                    # Check if the line starts with 'data: '
-                    if line.startswith("data: "):
-                        # If it does, strip it out
-                        line = line[6:]
-
-                    # If the line is '[DONE]', stop processing
-                    if line == "[DONE]":
-                        break
-
-                    json_line = json.loads(line)
-
-                    try:
-                        # Aggregate and flush the tokens to output
-                        token = json_line["choices"][0]["delta"]["content"]
-                        if token:  # Skip empty tokens
-                            message += token
-                            print(token, end="")
-                            sys.stdout.flush()
-                    except (KeyError,):
-                        continue
-
-            # Return the assistant's message after the loop
-            return {"role": "assistant", "content": message}
-        else:
-            print(f"Error: {response.status_code} {response.text}")
-            return {}  # Return empty dict in case of an error
+        response = self._send_request("POST", url, headers, params, True)
+        return self._process_stream_response(response)
