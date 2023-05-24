@@ -4,13 +4,16 @@ import os
 import pytest
 
 from pygptprompt.chat.token import ChatToken
-from pygptprompt.config import Configuration
 from pygptprompt.openai import OpenAI
+from pygptprompt.setting import GlobalConfiguration
 
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--private", action="store_true", default=False, help="test private endpoints"
+        "--private",
+        action="store_true",
+        default=False,
+        help="test private endpoints",
     )
 
 
@@ -61,15 +64,15 @@ def config_filepath() -> str:
 
 
 @pytest.fixture(scope="module")
-def config(config_filepath: str) -> Configuration:
-    return Configuration(config_filepath)
+def config(config_filepath: str) -> GlobalConfiguration:
+    return GlobalConfiguration(config_filepath)
 
 
 @pytest.fixture(scope="module")
-def chat_token(config: Configuration) -> ChatToken:
+def chat_token(config: GlobalConfiguration) -> ChatToken:
     return ChatToken(config)
 
 
 @pytest.fixture(scope="module")
-def openai(config: Configuration) -> OpenAI:
+def openai(config: GlobalConfiguration) -> OpenAI:
     return OpenAI(config.get_api_key())
