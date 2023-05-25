@@ -1,86 +1,71 @@
 # pygptprompt/command/session.py
+import json
 import os
 
-from pygptprompt.context.chat import ChatContext
-from pygptprompt.context.session import load_session, save_session
+from pygptprompt.setting.config import GlobalConfiguration
 
 
-def delete_session(session_name: str, chat_context: ChatContext) -> None:
-    session_path = chat_context.config.get_value("path.session", "sessions")
-    active_session_name = chat_context.session_name
+class SessionHandler:
+    def __init__(self, config: GlobalConfiguration):
+        self.config = config
+        self.session_path = self.config.get_value("path.session", "sessions")
+        self.create_directory()
 
-    if session_name == active_session_name:
-        print(f"SessionError: Cannot delete the active session {session_name}.")
-        return
+    def create_directory(self):
+        if not os.path.exists(self.session_path):
+            os.makedirs(self.session_path)
 
-    try:
-        os.remove(f"{session_path}/{session_name}.json")
-        print(f"SessionInfo: Session {session_name} deleted successfully.")
-    except FileNotFoundError:
-        print(f"SessionError: Session {session_name} not found.")
-    except Exception as e:
-        print(f"SessionError: Error deleting session {session_name}: {str(e)}.")
+    def load_session(self, session_name: str) -> dict:
+        try:
+            with open(f"{self.session_path}/{session_name}.json", "r") as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return {}
 
+    def save_session(self, session_name: str, session_data: dict) -> None:
+        with open(f"{self.session_path}/{session_name}.json", "w") as f:
+            json.dump(session_data, f)
 
-def handle_session_create(session_name: str, chat_context: ChatContext) -> str:
-    session_data = load_session(chat_context)
-    if session_data:
-        return f"Session {session_name} already exists. Use /session load {session_name} to load the session."
+    def delete_session(self, session_name: str) -> str:
+        try:
+            os.remove(f"{self.session_path}/{session_name}.json")
+            return f"SessionInfo: Session {session_name} deleted successfully."
+        except FileNotFoundError:
+            return f"SessionError: Session {session_name} not found."
+        except Exception as e:
+            return f"SessionError: Error deleting session {session_name}: {str(e)}."
 
-    # Perform any additional setup or initialization for the new session
-    # ...
+    def handle_session_command(self, command: str) -> str:
+        args = command.split()
+        if len(args) < 3:
+            return "Session command requires an action and a label. Try /session create|load|save|delete <label>."
 
-    # Save the new session
-    save_session(chat_context)
-    return f"Session {session_name} created successfully."
+        action = args[1]
+        label = args[2]
 
+        if action == "create":
+            if self.load_session(label):
+                return f"Session {label} already exists. Use /session load {label} to load the session."
+            self.save_session(label, {})
+            return f"Session {label} created successfully."
 
-def handle_session_load(session_name: str, chat_context: ChatContext) -> str:
-    session_data = load_session(chat_context)
-    if not session_data:
-        return f"Session {session_name} not found."
+        elif action == "load":
+            if not self.load_session(label):
+                return f"Session {label} not found."
+            return f"Session {label} loaded successfully."
 
-    # Perform any additional actions specific to loading a session
-    # ...
+        elif action == "save":
+            if not self.load_session(label):
+                return f"Session {label} not found."
+            self.save_session(
+                label, {}
+            )  # save_session needs the data to be saved. You need to decide where it comes from.
+            return f"Session {label} saved successfully."
 
-    return f"Session {session_name} loaded successfully."
+        elif action == "delete":
+            return self.delete_session(label)
 
-
-def handle_session_save(session_name: str, chat_context: ChatContext) -> str:
-    session_data = load_session(chat_context)
-    if not session_data:
-        return f"Session {session_name} not found."
-
-    # Perform any additional actions specific to saving a session
-    # ...
-
-    save_session(chat_context)
-    return f"Session {session_name} saved successfully."
-
-
-def handle_session_delete(session_name: str, config: ConfigContext) -> str:
-    delete_session(session_name, config)
-    return f"Session {session_name} deleted successfully."
-
-
-def handle_session_command(command: str, config: ConfigContext) -> str:
-    args = command.split()
-    if len(args) < 3:
-        return "Session command requires an action and a label. Try /session create|load|save|delete <label>."
-
-    command = args[0]
-    action = args[1]
-    label = args[2]
-
-    create_directory()
-
-    if action == "create":
-        return handle_session_create(label, config)
-    elif action == "load":
-        return handle_session_load(label, config)
-    elif action == "save":
-        return handle_session_save(label, config)
-    elif action == "delete":
-        return handle_session_delete(label, config)
-    else:
-        return "Invalid session command. Try /session create|load|save|delete <label>."
+        else:
+            return (
+                "Invalid session command. Try /session create|load|save|delete <label>."
+            )

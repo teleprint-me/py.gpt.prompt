@@ -3,6 +3,7 @@ from typing import Optional
 
 from prompt_toolkit import prompt
 
+from pygptprompt.command.interpreter import CommandInterpreter
 from pygptprompt.prompt.format import FormatText
 from pygptprompt.session.queue import SessionQueue
 from pygptprompt.session.token import SessionToken
@@ -15,6 +16,11 @@ class SessionContext:
         self.session: SessionQueue = SessionQueue(config_path)
         self.format_text: FormatText = FormatText(self.session.config)
         self.token: SessionToken = self.session.token
+        self.interpreter: CommandInterpreter = CommandInterpreter(
+            self.session.config,
+            self.session.policy,
+            self.session.token,
+        )
 
     def setup_session(self) -> None:
         self.session.set_name()  # prompt user for session name
@@ -69,10 +75,12 @@ class SessionContext:
 
             # Handle user input
             user_message: str = self.get_user_input()
+            user_message = self.interpreter.interpret_message(user_message)
             self.session.enqueue("user", user_message)
 
             # Prompt model - Call custom streaming API
             assistant_message: str = self.session.stream_completion()
+            assistant_message = self.interpreter.interpret_message(assistant_message)
             self.session.enqueue("assistant", assistant_message)
 
             # Save the updated messages to the session file

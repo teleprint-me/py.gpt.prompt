@@ -2,31 +2,36 @@
 import shlex
 import subprocess
 
-from pygptprompt.context.config import ConfigContext
-from pygptprompt.context.policy import is_accessible, is_command_allowed, is_traversable
+from pygptprompt.session.policy import SessionPolicy
+from pygptprompt.setting.config import GlobalConfiguration
 
 
-def run_subprocess(command: str, config: ConfigContext) -> str:
-    # First argument is /<command>
-    command_to_run = command.lstrip("/")
-    # Positional arguments are command_to_run
-    args = shlex.split(command_to_run)
+class SubprocessRunner:
+    def __init__(self, config: GlobalConfiguration, policy: SessionPolicy):
+        self.config: GlobalConfiguration = config
+        self.policy: SessionPolicy = policy
 
-    # Check if the command is allowed according to the configuration
-    allowed, reason = is_command_allowed(command_to_run, config)
-    if not allowed:
-        return f"Error: Command not allowed. Reason: {reason}"
+    def execute(self, command: str) -> str:
+        """Run a subprocess command and return its output."""
+        command = command.lstrip("/")
+        args = shlex.split(command)
 
-    # Check if any argument looks like a file path and is not accessible
-    for arg in args[1:]:  # exclude the command itself
-        if is_traversable(arg) and not is_accessible(arg, config):
-            return f"Error: File path '{arg}' not accessible."
+        # Check if the command is allowed
+        allowed, message = self.policy.is_command_allowed(command)
+        if not allowed:
+            return f"CommandError: {message}"
 
-    # Attempt process execution and return result
-    try:
-        process = subprocess.run(args, check=True, text=True, capture_output=True)
-        return process.stdout
-    except subprocess.CalledProcessError as e:
-        return (
-            f"Command '{' '.join(args)}' returned non-zero exit status {e.returncode}."
-        )
+        # Check if the file paths in the command are accessible
+        for arg in args:
+            if "/" in arg:
+                if not self.policy.is_traversable(arg):
+                    return f"FileError: File {arg} does not exist or is not a file."
+                if not self.policy.is_accessible(arg):
+                    return f"AccessError: Access to file {arg} is not allowed."
+
+        # Run the command
+        try:
+            result = subprocess.run(args, capture_output=True, text=True, check=True)
+            return result.stdout
+        except subprocess.CalledProcessError as e:
+            return f"CommandError: Command '{command}' returned non-zero exit status {e.returncode}."
