@@ -40,9 +40,7 @@ class SessionToken:
         total_tokens: int = 0
 
         for message in messages:
-            if "content" in message:
-                content: str = message["content"]
-                total_tokens += len(self.encoding.encode(content))
+            total_tokens += self.get_count(message)
 
         return total_tokens
 

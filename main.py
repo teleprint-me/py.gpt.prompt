@@ -1,11 +1,11 @@
 # main.py
 import argparse
 
-from pygptprompt.chat.context import ChatContext
+from pygptprompt.session.context import SessionContext
 
 
 def main(config_path):
-    chat = ChatContext(config_path=config_path)
+    chat = SessionContext(config_path=config_path)
     chat.loop()
 
 

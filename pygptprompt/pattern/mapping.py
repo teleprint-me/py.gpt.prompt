@@ -4,25 +4,25 @@ from typing import Any, Optional
 
 class MappingTemplate:
     def __init__(self, initial_data: Optional[dict[str, Any]] = None):
-        self._dataset = initial_data if initial_data is not None else {}
+        self._data = initial_data if initial_data is not None else {}
 
     @property
     def keys(self) -> list[str]:
-        return list(self._dataset.keys())
+        return list(self._data.keys())
 
     @property
     def data(self) -> dict[str, Any]:
-        return self._dataset
+        return self._data
 
     def create(self, key: str, value: Any) -> bool:
-        if key not in self._dataset:
-            self._dataset[key] = value
+        if key not in self._data:
+            self._data[key] = value
             return True
         else:
             return False
 
     def create_nested(self, value: Any, *keys: str) -> bool:
-        data = self._dataset
+        data = self._data
         last_key = keys[-1]
         keys = keys[:-1]
 
@@ -39,10 +39,10 @@ class MappingTemplate:
             return False
 
     def read(self, key: str) -> Any:
-        return self._dataset.get(key, None)
+        return self._data.get(key, None)
 
     def read_nested(self, *keys: str) -> Any:
-        data = self._dataset
+        data = self._data
         for key in keys:
             if isinstance(data, dict) and key in data:
                 data = data.get(key, None)
@@ -51,14 +51,14 @@ class MappingTemplate:
         return data
 
     def update(self, key: str, value: Any) -> bool:
-        if key in self._dataset:
-            self._dataset[key] = value
+        if key in self._data:
+            self._data[key] = value
             return True
         else:
             return self.create(key, value)
 
     def update_nested(self, value: Any, *keys: str) -> bool:
-        data = self._dataset
+        data = self._data
         last_key = keys[-1]
         keys = keys[:-1]
 
@@ -75,14 +75,14 @@ class MappingTemplate:
             return self.create_nested(value, *keys)
 
     def delete(self, key: str) -> bool:
-        if key in self._dataset:
-            del self._dataset[key]
+        if key in self._data:
+            del self._data[key]
             return True
         else:
             return False
 
     def delete_nested(self, *keys: str) -> bool:
-        data = self._dataset
+        data = self._data
         last_key = keys[-1]
         keys = keys[:-1]
 

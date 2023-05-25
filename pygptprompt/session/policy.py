@@ -1,4 +1,4 @@
-# pygptprompt/chat/policy.py
+# pygptprompt/session/policy.py
 import os
 
 from pygptprompt.pattern.singleton import Singleton

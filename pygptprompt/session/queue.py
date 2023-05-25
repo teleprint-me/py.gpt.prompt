@@ -1,4 +1,11 @@
-from typing import Any, Optional
+# pygptprompt/session/queue.py
+import os
+import string
+from json import JSONDecodeError
+from typing import Optional
+
+from prompt_toolkit import prompt
+from prompt_toolkit.history import FileHistory
 
 from pygptprompt.openai import OpenAI
 from pygptprompt.session.model import SessionModel
@@ -11,7 +18,7 @@ class SessionQueue:
     """Class for managing conversational context between assistant and user."""
 
     def __init__(self, config_path: Optional[str] = None):
-        # GlobalConfiguration defaults to `./config.json` (defined in config)
+        # GlobalConfiguration defaults to `./config.json`
         self.config: GlobalConfiguration = GlobalConfiguration(config_path)
         # A class for handling the model details
         self.model: SessionModel = SessionModel(self.config)
@@ -21,15 +28,19 @@ class SessionQueue:
         self.policy: SessionPolicy = SessionPolicy(self.config)
         # Transcript represents the entire conversation in completion
         self.transcript: list[dict[str, str]] = [self.model.system_message]
-        # Messages represents the context window
+        # Messages represents the models context window
         self.messages: list[dict[str, str]] = [self.model.system_message]
-        # Custom OpenAI interface
-        self.openai = OpenAI()
-        # Load the conversation transcript and context window
-        self.load()
+        # Custom OpenAI interface; see `pygptprompt/openai` for more info
+        self.openai: OpenAI = OpenAI()
+        # User defined session name; user is prompted for input
+        self.name: str = ""
 
     def __len__(self) -> int:
         return len(self.messages)
+
+    @property
+    def path(self) -> str:
+        return self.config.get_value("path.session", "sessions")
 
     @property
     def last_message(self) -> dict[str, str]:
@@ -40,30 +51,51 @@ class SessionQueue:
 
     @property
     def last_role(self) -> str:
-        return self.last_message.get("role", "")
+        return self.last_message.get("role", "system")
 
     @property
     def last_content(self) -> str:
-        return self.last_message.get("content", "")
+        return self.last_message.get("content", "You are a helpful assistant.")
 
-    def add_message(self, role: str, content: str) -> None:
-        self.dequeue_messages()
-        message = {"role": role.strip(), "content": content.strip()}
-        if message not in self.messages:
-            self.messages.append(message)
-        if message not in self.transcript:
-            self.transcript.append(message)
+    @property
+    def history(self) -> FileHistory:
+        return FileHistory(f"{self.path}/history/{self.name}.history")
 
-    def remove_message(self, index: int = 1) -> dict[str, str]:
+    def set_name(self) -> None:
+        allowed_chars = set(string.ascii_letters + string.digits + ".-_")
+        while True:
+            try:
+                self.name = prompt("Enter a session name: ")
+                if not self.name:
+                    print("SessionError: Session name cannot be empty.")
+                elif not set(self.name).issubset(allowed_chars):
+                    print(
+                        "SessionError: Session name can only contain alphanumeric characters, periods, hyphens, and underscores."
+                    )
+                else:
+                    break
+            except (KeyboardInterrupt, EOFError):
+                print("SessionInfo: Session Aborted.")
+                exit()
+
+    def pop_message(self, index: int = 1) -> dict[str, str]:
         if len(self) > 2:
             return self.messages.pop(index)
         return {}
 
-    def dequeue_messages(self) -> list[dict[str, str]]:
+    def dequeue(self, message: dict[str, str]) -> list[dict[str, str]]:
         dequeue = []
-        while len(self) > 2 and self.token.is_context_overflow(self.messages):
-            dequeue.append(self.remove_message(1))
+        while len(self) > 2 and self.token.is_overflow(message, self.messages):
+            dequeue.append(self.pop_message(1))
         return dequeue
+
+    def enqueue(self, role: str, content: str) -> None:
+        message = {"role": role.strip(), "content": content.strip()}
+        self.dequeue(message)
+        if message not in self.messages:
+            self.messages.append(message)
+        if message not in self.transcript:
+            self.transcript.append(message)
 
     def extend(self, messages: list[dict[str, str]]) -> None:
         """Extend messages within the given context."""
@@ -73,7 +105,7 @@ class SessionQueue:
             if message not in self.transcript:
                 self.transcript.append(message)
 
-    def generate_completion(self) -> str:
+    def stream_completion(self) -> str:
         message = self.openai.completions.stream_chat_completions(
             messages=self.messages,
             model=self.model.name,
@@ -81,32 +113,58 @@ class SessionQueue:
             temperature=self.model.temperature,
         )
 
-        role = message.get("role", "")
-        content = message.get("content", "")
-
-        self.add_message(role, content)
-
-        return message["content"]
+        alt_content = "SessionQueueError: Oops! Something unexpected went wrong!"
+        return message.get("content", alt_content)
 
     def clear_messages(self) -> None:
-        self.messages = [self.system_message]
+        self.messages = [self.model.system_message]
 
-    def clear_history(self) -> None:
-        self.history = self.messages[:]
-
-    def clear_completions(self) -> None:
-        self.completions = []
+    def clear_transcript(self) -> None:
+        self.transcript = self.messages[:]
 
     def clear(self) -> None:
         self.clear_messages()
-        self.clear_history()
+        self.clear_transcript()
+
+    def make_directory(self) -> None:
+        os.makedirs(self.path, exist_ok=True)
+        os.makedirs(f"{self.path}/context", exist_ok=True)
+        os.makedirs(f"{self.path}/transcript", exist_ok=True)
+        # NOTE:
+        # R/W is handled by prompt-toolkit
+        # This guarantees the expected path exists
+        os.makedirs(f"{self.path}/history", exist_ok=True)
 
     def save(self) -> None:
-        write_json(self.path.message, self.messages)
-        write_json(self.path.history, self.history)
-        write_json(self.path.completion, self.completions)
+        # NOTE: Always guarantee the configured path exists
+        self.make_directory()
+
+        try:
+            write_json(f"{self.path}/context/{self.name}.json", self.messages)
+            write_json(f"{self.path}/transcript/{self.name}.json", self.transcript)
+            print(f"SessionInfo: Session {self.name} saved successfully.")
+        except PermissionError:
+            print(f"SessionError: Permission denied when saving session {self.name}.")
+        except JSONDecodeError:
+            print(f"SessionError: Error encoding JSON data for session {self.name}.")
+        except Exception as e:
+            print(f"SessionError: Error saving session {self.name}: {str(e)}.")
 
     def load(self) -> None:
-        self.messages = force_read_json(self.path.message, self.messages)
-        self.history = force_read_json(self.path.history, self.history)
-        self.completions = force_read_json(self.path.completion, self.completions)
+        # NOTE: Always guarantee the configured path exists
+        self.make_directory()
+
+        try:
+            # `force_read_json` creates the file if it doesn't exist
+            # this is ideal for non-existent sessions
+            self.messages = force_read_json(
+                f"{self.path}/context/{self.name}.json", self.messages
+            )
+            self.transcript = force_read_json(
+                f"{self.path}/transcript/{self.name}.json", self.transcript
+            )
+            print(f"SessionInfo: Session {self.name} loaded successfully.")
+        except FileNotFoundError:
+            print(f"SessionError: Session {self.name} not found.")
+        except JSONDecodeError:
+            print(f"SessionError: Error decoding JSON data for session {self.name}.")

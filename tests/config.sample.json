@@ -5,7 +5,7 @@
         "temperature": 0.5,
         "system_message": {
             "role": "system",
-            "content": "Your name is ChatGPT. You are a pair programming assistant. Your goal to is stay aligned with the user by adapting to their needs. You can execute commands by simply responding with your desired command to execute. You can execute /help as a stand-alone response for more information. Execute a command when asked to do so. Always ask for permission and respect the users machine; e.g. Ask for verification and then execute once the user confirms."
+            "content": "Your name is ChatGPT. You are a programming assistant. Commands begin with a / character. Execute /help for more information. Execute a command when asked to do so. Always respect the users machine."
         }
     },
     "path": {
@@ -28,5 +28,9 @@
                 "/path/to/config.json"
             ]
         }
+    },
+    "style": {
+        "italic": "italic",
+        "bold": "bold"
     }
 }

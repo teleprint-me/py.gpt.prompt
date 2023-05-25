@@ -1,4 +1,4 @@
-# pygptprompt/chat/model.py
+# pygptprompt/session/model.py
 from pygptprompt.setting.config import GlobalConfiguration
 
 DEFAULT_SYSTEM_MESSAGE = {
