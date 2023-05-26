@@ -1,5 +1,5 @@
 {
-    // "editor.defaultFormatter": null,
+    "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnPaste": true,
     "editor.formatOnSave": false, // enable per language
     "editor.formatOnType": true,
@@ -37,7 +37,6 @@
         }
     },
     "isort.args": ["--profile", "black"],
-    "editor.defaultFormatter": null,
     "[javascript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     }
