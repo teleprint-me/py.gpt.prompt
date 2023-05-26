@@ -226,14 +226,16 @@ I welcome feedback and ideas on these planned features, as well as suggestions f
 
 ## Updates
 
-As of May 17, 2023, several major changes and updates have been made:
+As of May 26, 2023, several major changes and updates have been made:
 
-1. The `read_file`, `git`, and `tree` commands have been deprecated. These functionalities are now provided by the more flexible and robust subprocess command, which uses `/` as a prefix to detect a command. The `list_directory` and `/` commands have improved security features that prevent unauthorized access to sensitive files and directories. Only the paths specified in the allowed paths of the configuration can be accessed.
+1. **Security and Bug Fixes:** Several security and bug fixes have been implemented. These include improvements to command result printing, command policy enforcement, and handling policy enforcement for traversable paths. The `SessionContext` has been refactored for a cleaner `main_loop`.
 
-2. User Access Control (UAC) has been improved to provide more secure command execution. The security policy now better restricts the execution of potentially unsafe commands, providing an additional layer of security for the system.
+2. **Command Interpreter Implementation:** A new `CommandInterpreter` has been added for parsing and executing commands. The `/help` command has been enhanced to provide detailed information on individual commands. The `web`, `list`, `session`, `feed`, and `process` commands have been updated for better functionality.
 
-3. The `/browse` command has been introduced. This feature fetches HTML from a specified URL, converts it into Markdown format, and caches it locally. If the content has been previously fetched and exists in the local cache, the command will return the cached content.
+3. **Refactoring and Improvements:** The 'chat' package has been refactored into 'session' for better description of behavior. A new `FormatText` class has been introduced for configurable text formatting. The `SessionContext` class has been updated to integrate new classes and manage user interactions.
 
-4. Improvements to the `/rss` command. It now fetches and displays full-text articles from an RSS feed. The fetched content is processed to ensure improved readability, removing excess whitespace and preserving important formatting.
+4. **Path Access Control:** The `allowed_paths` and `disallowed_paths` in the configuration now control access to file paths. Any subdirectories or files within the allowed paths are implicitly allowed, unless they are explicitly disallowed.
 
-5. The help message (`/help` command) has been updated to reflect these changes and provide clear, concise explanations of the available commands.
+5. **Help Message Update:** The help message (`/help` command) has been updated to reflect these changes and provide clear, concise explanations of the available commands.
+
+You can look at the following path to see the latest commits: [GitHub Commits](https://github.com/teleprint-me/py.gpt.prompt/commits/dev)
