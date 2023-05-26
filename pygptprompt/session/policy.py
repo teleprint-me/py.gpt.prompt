@@ -41,10 +41,16 @@ class SessionPolicy(Singleton):
         disallowed_chars = self.config.get_value("access.shell.disallowed_chars", [])
 
         # Check if the command is explicitly allowed
-        if command.split()[0] in allowed_commands:
-            return True, ""
+        # NOTE: `not` ensures only allowed commands can execute.
+        # e.g. `"python" not in ["cat", "ls", "tree"]`.
+        # It's easier to specify what's allowed than specify what isn't allowed.
+        # In other words, we return False if something is not allowed.
+        if command.split()[0] not in allowed_commands:
+            return False, f"Command {command.split()[0]} is not explicitly allowed."
 
         # Check if the command is explicitly disallowed
+        # NOTE: Disallowed commands are a guardrail, not a guarantee.
+        # Warning: This can quickly become unwieldy (You've been warned!).
         if command.split()[0] in disallowed_commands:
             return False, f"Command {command.split()[0]} is explicitly disallowed."
 

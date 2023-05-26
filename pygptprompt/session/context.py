@@ -7,7 +7,6 @@ from pygptprompt.command.interpreter import CommandInterpreter
 from pygptprompt.prompt.format import FormatText
 from pygptprompt.session.queue import SessionQueue
 from pygptprompt.session.token import SessionToken
-from pygptprompt.setting.config import GlobalConfiguration
 
 
 class SessionContext:
@@ -53,35 +52,39 @@ class SessionContext:
         spaces = " " * (width - len(str(line_number)))
         return f"{line_number:000}{spaces}"
 
-    def get_user_input(self) -> str:
+    def prompt_user(self) -> None:
         try:
             self.format_text.print_bold("user")
-            return prompt(
+            user_message = prompt(
                 "1" + (" " * 4),
                 multiline=True,
                 prompt_continuation=self.prompt_continuation,
                 history=self.session.history,
             )
+            user_message = self.interpreter.interpret_message(user_message)
+            self.session.enqueue("user", user_message)
         except (KeyboardInterrupt, EOFError):
             self.session.save()
             exit()
 
-    def loop(self) -> None:
+    def prompt_assistant(self) -> None:
+        try:
+            print()
+            self.format_text.print_bold("assistant")
+            assistant_message: str = self.session.stream_completion()
+            assistant_message = self.interpreter.interpret_message(assistant_message)
+            self.session.enqueue("assistant", assistant_message)
+            print("\n")
+        except (KeyboardInterrupt, EOFError):
+            self.session.save()
+            exit()
+
+    def main_loop(self) -> None:
         self.setup_session()
         self.print_message_history()
 
         while True:
             self.print_token_usage_stats()
-
-            # Handle user input
-            user_message: str = self.get_user_input()
-            user_message = self.interpreter.interpret_message(user_message)
-            self.session.enqueue("user", user_message)
-
-            # Prompt model - Call custom streaming API
-            assistant_message: str = self.session.stream_completion()
-            assistant_message = self.interpreter.interpret_message(assistant_message)
-            self.session.enqueue("assistant", assistant_message)
-
-            # Save the updated messages to the session file
+            self.prompt_user()
+            self.prompt_assistant()
             self.session.save()

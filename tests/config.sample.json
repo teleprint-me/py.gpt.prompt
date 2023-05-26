@@ -15,7 +15,7 @@
     },
     "access": {
         "shell": {
-            "allowed_commands": ["ls", "cat", "cd", "git", "tree"],
+            "allowed_commands": ["ls", "cat", "cd", "tree", "git"],
             "disallowed_commands": ["rm", "sudo", "su"],
             "disallowed_strings": ["-rf /", ":(){ :|:& };:"],
             "disallowed_chars": ["&", "|", ";", "*", ">"]

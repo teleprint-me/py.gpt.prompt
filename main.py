@@ -6,7 +6,7 @@ from pygptprompt.session.context import SessionContext
 
 def main(config_path):
     chat = SessionContext(config_path=config_path)
-    chat.loop()
+    chat.main_loop()
 
 
 if __name__ == "__main__":

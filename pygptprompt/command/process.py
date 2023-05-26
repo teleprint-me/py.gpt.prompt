@@ -1,4 +1,5 @@
 # pygptprompt/command/process.py
+import os
 import shlex
 import subprocess
 
@@ -23,11 +24,11 @@ class SubprocessRunner:
 
         # Check if the file paths in the command are accessible
         for arg in args:
-            if "/" in arg:
-                if not self.policy.is_traversable(arg):
-                    return f"FileError: File {arg} does not exist or is not a file."
+            if self.policy.is_traversable(arg):
                 if not self.policy.is_accessible(arg):
                     return f"AccessError: Access to file {arg} is not allowed."
+                else:
+                    return f"FileError: File {arg} does not exist or is not a file."
 
         # Run the command
         try:

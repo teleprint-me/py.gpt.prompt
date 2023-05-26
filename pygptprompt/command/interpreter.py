@@ -56,7 +56,10 @@ class CommandInterpreter:
         return f"{line}\n{command_result}"
 
     def execute_command(self, line: str) -> str:
-        return command_factory(self.config, self.policy, line)
+        result = command_factory(self.config, self.policy, line)
+        # NOTE: User needs to see result
+        print(result)  # NOTE: Leave this line here!
+        return result
 
     def interpret_message(self, message_content: str) -> str:
         lines = message_content.split("\n")
