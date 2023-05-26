@@ -3,8 +3,8 @@ import os
 
 import pytest
 
-from pygptprompt.chat.token import ChatToken
 from pygptprompt.openai import OpenAI
+from pygptprompt.session.token import SessionToken
 from pygptprompt.setting import GlobalConfiguration
 
 
@@ -32,24 +32,32 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.fixture(scope="module")
-def messages():
-    return [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {
-            "role": "user",
-            "content": "Translate the following English text to French: 'The quick brown fox jumped over the lazy dog.'",
-        },
-    ]
+def message() -> dict[str, str]:
+    return {
+        "role": "user",
+        "content": "What commands have we executed so far?\n\nWhat commands do we have left to execute?",
+    }
 
 
 @pytest.fixture(scope="module")
-def dialog():
+def messages() -> list[dict[str, str]]:
     return [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Who won the world series in 2020?"},
         {
             "role": "assistant",
             "content": "The Los Angeles Dodgers won the World Series in 2020.",
+        },
+    ]
+
+
+@pytest.fixture(scope="module")
+def chat_completion() -> list[dict[str, str]]:
+    return [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {
+            "role": "user",
+            "content": "Translate the following English text to French: 'The quick brown fox jumped over the lazy dog.'",
         },
     ]
 
@@ -69,8 +77,8 @@ def config(config_filepath: str) -> GlobalConfiguration:
 
 
 @pytest.fixture(scope="module")
-def chat_token(config: GlobalConfiguration) -> ChatToken:
-    return ChatToken(config)
+def session_token(config: GlobalConfiguration) -> SessionToken:
+    return SessionToken(config)
 
 
 @pytest.fixture(scope="module")
