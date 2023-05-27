@@ -76,7 +76,7 @@ class RobotsFetcher:
         # Try to read from cache
         cached_content = read_from_cache(cache_path)
         if cached_content is not None:
-            return f"```txt\n{cached_content}```"
+            return cached_content
 
         # If the cache does not exist, fetch the robots.txt
         content = fetch_content(url)
@@ -84,7 +84,7 @@ class RobotsFetcher:
         # Cache the response
         write_to_cache(cache_path, content)
 
-        return f"```txt\n{content}```"
+        return content
 
 
 class WebsiteFetcher:
@@ -118,7 +118,7 @@ class WebsiteFetcher:
         # Try to read from cache
         markdown_content = read_from_cache(markdown_path)
         if markdown_content is not None:
-            return f"```md\n{markdown_content}\n```"
+            return markdown_content
 
         # If the cache does not exist, fetch the HTML content
         html_content = read_from_cache(html_path)
@@ -134,4 +134,4 @@ class WebsiteFetcher:
         # Cache the markdown content
         write_to_cache(markdown_path, markdown_content)
 
-        return f"```md\n{markdown_content}\n```"
+        return markdown_content
