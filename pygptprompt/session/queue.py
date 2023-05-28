@@ -59,7 +59,7 @@ class SessionQueue:
 
     @property
     def history(self) -> FileHistory:
-        return FileHistory(f"{self.path}/history/{self.name}.history")
+        return FileHistory(f"{self.path}/{self.name}/prompt.history")
 
     def set_name(self) -> None:
         allowed_chars = set(string.ascii_letters + string.digits + ".-_")
@@ -127,21 +127,15 @@ class SessionQueue:
         self.clear_transcript()
 
     def make_directory(self) -> None:
-        os.makedirs(self.path, exist_ok=True)
-        os.makedirs(f"{self.path}/context", exist_ok=True)
-        os.makedirs(f"{self.path}/transcript", exist_ok=True)
-        # NOTE:
-        # R/W is handled by prompt-toolkit
-        # This guarantees the expected path exists
-        os.makedirs(f"{self.path}/history", exist_ok=True)
+        os.makedirs(f"{self.path}/{self.name}", exist_ok=True)
 
     def save(self) -> None:
         # NOTE: Always guarantee the configured path exists
         self.make_directory()
 
         try:
-            write_json(f"{self.path}/context/{self.name}.json", self.messages)
-            write_json(f"{self.path}/transcript/{self.name}.json", self.transcript)
+            write_json(f"{self.path}/{self.name}/context.json", self.messages)
+            write_json(f"{self.path}/{self.name}/transcript.json", self.transcript)
             print(f"SessionInfo: Session {self.name} saved successfully.")
         except PermissionError:
             print(f"SessionError: Permission denied when saving session {self.name}.")
@@ -158,10 +152,10 @@ class SessionQueue:
             # `force_read_json` creates the file if it doesn't exist
             # this is ideal for non-existent sessions
             self.messages = force_read_json(
-                f"{self.path}/context/{self.name}.json", self.messages
+                f"{self.path}/{self.name}/context.json", self.messages
             )
             self.transcript = force_read_json(
-                f"{self.path}/transcript/{self.name}.json", self.transcript
+                f"{self.path}/{self.name}/transcript.json", self.transcript
             )
             print(f"SessionInfo: Session {self.name} loaded successfully.")
         except FileNotFoundError:
