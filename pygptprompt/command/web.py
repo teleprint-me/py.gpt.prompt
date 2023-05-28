@@ -10,6 +10,15 @@ from requests.exceptions import RequestException
 from pygptprompt.session.policy import SessionPolicy
 from pygptprompt.setting.config import GlobalConfiguration
 
+# TODO:
+# Always write web content to a file in cache instead of
+# automatically injecting it into the message content body.
+# This will help avoid unintentional context window overflows.
+#
+# It would be better to return information about the file instead
+# such as token consumption, the number of lines, file name/size,
+# etcetera.
+
 
 # Function to read from cache
 def read_from_cache(cache_path: str) -> Optional[str]:
