@@ -3,6 +3,7 @@ from pygptprompt.command.feed import RSSHandler
 from pygptprompt.command.help import HelpDisplay
 from pygptprompt.command.list import ListDirectory
 from pygptprompt.command.process import SubprocessRunner
+from pygptprompt.command.read import ReadFile
 from pygptprompt.command.web import RobotsFetcher, WebsiteFetcher
 from pygptprompt.session.policy import SessionPolicy
 from pygptprompt.setting.config import GlobalConfiguration
@@ -14,6 +15,7 @@ COMMAND_MAP = {
     "/robots": RobotsFetcher,
     "/rss": RSSHandler,
     "/help": HelpDisplay,
+    "/read": ReadFile,
 }
 
 
