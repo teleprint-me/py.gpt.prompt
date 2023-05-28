@@ -73,6 +73,8 @@ class OpenAIRequests:
                         sys.stdout.flush()
                 except KeyError:
                     continue
+        print()
+        sys.stdout.flush()
         return {"role": "assistant", "content": message}
 
     def get(
