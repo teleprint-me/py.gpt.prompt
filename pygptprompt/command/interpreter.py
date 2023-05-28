@@ -28,7 +28,7 @@ class CommandInterpreter:
 
     @staticmethod
     def is_in_backticks(line: str) -> bool:
-        return line.strip().startswith("`")
+        return line.strip().startswith(("`", "```", "````"))
 
     @staticmethod
     def write_result_to_file(command_result: str) -> str:
@@ -50,25 +50,29 @@ class CommandInterpreter:
         # This check should consider token count in addition to string length.
         return len(command_result) > self.token.upper_limit
 
+    def execute_command(self, line: str) -> str:
+        return command_factory(self.config, self.policy, line)
+
     def replace_line_with_result(self, line: str, command_result: str) -> str:
         if self.is_result_too_large(command_result):
             command_result = self.write_result_to_file(command_result)
-        return f"{line}\n{command_result}"
-
-    def execute_command(self, line: str) -> str:
-        result = command_factory(self.config, self.policy, line)
         # NOTE: User needs to see result
-        print(result)  # NOTE: Leave this line here!
-        return result
+        print(f"\n```\n{command_result.strip()}\n```")  # NOTE: Leave this line here!
+        return f"{line}\n```\n{command_result.strip()}\n```"
 
     def interpret_message(self, message_content: str) -> str:
-        lines = message_content.split("\n")
-        for i, temp in enumerate(lines):
-            line = temp.strip()
-            is_command = self.is_command(line)
-            not_in_quotes = not self.is_in_quotes(line)
-            not_in_ticks = not self.is_in_backticks(line)
-            if is_command and not_in_quotes and not_in_ticks:
+        lines: list[str] = message_content.split("\n")
+        in_code_block: bool = False
+        for i, line in enumerate(lines):
+            if line.strip() == "```":
+                in_code_block = not in_code_block
+            if in_code_block:
+                continue
+            if (
+                self.is_command(line)
+                and not self.is_in_quotes(line)
+                and not self.is_in_backticks(line)
+            ):
                 command_result = self.execute_command(line)
                 lines[i] = self.replace_line_with_result(line, command_result)
         return "\n".join(lines)
