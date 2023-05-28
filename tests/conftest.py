@@ -4,6 +4,7 @@ import os
 import pytest
 
 from pygptprompt.openai import OpenAI
+from pygptprompt.session.model import SessionModel
 from pygptprompt.session.token import SessionToken
 from pygptprompt.setting import GlobalConfiguration
 
@@ -59,6 +60,10 @@ def chat_completion() -> list[dict[str, str]]:
             "role": "user",
             "content": "Translate the following English text to French: 'The quick brown fox jumped over the lazy dog.'",
         },
+        {
+            "role": "assistant",
+            "content": "Le renard brun rapide a sauté par-dessus le chien paresseux.",
+        },
     ]
 
 
@@ -77,10 +82,15 @@ def config(config_filepath: str) -> GlobalConfiguration:
 
 
 @pytest.fixture(scope="module")
+def openai(config: GlobalConfiguration) -> OpenAI:
+    return OpenAI(config.get_api_key())
+
+
+@pytest.fixture(scope="module")
 def session_token(config: GlobalConfiguration) -> SessionToken:
     return SessionToken(config)
 
 
 @pytest.fixture(scope="module")
-def openai(config: GlobalConfiguration) -> OpenAI:
-    return OpenAI(config.get_api_key())
+def session_model(config: GlobalConfiguration) -> SessionModel:
+    return SessionModel(config)
