@@ -11,9 +11,9 @@ class HelpDisplay:
         self.commands_detail = {
             "/": {
                 "info": "Execute shell command",
-                "usage": "/ <shell command>",
-                "example": "/ ls -l",
-                "notes": "The commands are restricted by configuration.",
+                "usage": "/<shell command>",
+                "example": "/cat -n pyproject.toml",
+                "notes": "All commands are restricted by configuration, and the user can enable additional commands. By default, `cat`, `cd`, `tree`, and `git` are enabled.",
             },
             "/robots": {
                 "info": "Fetch URL's robots.txt.",
@@ -64,6 +64,9 @@ class HelpDisplay:
 
         **Filesystem** (access restricted by configuration)
         /ls <dir>: List files in directory (defaults to current dir).
+
+        **Help**
+        /help [command]: Show help information. If a command is specified, it shows detailed help for that command.
         """
         return help_text.strip()
 
