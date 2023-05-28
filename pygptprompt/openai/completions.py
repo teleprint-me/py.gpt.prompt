@@ -14,7 +14,7 @@ class OpenAICompletions(OpenAIRequests):
     ) -> dict[str, Any]:
         keys = ["prompt", "model", "max_tokens", "temperature"]
         values = [prompt, model, max_tokens, temperature]
-        for key, value in zip(keys, values):
+        for key, value in list(zip(keys, values)):
             params[key] = value
         return self.post("/completions", params=params)
 
@@ -28,7 +28,7 @@ class OpenAICompletions(OpenAIRequests):
     ) -> dict[str, Any]:
         keys = ["messages", "model", "max_tokens", "temperature"]
         values = [messages, model, max_tokens, temperature]
-        for key, value in zip(keys, values):
+        for key, value in list(zip(keys, values)):
             params[key] = value
         return self.post("/chat/completions", params=params)
 
@@ -43,6 +43,6 @@ class OpenAICompletions(OpenAIRequests):
         # `{"stream": True}` enables REST API streaming
         keys = ["messages", "model", "max_tokens", "temperature", "stream"]
         values = [messages, model, max_tokens, temperature, True]
-        for key, value in zip(keys, values):
+        for key, value in list(zip(keys, values)):
             params[key] = value
         return self.stream("/chat/completions", params=params)
