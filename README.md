@@ -226,16 +226,22 @@ I welcome feedback and ideas on these planned features, as well as suggestions f
 
 ## Updates
 
-As of May 26, 2023, several major changes and updates have been made:
+As of May 29, 2023, several major changes and updates have been made:
 
-1. **Security and Bug Fixes:** Several security and bug fixes have been implemented. These include improvements to command result printing, command policy enforcement, and handling policy enforcement for traversable paths. The `SessionContext` has been refactored for a cleaner `main_loop`.
+1. **RSS Feed Handling:** The `RSSHandler` class has been refactored to handle fetching, parsing, and caching of RSS feeds. This includes error handling for cases where the provided URL is not an RSS feed.
 
-2. **Command Interpreter Implementation:** A new `CommandInterpreter` has been added for parsing and executing commands. The `/help` command has been enhanced to provide detailed information on individual commands. The `web`, `list`, `session`, `feed`, and `process` commands have been updated for better functionality.
+2. **Content Size Handling:** The `SessionQueueProxy` now includes a `handle_content_size` method that checks if the content size exceeds the `base_limit`. If it does, a message indicating that the content has been saved to a file is returned. This method is used in the `RobotsFetcher`, `WebsiteFetcher`, and `RSSHandler` classes.
 
-3. **Refactoring and Improvements:** The 'chat' package has been refactored into 'session' for better description of behavior. A new `FormatText` class has been introduced for configurable text formatting. The `SessionContext` class has been updated to integrate new classes and manage user interactions.
+3. **Command Interpreter Cleanup:** Deprecated methods for handling large results have been removed from the `CommandInterpreter` class.
 
-4. **Path Access Control:** The `allowed_paths` and `disallowed_paths` in the configuration now control access to file paths. Any subdirectories or files within the allowed paths are implicitly allowed, unless they are explicitly disallowed.
+4. **Security and Bug Fixes:** Several security and bug fixes have been implemented. These include improvements to command result printing, command policy enforcement, and handling policy enforcement for traversable paths. The `SessionContext` has been refactored for a cleaner `main_loop`.
 
-5. **Help Message Update:** The help message (`/help` command) has been updated to reflect these changes and provide clear, concise explanations of the available commands.
+5. **Command Interpreter Implementation:** A new `CommandInterpreter` has been added for parsing and executing commands. The `/help` command has been enhanced to provide detailed information on individual commands. The `browse`, `list`, `session`, `rss`, and `process` commands have been updated for better functionality.
 
-You can look at the following path to see the latest commits: [GitHub Commits](https://github.com/teleprint-me/py.gpt.prompt/commits/dev)
+6. **Refactoring and Improvements:** The 'chat' package has been refactored into 'session' for better description of behavior. A new `FormatText` class has been introduced for configurable text formatting. The `SessionContext` class has been updated to integrate new classes and manage user interactions.
+
+7. **Path Access Control:** The `allowed_paths` and `disallowed_paths` in the configuration now control access to file paths. Any subdirectories or files within the allowed paths are implicitly allowed, unless they are explicitly disallowed.
+
+8. **Help Message Update:** The help message (`/help` command) has been updated to reflect these changes and provide clear, concise explanations of the available commands.
+
+You can look at the following path to see the latest commits: [GitHub Commits](https://github.com/teleprint-me/py.gpt.prompt/commits/main)
