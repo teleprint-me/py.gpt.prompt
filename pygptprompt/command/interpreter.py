@@ -6,8 +6,8 @@ from pygptprompt.session.proxy import SessionQueueProxy
 
 
 class CommandInterpreter:
-    def __init__(self, session_proxy: SessionQueueProxy):
-        self.session_proxy = session_proxy
+    def __init__(self, queue_proxy: SessionQueueProxy):
+        self.queue_proxy = queue_proxy
 
     @staticmethod
     def is_command(line: str) -> bool:
@@ -39,10 +39,10 @@ class CommandInterpreter:
     def is_result_too_large(self, command_result: str) -> bool:
         # TODO: Refine this check to ensure context window won't overflow
         # This check should consider token count in addition to string length.
-        return len(command_result) > self.session_proxy.token.upper_limit
+        return len(command_result) > self.queue_proxy.token.upper_limit
 
     def execute_command(self, line: str) -> str:
-        return command_factory(self.session_proxy, line)
+        return command_factory(self.queue_proxy, line)
 
     def replace_line_with_result(self, line: str, command_result: str) -> str:
         if self.is_result_too_large(command_result):
