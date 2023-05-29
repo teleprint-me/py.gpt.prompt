@@ -26,6 +26,11 @@ class RSSHandler:
         # Try to read from cache
         cached_content = read_from_cache(cache_path)
         if cached_content is not None:
+            cached_content_size = self.queue_proxy.token.get_content_count(
+                cached_content
+            )
+            if cached_content_size > self.queue_proxy.token.base_limit:
+                return f"The content is too large to display. It has been saved to a file: {cache_path}"
             return cached_content
 
         # Fetch the full text from the RSS feed
