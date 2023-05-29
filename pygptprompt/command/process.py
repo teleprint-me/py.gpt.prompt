@@ -6,8 +6,8 @@ from pygptprompt.session.proxy import SessionQueueProxy
 
 
 class SubprocessRunner:
-    def __init__(self, session_proxy: SessionQueueProxy):
-        self.session_proxy = session_proxy
+    def __init__(self, queue_proxy: SessionQueueProxy):
+        self.queue_proxy = queue_proxy
 
     def execute(self, command: str) -> str:
         """Run a subprocess command and return its output."""
@@ -15,14 +15,14 @@ class SubprocessRunner:
         args = shlex.split(command)
 
         # Check if the command is allowed
-        allowed, message = self.session_proxy.policy.is_command_allowed(command)
+        allowed, message = self.queue_proxy.policy.is_command_allowed(command)
         if not allowed:
             return f"CommandError: {message}"
 
         # Check if the file paths in the command are accessible
         for arg in args:
-            if self.session_proxy.policy.is_traversable(arg):
-                if not self.session_proxy.policy.is_accessible(arg):
+            if self.queue_proxy.policy.is_traversable(arg):
+                if not self.queue_proxy.policy.is_accessible(arg):
                     return f"AccessError: Access to file {arg} is not allowed."
 
         # Run the command
