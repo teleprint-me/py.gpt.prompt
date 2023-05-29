@@ -1,14 +1,12 @@
 # pygptprompt/command/list.py
 import os
 
-from pygptprompt.session.policy import SessionPolicy
-from pygptprompt.setting.config import GlobalConfiguration
+from pygptprompt.session.proxy import SessionQueueProxy
 
 
 class ListDirectory:
-    def __init__(self, config: GlobalConfiguration, policy: SessionPolicy):
-        self.config: GlobalConfiguration = config
-        self.policy: SessionPolicy = policy
+    def __init__(self, session_proxy: SessionQueueProxy):
+        self.session_proxy = session_proxy
 
     @staticmethod
     def get_file_info(file_path: str) -> str:
@@ -25,6 +23,22 @@ class ListDirectory:
 
         return f"{file_path:30} {type_info:10} {file_size}"
 
+    def get_accessible_files(self, directory: str) -> list:
+        files = []
+        for file in os.listdir(directory):
+            file_path = os.path.join(directory, file)
+            if self.session_proxy.policy.is_accessible(file_path):
+                files.append(file)
+        return files
+
+    def get_file_info_list(self, files: list, directory: str) -> list:
+        file_info_list = []
+        for file in files:
+            file_path = os.path.join(directory, file)
+            file_info = self.get_file_info(file_path)
+            file_info_list.append(file_info)
+        return file_info_list
+
     def execute(self, command: str) -> str:
         # The command is the first argument.
         args = command.split()[1:]
@@ -37,7 +51,7 @@ class ListDirectory:
         except (IndexError,):
             directory = "."
 
-        if not self.policy.is_accessible(directory):
+        if not self.session_proxy.policy.is_accessible(directory):
             return "RoleError: Access denied! You shouldn't snoop in private places."
 
         if not os.path.isdir(directory):
@@ -45,14 +59,10 @@ class ListDirectory:
 
         try:
             header = f"{'File Path':30} {'Type Info':10} {'File Size in Bytes'}\n"
-            files = [
-                file
-                for file in os.listdir(directory)
-                if self.policy.is_accessible(os.path.join(directory, file))
-            ]
-            file_info_list = [
-                self.get_file_info(os.path.join(directory, file)) for file in files
-            ]
+
+            files = self.get_accessible_files(directory)
+            file_info_list = self.get_file_info_list(files, directory)
+
             body = "\n".join(file_info_list)
             return header + body
         except Exception as e:
