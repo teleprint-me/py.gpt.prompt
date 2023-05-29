@@ -33,8 +33,8 @@ class SessionContext:
 
     def print_token_usage_stats(self) -> None:
         # Get the total token count for the current context and transcript
-        context_tokens = self.token.get_total_count(self.session.messages)
-        transcript_tokens = self.token.get_total_count(self.session.transcript)
+        context_tokens = self.token.get_total_message_count(self.session.messages)
+        transcript_tokens = self.token.get_total_message_count(self.session.transcript)
 
         # Print out the token usage stats
         self.format_text.print_italic(f"Context is consuming {context_tokens} tokens")
