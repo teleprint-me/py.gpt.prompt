@@ -16,8 +16,8 @@ class SessionContext:
         self.session: SessionQueue = SessionQueue(config_path)
         self.format_text: FormatText = FormatText(self.session.config)
         self.token: SessionToken = self.session.token
-        self.session_proxy: SessionQueueProxy = SessionQueueProxy(self.session)
-        self.interpreter: CommandInterpreter = CommandInterpreter(self.session_proxy)
+        self.queue_proxy: SessionQueueProxy = SessionQueueProxy(self.session)
+        self.interpreter: CommandInterpreter = CommandInterpreter(self.queue_proxy)
 
     def setup_session(self) -> None:
         self.session.set_name()  # prompt user for session name
@@ -61,18 +61,18 @@ class SessionContext:
             )
             user_message = self.interpreter.interpret_message(user_message)
             self.session.enqueue("user", user_message)
+            print()  # Add newline to pad output
         except (KeyboardInterrupt, EOFError):
             self.session.save()
             exit()
 
     def prompt_assistant(self) -> None:
         try:
-            print()
             self.format_text.print_bold("assistant")
             assistant_message: str = self.session.stream_completion()
             assistant_message = self.interpreter.interpret_message(assistant_message)
             self.session.enqueue("assistant", assistant_message)
-            print("\n")
+            print()  # Add newline to pad output
         except (KeyboardInterrupt, EOFError):
             self.session.save()
             exit()
