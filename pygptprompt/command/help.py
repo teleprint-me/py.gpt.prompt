@@ -1,12 +1,10 @@
 # pygptprompt/command/help.py
-from pygptprompt.session.policy import SessionPolicy
-from pygptprompt.setting.config import GlobalConfiguration
+from pygptprompt.session.proxy import SessionQueueProxy
 
 
 class HelpDisplay:
-    def __init__(self, config: GlobalConfiguration, policy: SessionPolicy):
-        self.config: GlobalConfiguration = config
-        self.policy: SessionPolicy = policy
+    def __init__(self, queue_proxy: SessionQueueProxy):
+        self.queue_proxy = queue_proxy
 
         self.commands_detail = {
             "/": {
