@@ -5,8 +5,8 @@ from pygptprompt.session.proxy import SessionQueueProxy
 
 
 class ListDirectory:
-    def __init__(self, session_proxy: SessionQueueProxy):
-        self.session_proxy = session_proxy
+    def __init__(self, queue_proxy: SessionQueueProxy):
+        self.queue_proxy = queue_proxy
 
     @staticmethod
     def get_file_info(file_path: str) -> str:
@@ -27,7 +27,7 @@ class ListDirectory:
         files = []
         for file in os.listdir(directory):
             file_path = os.path.join(directory, file)
-            if self.session_proxy.policy.is_accessible(file_path):
+            if self.queue_proxy.policy.is_accessible(file_path):
                 files.append(file)
         return files
 
@@ -51,7 +51,7 @@ class ListDirectory:
         except (IndexError,):
             directory = "."
 
-        if not self.session_proxy.policy.is_accessible(directory):
+        if not self.queue_proxy.policy.is_accessible(directory):
             return "RoleError: Access denied! You shouldn't snoop in private places."
 
         if not os.path.isdir(directory):

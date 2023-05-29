@@ -6,8 +6,8 @@ from pygptprompt.session.proxy import SessionQueueProxy
 
 
 class ReadFile:
-    def __init__(self, session_proxy: SessionQueueProxy):
-        self.session_proxy = session_proxy
+    def __init__(self, queue_proxy: SessionQueueProxy):
+        self.queue_proxy = queue_proxy
 
     def get_file_content(
         self,
@@ -32,7 +32,7 @@ class ReadFile:
         # The filepath is the second argument
         filepath = args[0]
 
-        if not self.session_proxy.policy.is_accessible(filepath):
+        if not self.queue_proxy.policy.is_accessible(filepath):
             return f"AccessError: Access to file {filepath} is not allowed."
 
         if not os.path.isfile(filepath):
