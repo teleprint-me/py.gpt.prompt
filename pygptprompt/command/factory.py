@@ -4,7 +4,8 @@ from pygptprompt.command.help import HelpDisplay
 from pygptprompt.command.list import ListDirectory
 from pygptprompt.command.process import SubprocessRunner
 from pygptprompt.command.read import ReadFile
-from pygptprompt.command.web import RobotsFetcher, WebsiteFetcher
+from pygptprompt.command.robots import RobotsFetcher
+from pygptprompt.command.website import WebsiteFetcher
 from pygptprompt.session.proxy import SessionQueueProxy
 
 COMMAND_MAP = {
