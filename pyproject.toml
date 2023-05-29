@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py-gpt-prompt"
-version = "0.0.3"
+version = "0.0.4"
 description = "Interface with OpenAI REST API to automate GPT via prompting."
 authors = ["teleprint-me <77757836+teleprint-me@users.noreply.github.com>"]
 license = "AGPL"
