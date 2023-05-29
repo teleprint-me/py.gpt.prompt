@@ -60,32 +60,55 @@ class RobotsFetcher:
     def __init__(self, queue_proxy: SessionQueueProxy):
         self.queue_proxy = queue_proxy
 
-    # Function to fetch and cache robots.txt
     def execute(self, command: str) -> str:
-        # Command is split into parts
-        args = command.split()
-        # URL is the second part (index 1)
-        url = args[1].strip()
-        # Get the storage path
-        storage_path = self.queue_proxy.config.get_value("path.storage", "storage")
+        # Parse the command and get the URL
+        url = self._parse_command(command)
 
-        # Ensure URL starts with "http://" or "https://", and ends with "/robots.txt"
-        if not url.startswith(("http://", "https://")):
-            url = "http://" + url
-        if not url.endswith("/robots.txt"):
-            url += "/robots.txt"
-
-        # Create a path for the cache
-        parsed_url = urlparse(url)
-        domain = parsed_url.netloc
-        cache_path = os.path.join(storage_path, "robots", domain, "robots.txt")
+        # Get the paths for the cache
+        cache_path = self._get_cache_path(url)
 
         # Try to read from cache
         cached_content = read_from_cache(cache_path)
         if cached_content is not None:
             return cached_content
 
-        # If the cache does not exist, fetch the robots.txt
+        # If the cache does not exist, fetch the robots.txt content
+        content = self._fetch_content(cache_path, url)
+        content_size = self.queue_proxy.token.get_content_count(content)
+
+        # Check if the content is too large
+        if content_size > self.queue_proxy.token.base_limit:
+            return f"The content is too large to display. It has been saved to a file: {cache_path}"
+
+        return content
+
+    def _parse_command(self, command: str) -> str:
+        # Command is split into parts
+        args = command.split()
+        # URL is the second part (index 1)
+        url = args[1].strip()
+
+        # Ensure URL starts with "http://" or "https://", and ends with "/robots.txt"
+        if not url.startswith(("http://", "https://")):
+            url = "https://" + url
+        if not url.endswith("/robots.txt"):
+            url += "/robots.txt"
+
+        return url
+
+    def _get_cache_path(self, url: str) -> str:
+        # Get the storage path
+        storage_path = self.queue_proxy.config.get_value("path.storage", "storage")
+
+        # Create a path for the cache
+        parsed_url = urlparse(url)
+        domain = parsed_url.netloc
+        cache_path = os.path.join(storage_path, "robots", domain, "robots.txt")
+
+        return cache_path
+
+    def _fetch_content(self, cache_path: str, url: str) -> str:
+        # Fetch the robots.txt
         content = fetch_content(url)
 
         # Cache the response
