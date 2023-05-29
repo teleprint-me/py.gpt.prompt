@@ -5,8 +5,7 @@ from pygptprompt.command.list import ListDirectory
 from pygptprompt.command.process import SubprocessRunner
 from pygptprompt.command.read import ReadFile
 from pygptprompt.command.web import RobotsFetcher, WebsiteFetcher
-from pygptprompt.session.policy import SessionPolicy
-from pygptprompt.setting.config import GlobalConfiguration
+from pygptprompt.session.proxy import SessionQueueProxy
 
 COMMAND_MAP = {
     "/": SubprocessRunner,
@@ -20,14 +19,13 @@ COMMAND_MAP = {
 
 
 def command_factory(
-    config: GlobalConfiguration,
-    policy: SessionPolicy,
+    session_proxy: SessionQueueProxy,
     command: str,
 ) -> str:
     for command_prefix, Handler in COMMAND_MAP.items():
         if command == command_prefix or command.startswith(command_prefix + " "):
-            handler = Handler(config, policy)
+            handler = Handler(session_proxy)
             return handler.execute(command)
 
     # If no specific command matches, treat it as a subprocess command
-    return COMMAND_MAP["/"](config, policy).execute(command)
+    return COMMAND_MAP["/"](session_proxy).execute(command)

@@ -5,6 +5,7 @@ from prompt_toolkit import prompt
 
 from pygptprompt.command.interpreter import CommandInterpreter
 from pygptprompt.prompt.format import FormatText
+from pygptprompt.session.proxy import SessionQueueProxy
 from pygptprompt.session.queue import SessionQueue
 from pygptprompt.session.token import SessionToken
 
@@ -15,11 +16,8 @@ class SessionContext:
         self.session: SessionQueue = SessionQueue(config_path)
         self.format_text: FormatText = FormatText(self.session.config)
         self.token: SessionToken = self.session.token
-        self.interpreter: CommandInterpreter = CommandInterpreter(
-            self.session.config,
-            self.session.policy,
-            self.session.token,
-        )
+        self.session_proxy: SessionQueueProxy = SessionQueueProxy(self.session)
+        self.interpreter: CommandInterpreter = CommandInterpreter(self.session_proxy)
 
     def setup_session(self) -> None:
         self.session.set_name()  # prompt user for session name

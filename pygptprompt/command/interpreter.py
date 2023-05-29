@@ -2,21 +2,12 @@
 import re
 
 from pygptprompt.command.factory import command_factory
-from pygptprompt.session.policy import SessionPolicy
-from pygptprompt.session.token import SessionToken
-from pygptprompt.setting.config import GlobalConfiguration
+from pygptprompt.session.proxy import SessionQueueProxy
 
 
 class CommandInterpreter:
-    def __init__(
-        self,
-        config: GlobalConfiguration,
-        policy: SessionPolicy,
-        token: SessionToken,
-    ):
-        self.config: GlobalConfiguration = config
-        self.policy: SessionPolicy = policy
-        self.token: SessionToken = token
+    def __init__(self, session_proxy: SessionQueueProxy):
+        self.session_proxy = session_proxy
 
     @staticmethod
     def is_command(line: str) -> bool:
@@ -48,10 +39,10 @@ class CommandInterpreter:
     def is_result_too_large(self, command_result: str) -> bool:
         # TODO: Refine this check to ensure context window won't overflow
         # This check should consider token count in addition to string length.
-        return len(command_result) > self.token.upper_limit
+        return len(command_result) > self.session_proxy.token.upper_limit
 
     def execute_command(self, line: str) -> str:
-        return command_factory(self.config, self.policy, line)
+        return command_factory(self.session_proxy, line)
 
     def replace_line_with_result(self, line: str, command_result: str) -> str:
         if self.is_result_too_large(command_result):
