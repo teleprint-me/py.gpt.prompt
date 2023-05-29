@@ -7,8 +7,7 @@ import html2text
 import requests
 from requests.exceptions import RequestException
 
-from pygptprompt.session.policy import SessionPolicy
-from pygptprompt.setting.config import GlobalConfiguration
+from pygptprompt.session.proxy import SessionQueueProxy
 
 # TODO:
 # Always write web content to a file in cache instead of
@@ -58,9 +57,8 @@ def convert_html_to_markdown(html: str) -> str:
 
 
 class RobotsFetcher:
-    def __init__(self, config: GlobalConfiguration, policy: SessionPolicy):
-        self.config: GlobalConfiguration = config
-        self.policy: SessionPolicy = policy
+    def __init__(self, queue_proxy: SessionQueueProxy):
+        self.queue_proxy = queue_proxy
 
     # Function to fetch and cache robots.txt
     def execute(self, command: str) -> str:
@@ -69,7 +67,7 @@ class RobotsFetcher:
         # URL is the second part (index 1)
         url = args[1].strip()
         # Get the storage path
-        storage_path = self.config.get_value("path.storage", "storage")
+        storage_path = self.queue_proxy.config.get_value("path.storage", "storage")
 
         # Ensure URL starts with "http://" or "https://", and ends with "/robots.txt"
         if not url.startswith(("http://", "https://")):
@@ -97,9 +95,8 @@ class RobotsFetcher:
 
 
 class WebsiteFetcher:
-    def __init__(self, config: GlobalConfiguration, policy: SessionPolicy):
-        self.config: GlobalConfiguration = config
-        self.policy: SessionPolicy = policy
+    def __init__(self, queue_proxy: SessionQueueProxy):
+        self.queue_proxy = queue_proxy
 
     def execute(self, command: str) -> str:
         # Command is first argument
@@ -107,7 +104,7 @@ class WebsiteFetcher:
         # URL is second argument
         url = args[1].strip()
         # Get the storage path
-        storage_path = self.config.get_value("path.storage", "storage")
+        storage_path = self.queue_proxy.config.get_value("path.storage", "storage")
 
         # Ensure URL starts with "http://" or "https://"
         if not url.startswith(("http://", "https://")):
@@ -139,6 +136,20 @@ class WebsiteFetcher:
 
         # Convert HTML to markdown
         markdown_content = convert_html_to_markdown(html_content)
+
+        # Check if the content is too large
+        if (
+            self.queue_proxy.token.get_content_count(markdown_content)
+            > self.queue_proxy.token.base_limit
+        ):
+            # Save the markdown content to a file
+            large_output_path = os.path.join(
+                storage_path, "large_output", domain, f"{os.path.splitext(path)[0]}.md"
+            )
+            write_to_cache(large_output_path, markdown_content)
+
+            # Return a message indicating that the output was too large and has been saved to a file
+            return f"The content is too large to display. It has been saved to a file: {large_output_path}"
 
         # Cache the markdown content
         write_to_cache(markdown_path, markdown_content)
