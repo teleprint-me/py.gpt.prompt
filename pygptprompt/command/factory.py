@@ -19,13 +19,13 @@ COMMAND_MAP = {
 
 
 def command_factory(
-    session_proxy: SessionQueueProxy,
+    queue_proxy: SessionQueueProxy,
     command: str,
 ) -> str:
     for command_prefix, Handler in COMMAND_MAP.items():
         if command == command_prefix or command.startswith(command_prefix + " "):
-            handler = Handler(session_proxy)
+            handler = Handler(queue_proxy)
             return handler.execute(command)
 
     # If no specific command matches, treat it as a subprocess command
-    return COMMAND_MAP["/"](session_proxy).execute(command)
+    return COMMAND_MAP["/"](queue_proxy).execute(command)
