@@ -99,27 +99,11 @@ class WebsiteFetcher:
         self.queue_proxy = queue_proxy
 
     def execute(self, command: str) -> str:
-        # Command is first argument
-        args = command.split()
-        # URL is second argument
-        url = args[1].strip()
-        # Get the storage path
-        storage_path = self.queue_proxy.config.get_value("path.storage", "storage")
+        # Parse the command and get the URL
+        url = self._parse_command(command)
 
-        # Ensure URL starts with "http://" or "https://"
-        if not url.startswith(("http://", "https://")):
-            url = "https://" + url
-
-        # Create paths for the cache
-        parsed_url = urlparse(url)
-        domain = parsed_url.netloc
-        # Remove leading slash
-        # If path is empty, use 'index' as the default filename
-        path = parsed_url.path.lstrip("/") or "index.html"
-        html_path = os.path.join(storage_path, "html", domain, path)
-        markdown_path = os.path.join(
-            storage_path, "markdown", domain, f"{os.path.splitext(path)[0]}.md"
-        )
+        # Get the paths for the cache
+        html_path, markdown_path = self._get_cache_paths(url)
 
         # Try to read from cache
         markdown_content = read_from_cache(markdown_path)
@@ -127,6 +111,59 @@ class WebsiteFetcher:
             return markdown_content
 
         # If the cache does not exist, fetch the HTML content
+        html_content = self._fetch_html_content(html_path, url)
+
+        # Convert HTML to markdown
+        markdown_content = convert_html_to_markdown(html_content)
+        markdown_content_size = self.queue_proxy.token.get_content_count(
+            markdown_content
+        )
+
+        # Cache the markdown content
+        write_to_cache(markdown_path, markdown_content)
+
+        # Check if the content is too large
+        if markdown_content_size > self.queue_proxy.token.base_limit:
+            # Return a message indicating that the output was too large and has been saved to a file
+            return f"The content is too large to display. It has been saved to a file: {markdown_path}"
+
+        return markdown_content
+
+    def _parse_command(self, command: str) -> str:
+        # Command is first argument
+        args = command.split()
+        # URL is second argument
+        url = args[1].strip()
+
+        # Ensure URL starts with "http://" or "https://"
+        if not url.startswith(("http://", "https://")):
+            url = "https://" + url
+
+        return url
+
+    def _get_cache_paths(self, url: str) -> tuple[str, str]:
+        # Get the storage path
+        storage_path = self.queue_proxy.config.get_value("path.storage", "storage")
+
+        # Create paths for the cache
+        parsed_url = urlparse(url)
+        domain = parsed_url.netloc
+
+        # Remove leading slash
+        # If path is empty, use 'index' as the default filename
+        path = parsed_url.path.lstrip("/") or "index.html"
+        html_path = os.path.join(storage_path, "html", domain, path)
+
+        markdown_path = os.path.join(
+            storage_path,
+            "markdown",
+            domain,
+            f"{os.path.splitext(path)[0]}.md",
+        )
+
+        return html_path, markdown_path
+
+    def _fetch_html_content(self, html_path: str, url: str) -> str:
         html_content = read_from_cache(html_path)
         if html_content is None:
             html_content = fetch_content(url)
@@ -134,24 +171,4 @@ class WebsiteFetcher:
             # Cache the HTML content
             write_to_cache(html_path, html_content)
 
-        # Convert HTML to markdown
-        markdown_content = convert_html_to_markdown(html_content)
-
-        # Check if the content is too large
-        if (
-            self.queue_proxy.token.get_content_count(markdown_content)
-            > self.queue_proxy.token.base_limit
-        ):
-            # Save the markdown content to a file
-            large_output_path = os.path.join(
-                storage_path, "large_output", domain, f"{os.path.splitext(path)[0]}.md"
-            )
-            write_to_cache(large_output_path, markdown_content)
-
-            # Return a message indicating that the output was too large and has been saved to a file
-            return f"The content is too large to display. It has been saved to a file: {large_output_path}"
-
-        # Cache the markdown content
-        write_to_cache(markdown_path, markdown_content)
-
-        return markdown_content
+        return html_content
