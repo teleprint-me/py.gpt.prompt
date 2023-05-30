@@ -38,7 +38,7 @@ class CommandInterpreter:
         return f"{line}\n{padded_result}\n"
 
     def interpret_message(self, message_content: str) -> str:
-        lines: list[str] = message_content.split("\n")
+        lines: list[str] = message_content.strip().split("\n")
         in_code_block: bool = False
         for i, line in enumerate(lines):
             if line.strip() == "```":
