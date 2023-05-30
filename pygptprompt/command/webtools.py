@@ -3,8 +3,8 @@ import os
 from typing import Optional
 
 import html2text
-import requests
-from requests.exceptions import RequestException
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 
 # Function to read from cache
@@ -23,13 +23,33 @@ def write_to_cache(cache_path: str, content: str) -> None:
 
 
 # Function to fetch content from the web
+
+
 def fetch_content(url: str) -> str:
+    # Configure WebDriver to run headlessly
+    options = Options()
+    options.headless = True
+
+    # Set up the WebDriver
+    driver = webdriver.Chrome(
+        options=options
+    )  # or webdriver.Firefox() or another browser driver
+
     try:
-        response = requests.get(url)
-        response.raise_for_status()
-        return response.text
-    except RequestException as e:
-        return f"RequestError: Error fetching content from {url}: {str(e)}."
+        # Navigate to the webpage
+        driver.get(url)
+
+        # Retrieve the HTML content of the webpage
+        html_content = driver.page_source
+
+        return html_content
+
+    except Exception as e:
+        return f"Error fetching content from {url}: {str(e)}."
+
+    finally:
+        # Close the WebDriver
+        driver.quit()
 
 
 def convert_html_to_markdown(html: str) -> str:
