@@ -19,6 +19,7 @@ langchain = "^0.0.169"
 beautifulsoup4 = "^4.12.2"
 feedparser = "^6.0.10"
 html2text = "^2020.1.16"
+selenium = "^4.9.1"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^6.0.0"
