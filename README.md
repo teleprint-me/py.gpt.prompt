@@ -50,17 +50,17 @@ PyGPTPrompt uses a `config.json` file to manage various settings, including the 
 
 ### chat_completions
 
-This section configures the chat model.
+Configures the chat model used by PyGPTPrompt.
 
--   `model`: The name of the chat model. As of now, "gpt-3.5-turbo" is recommended.
+-   `model`: The name of the chat model. "gpt-3.5-turbo" is currently recommended.
 -   `max_tokens`: The maximum number of tokens for the model to generate in a single response.
 -   `temperature`: Controls the randomness of the model's output. Higher values (closer to 1) make the output more random, while lower values make it more deterministic.
--   `base_limit_percentage`: Represents the percentage of the context window size that is reserved for resulting output. If the size of the generated output exceeds this percentage, it writes the content to a file and returns the file path. If the size is within the limit, it returns the content directly.
+-   `base_limit_percentage`: Represents the percentage of the context window size reserved for resulting output. Content exceeding this percentage is written to a file and its path is returned.
 -   `system_message`: The initial message that sets the behavior of the assistant.
 
 ### path
 
-This section configures various paths used by the application.
+Configures various paths used by PyGPTPrompt.
 
 -   `session`: The path to the directory where session data is stored.
 -   `environment`: The path to the environment file.
@@ -68,28 +68,28 @@ This section configures various paths used by the application.
 
 ### access
 
-This section configures access controls for shell commands and file paths.
+Configures access controls for shell commands and file paths.
 
 #### shell
 
--   `allowed_commands`: A list of shell commands that are allowed to be executed.
--   `disallowed_commands`: A list of shell commands that are explicitly disallowed.
+-   `allowed_commands`: A list of allowed shell commands.
+-   `disallowed_commands`: A list of explicitly disallowed shell commands.
 -   `disallowed_strings`: A list of strings that, if present in a command, will cause it to be disallowed.
 -   `disallowed_chars`: A list of characters that, if present in a command, will cause it to be disallowed.
 
 #### file
 
--   `allowed_paths`: A list of file paths that are allowed to be accessed. Any subdirectories or files within these paths are implicitly allowed, unless they are explicitly disallowed.
--   `disallowed_paths`: A list of file paths that are explicitly disallowed. These paths take precedence over the allowed paths.
+-   `allowed_paths`: A list of allowed file paths. Subdirectories and files within these paths are implicitly allowed unless explicitly disallowed.
+-   `disallowed_paths`: A list of explicitly disallowed file paths, taking precedence over allowed paths.
 
 ### style
 
-This section configures the style of the output.
+Configures the style of the output.
 
 -   `italic`: The string to use for italic text.
 -   `bold`: The string to use for bold text.
 
-Please handle the configuration file with care. Incorrect settings, especially in the `access` section, could lead to security vulnerabilities. Always ensure that your `disallowed_paths` adequately protect sensitive files and directories, and that your `allowed_commands` do not include commands that could harm your system.
+Handle the configuration file with care to ensure security. Pay attention to the `access` section, ensuring that `disallowed_paths` adequately protect sensitive files and directories. Review the `allowed_commands` to exclude any potentially risky commands. Customization options are available, but it's crucial to make informed choices to maintain a secure environment.
 
 Here's an example of a `config.json` file:
 
@@ -132,8 +132,6 @@ Here's an example of a `config.json` file:
     }
 }
 ```
-
-This configuration provides a high degree of customization. However, it's important to handle it with care. Incorrect settings, particularly in the `access` section, could potentially lead to security vulnerabilities. Always ensure that your `disallowed_paths` adequately protect sensitive files and directories, and that your `allowed_commands` do not include commands that could harm your system.
 
 ## Prerequisites
 
