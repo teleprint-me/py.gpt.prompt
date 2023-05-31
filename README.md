@@ -2,43 +2,47 @@
 
 # PyGPTPrompt
 
-A Python interface for the OpenAI REST API to automate GPT via prompts.
+PyGPTPrompt is a Python interface for the OpenAI REST API that enables automation of GPT-specific tasks using prompts.
 
-**Note:** Please be aware that this project is still in its experimental prototype phase. It currently has certain limitations, such as handling API keys, environment variables, and configuration files, which are yet to be fully addressed. The project functions well in isolation, but it's not yet production-ready.
+**Note:** Please be aware that this project is currently in an experimental prototype phase and has certain limitations. While the project works well in isolation, it is not yet considered production-ready.
 
 ## Overview
 
-PyGPTPrompt is a Python-based project that allows for interactive command execution within a controlled environment. It provides a sandbox for executing commands, with enhanced security features that restrict access to sensitive directories.
+PyGPTPrompt is a Python-based project that provides a sandbox environment for executing interactive commands. It offers enhanced security features to restrict access to sensitive directories, ensuring a controlled execution environment.
 
 ## Features
 
-PyGPTPrompt supports a range of commands for interacting with web pages, RSS feeds, shell processes, and the local file system:
+PyGPTPrompt offers the following features for interacting with various components:
 
 ![GPT-3.5 Turbo Demo](./assets/gpt-3.5-turbo.gif)
 
 ### Web Pages
 
--   `/robots <url>`: Get the robots.txt of a specified URL.
--   `/browse <url>`: Fetch HTML from a specified URL, convert it to Markdown, and cache it locally. If the content already exists in the cache, it will return the cached version.
+-   `/robots <url>`: Fetch the robots.txt file of a specified URL.
+-   `/browse <url>`: Retrieve HTML content from a specified URL, convert it to Markdown, and cache it locally. If the content already exists in the cache, the cached version is returned.
 
 ### RSS Feeds
 
--   `/rss <url>`: Fetch and display full text articles from an RSS feed.
+-   `/rss <url>`: Fetch and display full-text articles from an RSS feed.
+
+### Filesystem
+
+-   `/ls <dir>`: List files in a local directory without revealing sensitive details. Access to filesystem commands is restricted by configuration to enhance privacy.
+
+### Reading Files
+
+-   `/read <file> [start_line] [end_line]`: Read the content of a local file. This command retrieves the content of the specified file, optionally specifying the range of lines to read.
 
 ### Sub-Process
 
 -   `/<command>`: Execute a shell command (restricted by configuration).
 
-For example:
+Examples:
 
--   `/cat <file>`: Read content from a local file.
+-   `/cat <file>`: Read the content of a local file.
 -   `/git status`: Display the status of a git repository.
 
-### Filesystem
-
-Access to filesystem commands is restricted by configuration for enhanced privacy:
-
--   `/ls <dir>`: List files in a local directory without revealing user names, ownership, or other sensitive details. For example, `/ls Documents/` lists all files and directories within the `Documents/` directory.
+Please note that the available commands may be subject to configuration restrictions. For detailed information on each command, you can refer to the `/help` command.
 
 ## Configuration
 
@@ -51,6 +55,7 @@ This section configures the chat model.
 -   `model`: The name of the chat model. As of now, "gpt-3.5-turbo" is recommended.
 -   `max_tokens`: The maximum number of tokens for the model to generate in a single response.
 -   `temperature`: Controls the randomness of the model's output. Higher values (closer to 1) make the output more random, while lower values make it more deterministic.
+-   `base_limit_percentage`: Represents the percentage of the context window size that is reserved for resulting output. If the size of the generated output exceeds this percentage, it writes the content to a file and returns the file path. If the size is within the limit, it returns the content directly.
 -   `system_message`: The initial message that sets the behavior of the assistant.
 
 ### path
@@ -94,9 +99,10 @@ Here's an example of a `config.json` file:
         "model": "gpt-3.5-turbo",
         "max_tokens": 1024,
         "temperature": 0.5,
+        "base_limit_percentage": 0.1,
         "system_message": {
             "role": "system",
-            "content": "Your name is ChatGPT. You are a programming assistant..."
+            "content": "I am ChatGPT, an AI programming assistant utilizing the `pygptprompt` interactive CLI based on `prompt-toolkit`..."
         }
     },
     "path": {
@@ -169,18 +175,32 @@ The package can be installed using [Poetry](https://python-poetry.org/), a Pytho
 5. Setup your API Key.
 
     ```sh
-    echo "OPENAI_API_KEY=<API_KEY_GOES_HERE>" > .env
+    echo "OPENAI_API_KEY='API_KEY_GOES_HERE'" > .env
+    ```
+
+6. Setup your configuration.
+
+    ```sh
+    cp tests/config.example.json config.json
     ```
 
 ## Usage
 
-The package offers a command-line interface (CLI) for interacting with the GPT model. You can start the prompt interface with this command:
+The package provides a command-line interface (CLI) for interacting with the GPT model. You can start the prompt interface by running the following command:
 
 ```sh
 python main.py
 ```
 
-In the prompt interface, you can issue various commands and options to interact with the GPT model. For a list of available commands and options, use the `/help` command.
+Within the prompt interface, you can issue various commands and options to interact with the GPT model. To view a list of available commands and options, use the `/help` command.
+
+If your configuration file is not located in the current working directory, you can specify its location using the `--config` option. For example:
+
+```sh
+python main.py --config /path/to/config.json
+```
+
+This ensures that the application knows where to find your configuration file.
 
 ## Example Session
 
