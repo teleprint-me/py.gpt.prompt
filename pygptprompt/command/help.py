@@ -9,9 +9,9 @@ class HelpDisplay:
         self.commands_detail = {
             "/": {
                 "info": "Execute shell command",
-                "usage": "/<shell command>",
+                "usage": "/<shell_command>",
                 "example": "/cat -n pyproject.toml",
-                "notes": "All commands are restricted by configuration, and the user can enable additional commands. By default, `cat`, `cd`, `tree`, and `git` are enabled.",
+                "notes": "All commands are restricted by configuration. `cat`, `cd`, `tree`, and `git` are enabled by default. The user can enable additional commands.",
             },
             "/robots": {
                 "info": "Fetch URL's robots.txt.",
@@ -34,8 +34,14 @@ class HelpDisplay:
             "/ls": {
                 "info": "List files in directory",
                 "usage": "/ls <dir>",
-                "example": "/ls .",
+                "example": "/ls /path/to/dir",
                 "notes": "Access is restricted by configuration. If no directory is specified, it defaults to the current directory.",
+            },
+            "/read": {
+                "info": "Read the content of a local file",
+                "usage": "/read <file_path> [start_line] [end_line]",
+                "example": "/read myfile.txt 5",
+                "notes": "Access is restricted by configuration. Line numbers are 1-indexed. Optionally specify the range of lines to read.",
             },
             "/help": {
                 "info": "Show help information.",
@@ -61,7 +67,8 @@ class HelpDisplay:
         /rss <url>: Display full-text articles from RSS feed.
 
         **Filesystem** (access restricted by configuration)
-        /ls <dir>: List files in directory (defaults to current dir).
+        /ls <directory>: List files in directory (defaults to current dir).
+        /read <file_path> [start_line] [end_line]: Read the content of a local file.
 
         **Help**
         /help [command]: Show help information. If a command is specified, it shows detailed help for that command.
