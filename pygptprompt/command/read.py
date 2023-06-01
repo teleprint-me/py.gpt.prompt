@@ -1,8 +1,10 @@
 # pygptprompt/command/read.py
+import json
 import os
 from typing import Optional
 
 from pygptprompt.session.proxy import SessionQueueProxy
+from pygptprompt.setting.json import dump_json
 
 
 class ReadFile:
@@ -15,12 +17,30 @@ class ReadFile:
         start_line: int,
         end_line: Optional[int] = None,
     ) -> str:
-        with open(filepath, "r") as f:
-            lines = f.readlines()
-            if end_line is None:
-                return "".join(lines[start_line:])
-            else:
-                return "".join(lines[start_line:end_line])
+        if filepath.endswith(".json"):
+            with open(filepath, "r") as file:
+                lines = json.dumps(json.load(file), indent=4).split("\n")
+                content = self.join_lines(lines, start_line, end_line, "\n")
+        else:  # Treat as a plaintext file
+            with open(filepath, "r") as f:
+                lines = f.readlines()
+                content = self.join_lines(lines, start_line, end_line)
+        return content
+
+    def join_lines(
+        self,
+        lines: list[str],
+        start_line: int,
+        end_line: Optional[int] = None,
+        seperator: Optional[str] = None,
+    ) -> str:
+        seperator = seperator if seperator else ""
+        if end_line is None:
+            content = seperator.join(lines[start_line:])
+        else:
+            content = seperator.join(lines[start_line:end_line])
+
+        return content
 
     def execute(self, command: str) -> str:
         # The command is the first argument.
@@ -55,6 +75,7 @@ class ReadFile:
             return "ReadError: Ending line number must be greater than starting line number."
 
         try:
-            return self.get_file_content(filepath, start_line, end_line)
+            content = self.get_file_content(filepath, start_line, end_line)
+            return self.queue_proxy.handle_content_size(content, filepath)
         except Exception as e:
             return f"ReadError: Error reading file {filepath}: {str(e)}."
