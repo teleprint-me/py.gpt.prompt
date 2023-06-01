@@ -10,6 +10,11 @@ def read_json(filepath: Union[str, Path]) -> Any:
         return json.load(file)
 
 
+def dump_json(filepath: Union[str, Path]) -> str:
+    with open(filepath, "r") as file:
+        return json.dumps(json.load(file), indent=4)
+
+
 def write_json(filepath: Union[str, Path], content: Any) -> None:
     with open(filepath, "w") as f:
         json.dump(content, f)
