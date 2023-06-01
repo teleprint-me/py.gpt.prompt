@@ -140,6 +140,53 @@ Here's an example of a `config.json` file:
 
 ## Installation
 
+### End User
+
+It's important to use a virtual environment to isolate the dependencies of PyGPTPrompt from other Python projects on your system. Here's how to set up a virtual environment using `pipx` and `poetry`:
+
+1. Install `pipx` and `poetry`:
+
+    ```sh
+    # pipx runs each package in isolation.
+    # Learn more at https://github.com/pipxproject/pipx 
+    pip install --user --upgrade pipx
+    pipx install poetry
+    ```
+
+2. Create and activate a virtual environment using `poetry`:
+
+    ```sh
+    poetry shell
+    ```
+
+3. Install PyGPTPrompt using `poetry`:
+
+    ```sh
+    poetry add git+https://github.com/teleprint-me/py.gpt.prompt.git
+    ```
+
+    Alternatively, you can install PyGPTPrompt using `pip`:
+
+    ```sh
+    pip install git+https://github.com/teleprint-me/py.gpt.prompt.git
+    ```
+
+4. [Obtain an API key](https://platform.openai.com/account/api-keys) from the [Official OpenAI Platform](https://platform.openai.com/docs/introduction/overview) and set it as an environment variable:
+
+    ```sh
+    echo "OPENAI_API_KEY='API_KEY_GOES_HERE'" > .env
+    ```
+
+5. Set up your configuration by downloading the sample configuration file and modifying it to suit your needs:
+
+    ```sh
+    curl https://raw.githubusercontent.com/teleprint-me/py.gpt.prompt/main/tests/config.sample.json -o config.json
+    ```
+
+These instructions should help end users set up a virtual environment, install PyGPTPrompt, and configure the application to work with the OpenAI API.
+
+### Development
+
 The package can be installed using [Poetry](https://python-poetry.org/), a Python dependency management and packaging tool. Follow these steps:
 
 1. Clone the repository:
@@ -184,21 +231,36 @@ The package can be installed using [Poetry](https://python-poetry.org/), a Pytho
 
 ## Usage
 
-The package provides a command-line interface (CLI) for interacting with the GPT model. You can start the prompt interface by running the following command:
+The PyGPTPrompt package provides a command-line interface (CLI) for interacting with the GPT model. You can start the prompt interface by running the followin
+g command:
 
 ```sh
-python main.py
+python -m pygptprompt.main
 ```
 
-Within the prompt interface, you can issue various commands and options to interact with the GPT model. To view a list of available commands and options, use the `/help` command.
+Within the prompt interface, you can issue various commands and options to interact with the GPT model. To view a list of available commands and options, use
+the `/help` command.
 
 If your configuration file is not located in the current working directory, you can specify its location using the `--config` option. For example:
 
 ```sh
-python main.py --config /path/to/config.json
+python -m pygptprompt.main --config /path/to/config.json
 ```
 
 This ensures that the application knows where to find your configuration file.
+
+### Keybindings
+
+PyGPTPrompt comes with default keybindings that you can use to interact with the application. Here's a brief overview of the available keybindings:
+
+-   `Ctrl-C`: Exits the application.
+-   `Ctrl-D`: Exits the application.
+-   `Return`: Enters a newline.
+-   `Alt-Return`: Submits a message (Win & Linux).
+-   `Option-Return`: Submits a message (Mac OS X).
+-   `Up/Down arrow keys`: Navigates through command history.
+-   `Ctrl-Shift-V`: Pastes from the system clipboard.
+-   `Tab`: Auto-completes commands and arguments. (TODO)
 
 ## Example Session
 
@@ -235,31 +297,37 @@ It looks like you ran the `/git status` command. The output shows that you have 
 
 ## Roadmap
 
-While PyGPTPrompt is still in its prototype phase, I have future plans for its development. Here are some of the features I plan to implement in the future:
+While PyGPTPrompt is still in its prototype phase, there are several features currently being worked on, and plans for future development. Here are some of the features currently being worked on:
+
+-   Cleaning up read commands to prevent context flooding and accidental flushing of successful floods, and instead returning a string indicating that the contents are too large.
+-   Adding commands for handling the context window, such as freezing and unfreezing select messages within the queue.
+-   Implementing a vector database to prevent the model from "forgetting" as easily. This will depend on the accuracy of the query and what's fed back into the model.
+
+Here are some of the planned features for future development:
 
 -   Enhanced security features for reading and writing files.
 -   Integration with more third-party APIs and services.
 
-I welcome feedback and ideas on these planned features, as well as suggestions for new ones!
+If you have any feedback, ideas, or suggestions for these planned features, or any new ones, please feel free to share them!
 
 ## Updates
 
-As of May 29, 2023, several major changes and updates have been made:
+As of June 1, 2023, several major changes and updates have been made:
 
-1. **RSS Feed Handling:** The `RSSHandler` class has been refactored to handle fetching, parsing, and caching of RSS feeds. This includes error handling for cases where the provided URL is not an RSS feed.
+1. **JSON Module Enhancement:** A new `dump_json` function has been added to the `JSON` module, which loads a JSON file and returns it as a formatted string. This enhances code modularity and maintainability.
 
-2. **Content Size Handling:** The `SessionQueueProxy` now includes a `handle_content_size` method that checks if the content size exceeds the `base_limit`. If it does, a message indicating that the content has been saved to a file is returned. This method is used in the `RobotsFetcher`, `WebsiteFetcher`, and `RSSHandler` classes.
+2. **Content Size Handling:** The `SessionQueueProxy` now includes a `handle_content_size` method that checks if the content size exceeds the `base_limit`. If
+   it does, a message indicating that the content has been saved to a file is returned. This method is used in the `RobotsFetcher`, `WebsiteFetcher`, and `RSSHandler` classes.
 
-3. **Command Interpreter Cleanup:** Deprecated methods for handling large results have been removed from the `CommandInterpreter` class.
+3. **Code Refactoring and Modularity:** Several classes and methods have been refactored and modularized for better code organization and maintainability. This includes the `SubprocessRunner`, `get_file_content`, and `main` modules.
 
-4. **Security and Bug Fixes:** Several security and bug fixes have been implemented. These include improvements to command result printing, command policy enforcement, and handling policy enforcement for traversable paths. The `SessionContext` has been refactored for a cleaner `main_loop`.
+4. **Package Distribution Improvement:** The `main.py` module has been moved to the `pygptprompt/session` directory to make it easier to distribute the app as a package.
 
-5. **Command Interpreter Implementation:** A new `CommandInterpreter` has been added for parsing and executing commands. The `/help` command has been enhanced to provide detailed information on individual commands. The `browse`, `list`, `session`, `rss`, and `process` commands have been updated for better functionality.
+5. **Command Line Interface Enhancement:** The `gpt_prompt` module has been updated for better functionality. The `/help` command has been enhanced to provide
+   detailed information on individual commands. The `browse`, `list`, `session`, `rss`, and `process` commands have been updated for better functionality.
 
-6. **Refactoring and Improvements:** The 'chat' package has been refactored into 'session' for better description of behavior. A new `FormatText` class has been introduced for configurable text formatting. The `SessionContext` class has been updated to integrate new classes and manage user interactions.
+6. **Configuration and Security Improvement:** The `pyproject.toml` file has been updated to reflect package changes. Access control for file paths has been improved, with the `allowed_paths` and `disallowed_paths` configuration options now controlling access to file paths. Several security and bug fixes have been implemented, including improvements to command result printing, command policy enforcement, and handling policy enforcement for traversable paths.
 
-7. **Path Access Control:** The `allowed_paths` and `disallowed_paths` in the configuration now control access to file paths. Any subdirectories or files within the allowed paths are implicitly allowed, unless they are explicitly disallowed.
-
-8. **Help Message Update:** The help message (`/help` command) has been updated to reflect these changes and provide clear, concise explanations of the available commands.
+7. **Help Message Update:** The help message (`/help` command) has been updated to reflect these changes and provide clear, concise explanations of the available commands.
 
 You can look at the following path to see the latest commits: [GitHub Commits](https://github.com/teleprint-me/py.gpt.prompt/commits/main)
