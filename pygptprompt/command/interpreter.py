@@ -33,9 +33,8 @@ class CommandInterpreter:
 
     def replace_line_with_result(self, line: str, command_result: str) -> str:
         # NOTE: User needs to see result
-        padded_result = f"\n```\n{command_result.strip()}\n```"
-        print(padded_result)  # NOTE: Leave this line here!
-        return f"{line}\n{padded_result}\n"
+        print(command_result)  # NOTE: Leave this line here!
+        return f"{line}\n{command_result}\n"
 
     def interpret_message(self, message_content: str) -> str:
         lines: list[str] = message_content.strip().split("\n")
