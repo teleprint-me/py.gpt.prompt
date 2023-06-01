@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "py-gpt-prompt"
-version = "0.0.4"
+version = "0.0.5"
 description = "Interface with OpenAI REST API to automate GPT via prompting."
 authors = ["teleprint-me <77757836+teleprint-me@users.noreply.github.com>"]
 license = "AGPL"
 readme = "README.md"
-packages = [{include = "py"}]
+packages = [{include = "pygptprompt"}]
 keywords = ["OpenAI", "GPT", "Python", "Prompt", "Automation", "API"]
 
 [tool.poetry.dependencies]
@@ -26,6 +26,7 @@ flake8 = "^6.0.0"
 black = "^23.3.0"
 isort = "^5.12.0"
 pytest = "^7.3.1"
+build = "^0.10.0"
 
 [build-system]
 requires = ["poetry-core"]
