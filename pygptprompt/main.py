@@ -1,4 +1,4 @@
-# main.py
+# pygptprompt/main.py
 import argparse
 
 from pygptprompt.session.context import SessionContext
