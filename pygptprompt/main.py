@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # pygptprompt/main.py
 import argparse
 
