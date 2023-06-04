@@ -148,27 +148,37 @@ It's important to use a virtual environment to isolate the dependencies of PyGPT
 
     ```sh
     # pipx runs each package in isolation.
-    # Learn more at https://github.com/pipxproject/pipx 
+    # Learn more at https://github.com/pipxproject/pipx
     pip install --user --upgrade pipx
     pipx install poetry
     ```
 
-2. Create and activate a virtual environment using `poetry`:
+    Alternatively, you can install PyGPTPrompt using `virtualenv`:
 
     ```sh
-    poetry shell
+    virtualenv .venv
+    source .venv/bin/activate
+    pip install git+https://github.com/teleprint-me/py.gpt.prompt.git
+    pip freeze > requirements.txt
     ```
 
-3. Install PyGPTPrompt using `poetry`:
+    Then skip step 2 and continue from step 3 if you opted for `virtualenv`.
+
+2. Create, activate, and install using `poetry`:
 
     ```sh
+    poetry init  # follow the prompts
+    poetry shell
     poetry add git+https://github.com/teleprint-me/py.gpt.prompt.git
     ```
 
-    Alternatively, you can install PyGPTPrompt using `pip`:
+3. Setup `git` and your `.gitignore`
 
     ```sh
-    pip install git+https://github.com/teleprint-me/py.gpt.prompt.git
+    git init
+    curl https://raw.githubusercontent.com/github/gitignore/main/Python.gitignore -o .gitignore
+    git add .gitignore  # add /sessions and /storage if they're local
+    git commit -s -m "Initial commit" .gitignore
     ```
 
 4. [Obtain an API key](https://platform.openai.com/account/api-keys) from the [Official OpenAI Platform](https://platform.openai.com/docs/introduction/overview) and set it as an environment variable:
