@@ -31,6 +31,12 @@ class HelpDisplay:
                 "example": "/rss https://www.example.com/rss",
                 "notes": "",
             },
+            "/cd": {
+                "info": "Change current working directory",
+                "usage": "/cd <dir>",
+                "example": "/cd /path/to/dir",
+                "notes": "Access is restricted by configuration. If no directory is specified, it defaults to the current directory.",
+            },
             "/ls": {
                 "info": "List files in directory",
                 "usage": "/ls <dir>",
@@ -67,6 +73,7 @@ class HelpDisplay:
         /rss <url>: Display full-text articles from RSS feed.
 
         **Filesystem** (access restricted by configuration)
+        /cd <directory>: Change current working directory (defaults to current dir).
         /ls <directory>: List files in directory (defaults to current dir).
         /read <file_path> [start_line] [end_line]: Read the content of a local file.
 
