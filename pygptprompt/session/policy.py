@@ -10,9 +10,14 @@ class SessionPolicy(Singleton):
         self.config = config
 
     @staticmethod
-    def is_traversable(path: str) -> bool:
+    def is_filepath(path: str) -> bool:
         """Check if the filepath is valid."""
         return os.path.isabs(path) or os.path.exists(path)
+
+    @staticmethod
+    def is_traversable(path: str) -> bool:
+        """Check if the path is a valid directory"""
+        return os.path.exists(path) and os.path.isdir(path)
 
     def is_accessible(self, path: str) -> bool:
         """Check if the filepath is allowed according to the file access configuration."""

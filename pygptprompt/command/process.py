@@ -36,9 +36,11 @@ class SubprocessRunner:
 
         # Check if the file paths in the command are accessible
         for arg in args:
-            if self.queue_proxy.policy.is_traversable(arg):
+            if self.queue_proxy.policy.is_filepath(arg):
                 if not self.queue_proxy.policy.is_accessible(arg):
                     return f"AccessError: Access to file {arg} is not allowed."
+
+        cache_path = self._get_cache_path(args[0])
 
         # Run the command
         try:
@@ -49,8 +51,13 @@ class SubprocessRunner:
                 check=True,
                 shell=False,  # NOTE: Enabling this is potentially dangerous!
             )
-            cache_path = self._get_cache_path(args[0])
             write_to_cache(cache_path, result.stdout)
             return self.queue_proxy.handle_content_size(result.stdout, cache_path)
         except subprocess.CalledProcessError as e:
-            return f"CommandError: Command '{command}' returned non-zero exit status {e.returncode}."
+            result = f"CalledProcessError: ReturnCode: {e.returncode}\n"
+            if e.stderr:
+                result += f"StandardError:\n{e.stderr}\n"
+            if e.stdout:
+                result += f"StandardOutput:\n{e.stdout}\n"
+            write_to_cache(cache_path, result)
+            return self.queue_proxy.handle_content_size(result, cache_path)
