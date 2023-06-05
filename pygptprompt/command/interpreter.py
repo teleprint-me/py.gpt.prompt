@@ -14,12 +14,8 @@ class CommandInterpreter:
         return line.strip().startswith("/")
 
     @staticmethod
-    def is_in_quotes(line: str) -> bool:
-        return line.strip().startswith(("'", '"'))
-
-    @staticmethod
-    def is_in_backticks(line: str) -> bool:
-        return line.strip().startswith(("`", "```", "````"))
+    def is_code_block(line: str) -> bool:
+        return line.strip().startswith(("```", "````"))
 
     @staticmethod
     def extract_code_blocks(message: str) -> list[str]:
@@ -40,15 +36,14 @@ class CommandInterpreter:
         lines: list[str] = message_content.split("\n")
         in_code_block: bool = False
         for i, line in enumerate(lines):
-            if line.strip() == "```":
+            if self.is_code_block(line):
                 in_code_block = not in_code_block
-            if (
-                in_code_block
-                or not self.is_command(line)
-                or self.is_in_quotes(line)
-                or self.is_in_backticks(line)
-            ):
+
+            if in_code_block:
                 continue
-            command_result = self.execute_command(line)
-            lines[i] = self.replace_line_with_result(line, command_result)
+
+            if self.is_command(line):
+                command_result = self.execute_command(line)
+                lines[i] = self.replace_line_with_result(line, command_result)
+
         return "\n".join(lines)
