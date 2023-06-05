@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-GPT_CONFIG_PATH="${HOME}/.local/pygptprompt"
+GPT_CONFIG_PATH="${HOME}/.local/share/pygptprompt"
 GPT_CONFIG_FILE="${GPT_CONFIG_PATH}/config.json"
 GPT_CONFIG_ENV="${GPT_CONFIG_PATH}/env"
 GPT_CONFIG_URL="https://raw.githubusercontent.com/teleprint-me/py.gpt.prompt/main/tests/config.sample.json"
