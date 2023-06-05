@@ -322,22 +322,18 @@ If you have any feedback, ideas, or suggestions for these planned features, or a
 
 ## Updates
 
-As of June 1, 2023, several major changes and updates have been made:
+As of June 4, 2023, several major changes and updates have been made:
 
-1. **JSON Module Enhancement:** A new `dump_json` function has been added to the `JSON` module, which loads a JSON file and returns it as a formatted string. This enhances code modularity and maintainability.
+1. **Bump Revision Number:** The revision number has been bumped from 0.0.6 to 0.0.7 to prepare for the upcoming release.
 
-2. **Content Size Handling:** The `SessionQueueProxy` now includes a `handle_content_size` method that checks if the content size exceeds the `base_limit`. If
-   it does, a message indicating that the content has been saved to a file is returned. This method is used in the `RobotsFetcher`, `WebsiteFetcher`, and `RSSHandler` classes.
+2. **Fix OpenAI API Key Registration:** The OpenAI API key registration process has been fixed, ensuring smoother integration.
 
-3. **Code Refactoring and Modularity:** Several classes and methods have been refactored and modularized for better code organization and maintainability. This includes the `SubprocessRunner`, `get_file_content`, and `main` modules.
+3. **Improved Installation Instructions:** The installation instructions have been enhanced for easier setup.
 
-4. **Package Distribution Improvement:** The `main.py` module has been moved to the `pygptprompt/session` directory to make it easier to distribute the app as a package.
+4. **Add Shebang to main.py:** The `main.py` file now includes a shebang to make it an executable module.
 
-5. **Command Line Interface Enhancement:** The `gpt_prompt` module has been updated for better functionality. The `/help` command has been enhanced to provide
-   detailed information on individual commands. The `browse`, `list`, `session`, `rss`, and `process` commands have been updated for better functionality.
+5. **Fix Directory Path for Configuration Files:** The directory path for configuration files has been updated to ensure consistency.
 
-6. **Configuration and Security Improvement:** The `pyproject.toml` file has been updated to reflect package changes. Access control for file paths has been improved, with the `allowed_paths` and `disallowed_paths` configuration options now controlling access to file paths. Several security and bug fixes have been implemented, including improvements to command result printing, command policy enforcement, and handling policy enforcement for traversable paths.
+6. **Introduce Helper Script for Running GPT Chat Sessions:** A new helper script, `gptprompt.sh`, has been added to facilitate running GPT chat sessions.
 
-7. **Help Message Update:** The help message (`/help` command) has been updated to reflect these changes and provide clear, concise explanations of the available commands.
-
-You can look at the following path to see the latest commits: [GitHub Commits](https://github.com/teleprint-me/py.gpt.prompt/commits/main)
+For more detailed information, you can refer to the individual commits in the [GitHub Commits](https://github.com/teleprint-me/py.gpt.prompt/commits/main) section.
