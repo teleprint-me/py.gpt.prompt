@@ -37,18 +37,18 @@ class CommandInterpreter:
         return f"{line}\n{command_result}\n"
 
     def interpret_message(self, message_content: str) -> str:
-        lines: list[str] = message_content.strip().split("\n")
+        lines: list[str] = message_content.split("\n")
         in_code_block: bool = False
         for i, line in enumerate(lines):
             if line.strip() == "```":
                 in_code_block = not in_code_block
-            if in_code_block:
-                continue
             if (
-                self.is_command(line)
-                and not self.is_in_quotes(line)
-                and not self.is_in_backticks(line)
+                in_code_block
+                or not self.is_command(line)
+                or self.is_in_quotes(line)
+                or self.is_in_backticks(line)
             ):
-                command_result = self.execute_command(line)
-                lines[i] = self.replace_line_with_result(line, command_result)
+                continue
+            command_result = self.execute_command(line)
+            lines[i] = self.replace_line_with_result(line, command_result)
         return "\n".join(lines)
