@@ -1,4 +1,5 @@
 # pygptprompt/command/factory.py
+from pygptprompt.command.cd import ChangeDirectory
 from pygptprompt.command.feed import RSSHandler
 from pygptprompt.command.help import HelpDisplay
 from pygptprompt.command.list import ListDirectory
@@ -11,6 +12,7 @@ from pygptprompt.session.proxy import SessionQueueProxy
 COMMAND_MAP = {
     "/": SubprocessRunner,
     "/ls": ListDirectory,
+    "/cd": ChangeDirectory,
     "/browse": WebsiteFetcher,
     "/robots": RobotsFetcher,
     "/rss": RSSHandler,
