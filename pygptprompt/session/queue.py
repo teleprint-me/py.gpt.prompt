@@ -31,7 +31,7 @@ class SessionQueue:
         # Messages represents the models context window
         self.messages: list[dict[str, str]] = [self.model.system_message]
         # Custom OpenAI interface; see `pygptprompt/openai` for more info
-        self.openai: OpenAI = OpenAI()
+        self.openai: OpenAI = OpenAI(self.config.get_api_key())
         # User defined session name; user is prompted for input
         self.name: str = ""
 

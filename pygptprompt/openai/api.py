@@ -1,14 +1,6 @@
+# pygptprompt/openai/api.py
 import os
 from dataclasses import dataclass
-from typing import Optional
-
-from dotenv import load_dotenv
-
-load_dotenv()
-
-
-def get_api_key(api_key: Optional[str] = "") -> str:
-    return api_key or os.getenv("OPENAI_API_KEY") or ""
 
 
 @dataclass

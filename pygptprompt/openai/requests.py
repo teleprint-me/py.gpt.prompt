@@ -7,14 +7,14 @@ from typing import Any, Optional
 import requests
 from requests.exceptions import HTTPError
 
-from pygptprompt.openai.api import OpenAIAPI, get_api_key
+from pygptprompt.openai.api import OpenAIAPI
 
 
 class OpenAIRequests:
     MAX_RETRIES = 5
 
     def __init__(self, api_key: Optional[str] = "") -> None:
-        self.api = OpenAIAPI(get_api_key(api_key))
+        self.api = OpenAIAPI(api_key or "")
         self.session = requests.Session()
 
     def _handle_rate_limit(
