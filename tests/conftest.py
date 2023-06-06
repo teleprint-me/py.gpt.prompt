@@ -5,6 +5,7 @@ import pytest
 
 from pygptprompt.openai import OpenAI
 from pygptprompt.session.model import SessionModel
+from pygptprompt.session.policy import SessionPolicy
 from pygptprompt.session.token import SessionToken
 from pygptprompt.setting import GlobalConfiguration
 
@@ -94,3 +95,8 @@ def session_token(config: GlobalConfiguration) -> SessionToken:
 @pytest.fixture(scope="module")
 def session_model(config: GlobalConfiguration) -> SessionModel:
     return SessionModel(config)
+
+
+@pytest.fixture(scope="module")
+def session_policy(config):
+    return SessionPolicy(config)
