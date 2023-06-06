@@ -36,7 +36,7 @@ class SubprocessRunner:
 
         # Check if the file paths in the command are accessible
         for arg in args:
-            if self.queue_proxy.policy.is_filepath(arg):
+            if self.queue_proxy.policy.is_file_path(arg):
                 if not self.queue_proxy.policy.is_accessible(arg):
                     return f"AccessError: Access to file {arg} is not allowed."
 

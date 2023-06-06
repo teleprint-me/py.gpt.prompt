@@ -10,8 +10,8 @@ class SessionPolicy(Singleton):
         self.config = config
 
     @staticmethod
-    def is_filepath(path: str) -> bool:
-        """Check if the filepath is valid."""
+    def is_file_path(path: str) -> bool:
+        """Check if the file path is valid."""
         return os.path.isabs(path) or os.path.exists(path)
 
     @staticmethod
