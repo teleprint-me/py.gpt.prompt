@@ -11,14 +11,14 @@ class TestOpenAI:
     def test_streaming_completions(
         self,
         openai: OpenAI,
-        messages: list[dict[str, str]],
+        chat_completion: list[dict[str, str]],
     ):
         model = "gpt-3.5-turbo"
         temperature = 0
         max_tokens = 128
 
         message: dict[str, Any] = openai.completions.stream_chat_completions(
-            messages, model, max_tokens, temperature
+            chat_completion, model, max_tokens, temperature
         )
 
         print()

@@ -61,10 +61,6 @@ def chat_completion() -> list[dict[str, str]]:
             "role": "user",
             "content": "Translate the following English text to French: 'The quick brown fox jumped over the lazy dog.'",
         },
-        {
-            "role": "assistant",
-            "content": "Le renard brun rapide a sauté par-dessus le chien paresseux.",
-        },
     ]
 
 
