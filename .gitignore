@@ -1,9 +1,9 @@
 # Local
-/config.json
-/storage
-/assets/*
+/config
 /sessions
+/cache
 
+/assets/*
 !/assets/*.gif
 !/sessions/gpt-3.5-turbo.*
 
