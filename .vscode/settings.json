@@ -16,6 +16,9 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.formatOnSave": true
     },
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
     "python.analysis.extraPaths": [
         "${workspaceFolder}/.venv/bin",
         "${workspaceFolder}/.venv/lib/python3.11/site-packages"
@@ -36,8 +39,5 @@
             "source.organizeImports": true
         }
     },
-    "isort.args": ["--profile", "black"],
-    "[javascript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    }
+    "isort.args": ["--profile", "black"]
 }
