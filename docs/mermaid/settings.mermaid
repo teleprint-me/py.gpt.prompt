@@ -1,0 +1,11 @@
+graph TB
+  U["User"] -- "Access to" --> S["Settings"]
+  S -- "Contains" --> F["Functions.json"]
+  S -- "Contains" --> M["Models.json"]
+  S -- "Contains" --> UJ["Users.json"]
+  F["Functions.json"] -- "Function Metadata" --> MD["Model"]
+  M["Models.json"] -- "Model Preferences" --> MD["Model"]
+  UJ["Users.json"] -- "User Preferences" --> A["Application"]
+  A["Application"] -- "Local or Remote Ingest" --> VD["Vector Database"]
+  A["Application"] -- "Accessible Filepaths" --> FP["Filepaths"]
+  A["Application"] -- "Policy Settings" --> PS["Model Permissions"]
