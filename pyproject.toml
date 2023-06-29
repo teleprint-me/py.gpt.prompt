@@ -2,7 +2,7 @@
 name = "pygptprompt"
 version = "0.0.9"
 description = "A Context Window Management System for automating prompting with Chat Models."
-authors = ["Austin Berrio aberrio@teleprint.me"]
+authors = ["Austin Berrio <aberrio@teleprint.me>"]
 license = "AGPL"
 readme = "README.md"
 keywords = ["OpenAI", "GPT", "Python", "Prompt", "Automation", "API"]
