@@ -2,15 +2,39 @@
 
 # PyGPTPrompt
 
-PyGPTPrompt is a Python interface for the OpenAI REST API that enables automation of GPT-specific tasks using prompts.
+PyGPTPrompt is a user-friendly CLI tool designed for managing context windows for advanced AI models, including OpenAI's GPT-3.5, GPT-4, and now also supports the llama.cpp Python API to facilitate integration of other models like the quantized spin-offs of Microsoft's Orca model. This tool streamlines user interactions and data ingestion, enabling an optimized use of the AI models' long-term memory and facilitating task automation.
 
-**Note:** Please be aware that this project is currently in an experimental prototype phase and has certain limitations. While the project works well in isolation, it is not yet considered production-ready.
+**Note:** PyGPTPrompt is a passion project by a solo developer, supported by AI models for assistance. As it is currently in an experimental prototype phase, it may exhibit some limitations and areas for improvement. Despite being functional and showing significant potential in a controlled environment, it is still under active development and is not considered production-ready yet.
 
 ## Overview
 
-PyGPTPrompt is a Python-based project that provides a sandbox environment for executing interactive commands. It offers enhanced security features to restrict access to sensitive directories, ensuring a controlled execution environment.
+PyGPTPrompt is built using Python and offers a secure sandbox environment for executing interactive commands with AI models. It comes equipped with enhanced security measures that restrict access to sensitive directories, ensuring a safe and controlled execution environment.
+
+One of the core offerings of PyGPTPrompt is its seamless integration with advanced AI models. The tool serves as an effective interface for interaction between the user and AI models, making use of their respective Python APIs for optimal compatibility and performance.
 
 ## Features
+
+- **Multiple Model Support:** PyGPTPrompt now supports llama.cpp's Python API, facilitating the integration of a broader range of models including a quantized spin-off of Microsoft's Orca model.
+
+- **Context Window Management:** Efficiently manage the context windows of your AI models for streamlined interactions.
+  
+- **Data Ingestion:** PyGPTPrompt simplifies the process of feeding data into AI models, enhancing their long-term memory performance.
+
+- **Task Automation:** PyGPTPrompt enables effective task automation with AI models, saving time and improving productivity.
+
+- **Secure Execution Environment:** The tool implements advanced security features, restricting access to sensitive directories to ensure secure interactions.
+
+- **First-Class Support for OpenAI GPT Models:** Designed with OpenAI's GPT models in mind, PyGPTPrompt integrates flawlessly with these AI models through their functions API.
+
+## Development Status
+
+Being a solo developer's endeavor, PyGPTPrompt is currently in an experimental prototype phase. While it is functional and shows promising potential, there are some limitations and issues that are actively being worked on. Please stay tuned for future updates and improvements as this project continues to evolve with the valuable assistance of AI models.
+
+---
+
+This solo developer is committed to refining and enhancing PyGPTPrompt, striving to make it a top-notch tool for managing AI models' context windows, facilitating user interactions, and optimizing data ingestion and task automation. Thank you for your patience and understanding during this development process.
+
+## Feature Implementations
 
 PyGPTPrompt offers the following features for interacting with various components:
 
