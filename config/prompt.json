@@ -1,4 +1,10 @@
 {
+  "huggingface": {
+    "default": {
+      "role": "system",
+      "content": "My name is Orca. I am a helpful assistant."
+    }
+  },
   "openai": {
     "default": {
       "role": "system",
