@@ -1,0 +1,62 @@
+{
+  "defaults": {
+    "temperature": 1,
+    "max_tokens": 512,
+    "top_p": 1,
+    "frequency_penalty": 0,
+    "presence_penalty": 0,
+    "best_of": 1
+  },
+  "context_window": {
+    "base_limit_percentage": 0.2,
+    "max_length": 2048
+  },
+  "choices": {
+    "providers": ["huggingface", "openai"],
+    "device_types": ["cpu", "cuda", "hip", "mps", "opencl", "vulkan", "lazy"],
+    "embedding_types": [
+      "HuggingFaceEmbeddings",
+      "HuggingFaceInstructEmbeddings"
+    ],
+    "embedding_models": [
+      "hkunlp/instructor-base",
+      "hkunlp/instructor-large",
+      "hkunlp/instructor-xl",
+      "sentence-transformers/all-MiniLM-L6-v2",
+      "sentence-transformers/all-MiniLM-L12-v2"
+    ],
+    "model_repositories": [
+      "TheBloke/orca_mini_3B-GGML",
+      "TheBloke/orca_mini_7B-GGML",
+      "TheBloke/orca_mini_13B-GGML",
+      "TheBloke/WizardLM-7B-V1.0-Uncensored-GGML",
+      "TheBloke/WizardLM-13B-V1.0-Uncensored-GGML",
+      "TheBloke/falcon-7b-instruct-GGML",
+      "TheBloke/WizardLM-Uncensored-Falcon-7B-GGML"
+    ]
+  },
+  "huggingface": {
+    "embeddings": {
+      "repository": "hkunlp/instructor-large",
+      "class": "HuggingFaceInstructEmbeddings"
+    },
+    "completions": {
+      "repository": "TheBloke/orca_mini_7B-GGML",
+      "filename": "orca-mini-7b.ggmlv3.q4_0.bin"
+    }
+  },
+  "openai": {
+    "embeddings": {
+      "model": "text-embedding-ada-002",
+      "max_input_tokens": 4096
+    },
+    "completions": {
+      "model": "text-davinci-003",
+      "max_tokens": 1024
+    },
+    "chat_completions": {
+      "model": "gpt-3.5-turbo-0613",
+      "max_tokens": 1024
+    }
+  }
+}

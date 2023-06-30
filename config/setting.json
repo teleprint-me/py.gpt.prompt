@@ -1,0 +1,42 @@
+{
+  "path": {
+    "local": "${HOME}/.local/share/pygptprompt",
+    "cache": "${HOME}/.cache/pygptprompt",
+    "config": "${HOME}/.config/pygptprompt"
+  },
+  "access": {
+    "confirm": true,
+    "shell": {
+      "allowed_commands": [
+        "date",
+        "cal",
+        "pwd",
+        "cat",
+        "grep",
+        "git",
+        "tree",
+        "virtualenv",
+        "poetry",
+        "pytest"
+      ],
+      "disallowed_commands": ["rm", "sudo", "su"],
+      "disallowed_strings": ["-rf /", ":(){ :|:& };:"],
+      "disallowed_chars": ["&", ";", "*", ">", ">>", "|"]
+    },
+    "file": {
+      "allowed_paths": [
+        "${HOME}/.local/share/pygptprompt",
+        "${HOME}/.cache/pygptprompt",
+        "${HOME}/Documents/code/pygptprompt"
+      ],
+      "disallowed_paths": [
+        "${HOME}/.local/share/pygptprompt/.env",
+        "${HOME}/.local/share/pygptprompt/config"
+      ]
+    }
+  },
+  "style": {
+    "italic": "italic",
+    "bold": "bold"
+  }
+}
