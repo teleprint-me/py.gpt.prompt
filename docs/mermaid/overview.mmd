@@ -1,37 +1,40 @@
 graph TB
-  U["User"] -- "Use chat.py" --> CP["chat.py"]
-  CP -- "Invoke Session" --> IS["Invoke Session"]
-  IS -- "Session Exists?" --> SE["Session Exists"]
-  SE -- "No" --> NS["New Session"]
-  NS -- "Prompt for Label" --> PL["Prompt for Label"]
-  PL -- "Create Label" --> CL["Create Label"]
-  CL -- "Prompt for System Prompt" --> SP["System Prompt"]
-  SP -- "Create Session" --> CS["Create Session"]
-  CS -- "Open Context Window" --> CW["Context Window"]
-  CW -- "Chat Loop" --> CLP["Chat Loop"]
-  CLP -- "Prompt User for Input" --> PUI["Prompt User for Input"]
-  PUI -- "User Inputs Message/Command" --> UIMC["User Inputs Message/Command"]
-  UIMC -- "Model Responds/Accesses Functions" --> MRAF["Model Responds/Accesses Functions"]
-  MRAF -- "Chat Loop" --> CLP
-  CLP -- "User Exits chat.py" --> UE["User Exits"]
-  SE -- "Yes" --> ES["Existing Session"]
-  ES -- "Prompt for Label" --> PL2["Prompt for Label"]
-  PL2 -- "Load Existing Session" --> LES["Load Existing Session"]
+  U["User Execution"] -- "Use chat.py" --> CP["chat.py"]
+  CP -- "Model API Functions" --> MF["function.json"]
+  CP -- "Model Settings" --> MC["model.json"]
+  CP -- "Model System Prompts" --> MP["prompt.json"]
+  CP -- "User Settings" --> US["setting.json"]
+  MF -- "Load configuration" --> GC[Global Configuration]
+  MC -- "Load configuration" --> GC[Global Configuration]
+  MP -- "Load configuration" --> GC[Global Configuration]
+  US -- "Load configuration" --> GC[Global Configuration]
+  GC -- "Session Exists?" --> SE[Session Invokation]
+  SE -- "No" --> NS[New Session]
+  NS -- "Prompt for Label" --> PL[Prompt for Label]
+  PL -- "Create Label" --> CL[Create Label]
+  CL -- "Prompt for System Prompt" --> SP[System Prompt]
+  SP -- "Create Session" --> CS[Create Session]
+  CS -- "Open Context Window" --> CW[Context Window]
+  CW -- "Context Enqueue" --> CLP[Chat Loop]
+  CLP -- "Prompt User for Input" --> PUI[Prompt User for Input]
+  PUI -- "User Inputs Message/Command" --> UIMC[User Inputs Message/Command]
+  UIMC -- "Model Responds/Accesses Functions" --> MRAF[Model Responds/Accesses Functions]
+  MRAF -- "Context Dequeue" --> DQ[Dequeue]
+  MRAF -- "Model Accesses Memory" --> LTM
+  DQ -- "Load Embeddings Model" --> LEM[Embeddings Model]
+  LEM -- "Generate embeddings" --> EBD[Embeddings Data]
+  EBD -- "Add embeddings" --> VDB[Vector Database]
+  VDB -- "Long Term Memory" --> LTM[Long Term Memory]
+  LTM -- "Return to Chat Loop" --> CLP
+  LTM -- "Model Recieves Memory" --> MRAF
+  CLP -- "User Exits chat.py/embed.py" --> UE[User Exits]
+  SE -- "Yes" --> ES[Existing Session]
+  ES -- "Prompt for Label" --> PL2[Prompt for Label]
+  PL2 -- "Load Existing Session" --> LES[Load Existing Session]
   LES -- "Open Context Window" --> CW
-  U -- "Edit/Delete/Insert/Create Messages" --> M["Messages"]
-  U -- "Use/Create/Delete Session" --> S["Session"]
-  U -- "Create/Modify/Delete Settings" --> ST["Settings"]
-  U -- "Use ingest.py" --> IP["ingest.py"]
-  M -- "JSON" --> CW
-  S -- "JSON" --> CW
-  ST -- "JSON" --> GC["Global Configuration"]
-  GC -- "Functions.json" --> FJ["Functions.json"]
-  GC -- "Models.json" --> MJ["Models.json"]
-  GC -- "Users.json" --> UJ["Users.json"]
-  IP -- "Add Data" --> VDB["Vector Database"]
-  CW -- "Queue" --> Q["Queue"]
-  Q -- "Ingest into Vector DB" --> VDB
-  VDB -- "Long Term Memory" --> LTM["Long Term Memory"]
-  LTM -- "Access by Model" --> M
+  U -- "Use embed.py" --> IP["embed.py"]
+  IP -- "Model Settings" --> MC["model.json"]
+  IP -- "User Settings" --> US["setting.json"]
+  GC -- "Load Embeddings Model" --> LEM
   style CW fill:#2E8B57
   style CLP fill:#008B8B
