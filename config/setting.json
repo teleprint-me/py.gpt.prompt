@@ -26,12 +26,12 @@
     "file": {
       "allowed_paths": [
         "${HOME}/.local/share/pygptprompt",
-        "${HOME}/.cache/pygptprompt",
-        "${HOME}/Documents/code/pygptprompt"
+        "${HOME}/.cache/pygptprompt"
       ],
       "disallowed_paths": [
-        "${HOME}/.local/share/pygptprompt/.env",
-        "${HOME}/.local/share/pygptprompt/config"
+        ".env",
+        "${HOME}/.local/config/pygptprompt/env",
+        "${HOME}/.local/config/pygptprompt/config"
       ]
     }
   },
