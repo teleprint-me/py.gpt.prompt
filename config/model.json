@@ -3,29 +3,31 @@
     "temperature": 1,
     "max_tokens": 512,
     "top_p": 1,
-    "frequency_penalty": 0,
-    "presence_penalty": 0,
+    "frequency_penalty": 0.0,
+    "presence_penalty": 0.0,
     "best_of": 1
   },
   "context_window": {
+    "max_input_tokens": 4096,
     "base_limit_percentage": 0.2,
     "max_length": 2048
   },
   "choices": {
     "providers": ["huggingface", "openai"],
     "device_types": ["cpu", "cuda", "hip", "mps", "opencl", "vulkan", "lazy"],
-    "embedding_types": [
+    "embeddings_classes": [
       "HuggingFaceEmbeddings",
-      "HuggingFaceInstructEmbeddings"
+      "HuggingFaceInstructEmbeddings",
+      "OpenAIEmbeddings"
     ],
-    "embedding_models": [
+    "embeddings_models": [
       "hkunlp/instructor-base",
       "hkunlp/instructor-large",
       "hkunlp/instructor-xl",
       "sentence-transformers/all-MiniLM-L6-v2",
       "sentence-transformers/all-MiniLM-L12-v2"
     ],
-    "model_repositories": [
+    "repo_ids": [
       "TheBloke/orca_mini_3B-GGML",
       "TheBloke/orca_mini_7B-GGML",
       "TheBloke/orca_mini_13B-GGML",
@@ -47,16 +49,13 @@
   },
   "openai": {
     "embeddings": {
-      "model": "text-embedding-ada-002",
-      "max_input_tokens": 4096
+      "model": "text-embedding-ada-002"
     },
     "completions": {
-      "model": "text-davinci-003",
-      "max_tokens": 1024
+      "model": "text-davinci-003"
     },
     "chat_completions": {
-      "model": "gpt-3.5-turbo-0613",
-      "max_tokens": 1024
+      "model": "gpt-3.5-turbo-0613"
     }
   }
 }
