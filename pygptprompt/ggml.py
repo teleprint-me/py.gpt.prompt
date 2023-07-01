@@ -70,12 +70,6 @@ from pygptprompt import (
     default=0.95,
     help="The top-p value to use for sampling. Default is 0.95.",
 )
-@click.option(
-    "--echo",
-    type=click.BOOL,
-    default=False,
-    help="Whether to echo the prompt. Default is True.",
-)
 def main(
     repo_id,
     filename,
@@ -86,22 +80,16 @@ def main(
     max_tokens,
     temperature,
     top_p,
-    echo,
 ):
     cache_dir = os.path.join(os.path.expanduser("~"), ".cache", "huggingface", "hub")
 
     logging.info(f"Using {repo_id} to load {filename}")
 
     try:
-        if not os.path.exists(cache_dir):
-            logging.info(
-                f"Model not found locally. Downloading {filename} from Hugging Face Hub using {repo_id}."
-            )
-        else:
-            logging.info(f"Model found locally. Loading {filename} from cache instead.")
-
         model_path = hf_hub_download(
-            repo_id=repo_id, filename=filename, cache_dir=cache_dir
+            repo_id=repo_id,
+            filename=filename,
+            cache_dir=cache_dir,
         )
     except Exception as e:
         logging.error(f"Error downloading model: {e}")
@@ -136,7 +124,7 @@ def main(
 
         logging.info("Generating response...")
 
-        response = llama_model.create_chat_completion(
+        response_generator = llama_model.create_chat_completion(
             messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,
@@ -144,13 +132,14 @@ def main(
             stream=True,
         )
 
-        print(type(response))
-        print("assistant:", end="")
+        print("assistant:", end=" ")
         sys.stdout.flush()
-        for token in response:
+        for chat_completion in response_generator:
             try:
-                print(token["choices"][0]["delta"]["content"], end="")
-                sys.stdout.flush()
+                token = chat_completion["choices"][0]["delta"]["content"]
+                if token:
+                    print(token, end="")
+                    sys.stdout.flush()
             except KeyError:
                 continue
         print()
