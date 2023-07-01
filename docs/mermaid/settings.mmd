@@ -7,11 +7,11 @@ graph TB
   chatPy -- "Loads setting.json" --> settingJson["setting.json"]
   embedPy -- "Loads model.json" --> modelJson
   embedPy -- "Loads setting.json" --> settingJson
-  functionJson -- "Load configuration" --> macd[Model, Access, and Context Definition]
-  modelJson -- "Load configuration" --> macd
-  promptJson -- "Load configuration" --> macd
-  settingJson -- "Load configuration" --> macd
-  macd -- "Model, Access, and Context Definition" --> globalConfig[Global Configuration]
+  functionJson -- "Loads Mapping Template" --> mappingTemplate[Mapping Template]
+  modelJson -- "Loads Mapping Template" --> mappingTemplate
+  promptJson -- "Loads Mapping Template" --> mappingTemplate
+  settingJson -- "Loads Mapping Template" --> mappingTemplate
+  mappingTemplate -- "Model, Access, and Context Definition" --> globalConfig[Global Configuration]
   globalConfig -- "Local or Remote Ingest" --> vectorDb["Vector Database"]
   globalConfig -- "Local or Remote Model" --> inferenceModel["Model for Inference"]
   globalConfig -- "Policy Settings" --> modelPermissions["Model Permissions"]
