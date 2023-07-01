@@ -4,6 +4,9 @@
     "cache": "${HOME}/.cache/pygptprompt",
     "config": "${HOME}/.config/pygptprompt"
   },
+  "database": {
+    "chroma": "${HOME}/.cache/pygptprompt/chromadb"
+  },
   "access": {
     "confirm": true,
     "shell": {

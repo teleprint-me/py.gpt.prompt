@@ -1,7 +1,5 @@
 {
-  "choices": {
-    "providers": ["huggingface", "openai"]
-  },
+  "providers": ["huggingface", "openai"],
   "defaults": {
     "temperature": 1,
     "max_tokens": 512,
@@ -15,7 +13,7 @@
   },
   "huggingface": {
     "choices": {
-      "device_types": ["cpu", "cuda", "hip", "mps", "opencl", "vulkan", "lazy"],
+      "device_types": ["cpu", "cuda", "opencl", "vulkan", "hip", "mps", "lazy"],
       "embeddings_classes": [
         "HuggingFaceEmbeddings",
         "HuggingFaceInstructEmbeddings",
@@ -44,7 +42,7 @@
         "type": "completions",
         "repository": "TheBloke/orca_mini_7B-GGML",
         "filename": "orca-mini-7b.ggmlv3.q4_0.bin",
-        "max_tokens": 256,
+        "max_tokens": 512,
         "max_context": 2048
       }
     }
