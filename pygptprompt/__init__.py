@@ -93,7 +93,7 @@ INGEST_THREADS: int = os.cpu_count() or 8
 
 # The default device type to compute with
 DEFAULT_DEVICE_TYPE: str = "cpu"
-
+DEFAULT_N_CTX: int = 512
 # The default llama.cpp GPU settings
 DEFAULT_N_GPU_LAYERS: int = 0
 DEFAULT_N_BATCH: int = 512

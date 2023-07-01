@@ -10,6 +10,7 @@ from pygptprompt import (
     DEFAULT_MODEL_FILENAME,
     DEFAULT_MODEL_REPOSITORY,
     DEFAULT_N_BATCH,
+    DEFAULT_N_CTX,
     DEFAULT_N_GPU_LAYERS,
     logging,
 )
@@ -26,7 +27,7 @@ from pygptprompt import (
     "--filename",
     type=click.STRING,
     default=DEFAULT_MODEL_FILENAME,
-    help="The filename of the model from the given repository. Default is orca-mini-7b.ggmlv3.q4_0.bin.",
+    help="The filename of the model from the given repository. Default is orca-mini-7b.ggmlv3.q2_K.bin.",
 )
 @click.option(
     "--text_input",
@@ -35,16 +36,22 @@ from pygptprompt import (
     help="Literal string based text input provided by the user. Default is a greeting.",
 )
 @click.option(
-    "--n_gpu_layers",
+    "--n_ctx",
     type=click.INT,
-    default=DEFAULT_N_GPU_LAYERS,
-    help="Number of GPU layers to use. Default is 0.",
+    default=DEFAULT_N_CTX,
+    help="Maximum context size. Default is 512.",
 )
 @click.option(
     "--n_batch",
     type=click.INT,
     default=DEFAULT_N_BATCH,
     help="Number of batches to use. Default is 512.",
+)
+@click.option(
+    "--n_gpu_layers",
+    type=click.INT,
+    default=DEFAULT_N_GPU_LAYERS,
+    help="Number of GPU layers to use. Default is 0.",
 )
 @click.option(
     "--low_vram",
@@ -74,8 +81,9 @@ def main(
     repo_id,
     filename,
     text_input,
-    n_gpu_layers,
+    n_ctx,
     n_batch,
+    n_gpu_layers,
     low_vram,
     max_tokens,
     temperature,
@@ -115,7 +123,7 @@ def main(
     try:
         llama_model = Llama(
             model_path=model_path,
-            n_ctx=2048,
+            n_ctx=n_ctx,
             n_gpu_layers=n_gpu_layers,
             n_batch=n_batch,
             low_vram=low_vram,
