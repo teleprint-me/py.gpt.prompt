@@ -1,9 +1,10 @@
 import os
 import sys
+from typing import List
 
 import click
 from huggingface_hub import hf_hub_download
-from llama_cpp import Llama
+from llama_cpp import ChatCompletionMessage, Llama
 
 from pygptprompt import (
     DEFAULT_MODEL_FILENAME,
@@ -54,7 +55,7 @@ from pygptprompt import (
 @click.option(
     "--max_tokens",
     type=click.INT,
-    default=64,
+    default=512,
     help="The maximum number of tokens to generate. Default is 64.",
 )
 @click.option(
@@ -72,7 +73,7 @@ from pygptprompt import (
 @click.option(
     "--echo",
     type=click.BOOL,
-    default=True,
+    default=False,
     help="Whether to echo the prompt. Default is True.",
 )
 def main(
@@ -111,10 +112,12 @@ def main(
     if not text_input:
         text_input = input("> ")
 
-    system_prompt = (
-        "### System:\n"
-        "My name is Orca. I am a very helpful assistant. I am an AI assistant that follows instructions extremely well.\n\n"
-    )
+    # chat_completion_message = ChatCompletionMessage(
+    #     role="system",
+    #     content="My name is Orca. I am a helpful AI assistant.",
+    # )
+
+    system_prompt = "### System:\nMy name is Orca. I am a helpful AI assistant.\n\n"
 
     user_prompt = f"### User:\n{text_input}\n\n"
 
@@ -125,22 +128,30 @@ def main(
     try:
         llama_model = Llama(
             model_path=model_path,
+            n_ctx=2048,
             n_gpu_layers=n_gpu_layers,
             n_batch=n_batch,
             low_vram=low_vram,
+            verbose=False,
         )
 
         logging.info("Generating response...")
 
-        output = llama_model(
+        response = llama_model.create_completion(
             prompt=prompt,
             max_tokens=max_tokens,
             temperature=temperature,
             top_p=top_p,
             echo=echo,
+            stream=True,
         )
 
-        logging.info(f"Response: {output['choices'][0]['text']}")
+        print("assistant:", end="")
+        sys.stdout.flush()
+        for token in response:
+            print(token["choices"][0]["text"], end="")
+            sys.stdout.flush()
+        print()
     except Exception as e:
         logging.error(f"Error generating response: {e}")
         sys.exit(1)
