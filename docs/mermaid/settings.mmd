@@ -1,11 +1,13 @@
 graph TB
-  U["User"] -- "Access to" --> S["Settings"]
-  S -- "Contains" --> F["Functions.json"]
-  S -- "Contains" --> M["Models.json"]
-  S -- "Contains" --> UJ["Users.json"]
-  F["Functions.json"] -- "Function Metadata" --> MD["Model"]
-  M["Models.json"] -- "Model Preferences" --> MD["Model"]
-  UJ["Users.json"] -- "User Preferences" --> A["Application"]
-  A["Application"] -- "Local or Remote Ingest" --> VD["Vector Database"]
-  A["Application"] -- "Accessible Filepaths" --> FP["Filepaths"]
-  A["Application"] -- "Policy Settings" --> PS["Model Permissions"]
+  script["Script"] -- "JSON Input" --> functionJson["function.json"]
+  script -- "JSON Input" --> modelJson["model.json"]
+  script -- "JSON Input" --> promptJson["prompt.json"]
+  script -- "JSON Input" --> settingJson["setting.json"]
+  settingJson -- "Application Preferences" --> macd
+  functionJson -- "Function Metadata" --> macd["Model, Application, and Context Configuration"]
+  modelJson -- "Model Preferences" --> macd
+  promptJson -- "System Prompts" --> macd
+  macd -- "User Preferences" --> globalConfig["Global Configuration"]
+  globalConfig -- "Local or Remote Ingest" --> vectorDb["Vector Database"]
+  globalConfig -- "Local or Remote Model" --> inferenceModel["Model for Inference"]
+  globalConfig -- "Policy Settings" --> modelPermissions["Model Permissions"]

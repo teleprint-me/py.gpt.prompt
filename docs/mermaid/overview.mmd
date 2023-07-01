@@ -1,40 +1,41 @@
 graph TB
-  U["User Execution"] -- "Use chat.py" --> CP["chat.py"]
-  CP -- "Model API Functions" --> MF["function.json"]
-  CP -- "Model Settings" --> MC["model.json"]
-  CP -- "Model System Prompts" --> MP["prompt.json"]
-  CP -- "User Settings" --> US["setting.json"]
-  MF -- "Load configuration" --> GC[Global Configuration]
-  MC -- "Load configuration" --> GC[Global Configuration]
-  MP -- "Load configuration" --> GC[Global Configuration]
-  US -- "Load configuration" --> GC[Global Configuration]
-  GC -- "Session Exists?" --> SE[Session Invokation]
-  SE -- "No" --> NS[New Session]
-  NS -- "Prompt for Label" --> PL[Prompt for Label]
-  PL -- "Create Label" --> CL[Create Label]
-  CL -- "Prompt for System Prompt" --> SP[System Prompt]
-  SP -- "Create Session" --> CS[Create Session]
-  CS -- "Open Context Window" --> CW[Context Window]
-  CW -- "Context Enqueue" --> CLP[Chat Loop]
-  CLP -- "Prompt User for Input" --> PUI[Prompt User for Input]
-  PUI -- "User Inputs Message/Command" --> UIMC[User Inputs Message/Command]
-  UIMC -- "Model Responds/Accesses Functions" --> MRAF[Model Responds/Accesses Functions]
-  MRAF -- "Context Dequeue" --> DQ[Dequeue]
-  MRAF -- "Model Accesses Memory" --> LTM
-  DQ -- "Load Embeddings Model" --> LEM[Embeddings Model]
-  LEM -- "Generate embeddings" --> EBD[Embeddings Data]
-  EBD -- "Add embeddings" --> VDB[Vector Database]
-  VDB -- "Long Term Memory" --> LTM[Long Term Memory]
-  LTM -- "Return to Chat Loop" --> CLP
-  LTM -- "Model Recieves Memory" --> MRAF
-  CLP -- "User Exits chat.py/embed.py" --> UE[User Exits]
-  SE -- "Yes" --> ES[Existing Session]
-  ES -- "Prompt for Label" --> PL2[Prompt for Label]
-  PL2 -- "Load Existing Session" --> LES[Load Existing Session]
-  LES -- "Open Context Window" --> CW
-  U -- "Use embed.py" --> IP["embed.py"]
-  IP -- "Model Settings" --> MC["model.json"]
-  IP -- "User Settings" --> US["setting.json"]
-  GC -- "Load Embeddings Model" --> LEM
-  style CW fill:#2E8B57
-  style CLP fill:#008B8B
+  userExec["User Execution"] -- "Uses chat.py" --> chatPy["chat.py"]
+  userExec -- "Uses embed.py" --> embedPy["embed.py"]
+  chatPy -- "Model API Functions" --> functionJson["function.json"]
+  chatPy -- "Model Settings" --> modelJson["model.json"]
+  chatPy -- "Model System Prompts" --> promptJson["prompt.json"]
+  chatPy -- "User Settings" --> settingJson["setting.json"]
+  functionJson -- "Load configuration" --> globalConfig[Global Configuration]
+  modelJson -- "Load configuration" --> globalConfig
+  promptJson -- "Load configuration" --> globalConfig
+  settingJson -- "Load configuration" --> globalConfig
+  globalConfig -- "Session Exists?" --> sessionInvokation[Session Invokation]
+  sessionInvokation -- "No" --> newSession[New Session]
+  newSession -- "Prompt for Label" --> promptLabel[Prompt for Label]
+  promptLabel -- "Create Label" --> createLabel[Create Label]
+  createLabel -- "Prompt for System Prompt" --> systemPrompt[System Prompt]
+  systemPrompt -- "Create Session" --> createSession[Create Session]
+  createSession -- "Open Context Window" --> contextWindow[Context Window]
+  contextWindow -- "Context Enqueue" --> chatLoop[Chat Loop]
+  chatLoop -- "Prompt User for Input" --> promptInput[Prompt User for Input]
+  promptInput -- "User Inputs Message/Command" --> userInputMsgCmd[User Inputs Message/Command]
+  userInputMsgCmd -- "Model Responds/Accesses Functions" --> modelResponds[Model Responds/Accesses Functions]
+  modelResponds -- "Context Dequeue" --> dequeue[Dequeue]
+  modelResponds -- "Model Accesses Memory" --> longTermMemory[Long Term Memory]
+  dequeue -- "Embed dequeued tokens" --> embeddingsModel[Embeddings Model]
+  embeddingsModel -- "Generate embeddings" --> embeddingsData[Embeddings Data]
+  embeddingsData -- "Add embeddings" --> vectorDb[Vector Database]
+  vectorDb -- "User Exits embed.py" --> userExitEmbed[User exits]
+  vectorDb -- "Long Term Memory" --> longTermMemory
+  longTermMemory -- "Return to Chat Loop" --> chatLoop
+  longTermMemory -- "Model Memory Recall" --> modelResponds
+  chatLoop -- "User Exits chat.py" --> userExit[User Exits]
+  sessionInvokation -- "Yes" --> existingSession[Existing Session]
+  existingSession -- "Prompt for Label" --> promptLabel2[Prompt for Label]
+  promptLabel2 -- "Load Existing Session" --> loadExistingSession[Load Existing Session]
+  loadExistingSession -- "Open Context Window" --> contextWindow
+  embedPy -- "Model Settings" --> modelJson
+  embedPy -- "User Settings" --> settingJson
+  globalConfig -- "Embed input data" --> embeddingsModel
+  style contextWindow fill:#008B57
+  style chatLoop fill:#008B8B
