@@ -43,10 +43,10 @@ set based on the package structure and can be customized if needed.
 """
 
 import logging
+import multiprocessing
 import os
 from typing import List, Tuple, Type
 
-from chromadb.config import Settings
 from langchain.document_loaders import (
     CSVLoader,
     PDFMinerLoader,
@@ -79,10 +79,28 @@ SOURCE_DIRECTORY: str = os.path.join(ROOT_DIRECTORY, "SOURCE_DOCUMENTS")
 # Set the default path for storing the database
 PERSIST_DIRECTORY: str = os.path.join(ROOT_DIRECTORY, "DB")
 
+# The default device type to compute with
+DEFAULT_DEVICE_TYPE: str = "cpu"
 # The number of CPU threads for ingestion
-# If os.cpu_count() is not available, it defaults to 8
-INGEST_THREADS: int = os.cpu_count() or 8
+# Defaults to 2 if if cpu_count() is unavailable
+INGEST_THREADS: int = multiprocessing.cpu_count() or 2
 
+# The default llama.cpp Model settings
+DEFAULT_N_CTX: int = 512
+DEFAULT_MAX_TOKENS: int = 512
+DEFAULT_TEMPERATURE: float = 0.8
+DEFAULT_TOP_P: float = 0.95
+
+# The default llama.cpp GPU settings
+DEFAULT_N_GPU_LAYERS: int = 0
+DEFAULT_N_BATCH: int = 512
+DEFAULT_LOW_VRAM: bool = False
+
+# The default embedding model
+DEFAULT_EMBEDDING_MODEL: str = "hkunlp/instructor-large"
+# The default embedding type
+DEFAULT_EMBEDDING_TYPE: str = "HuggingFaceInstructEmbeddings"
+# The default model git repository
 # NOTE: IMPORTANT: MODEL_REPOSITORY
 # Models are downloaded at runtime.
 # The label convention is <username>/<repository>
@@ -90,19 +108,6 @@ INGEST_THREADS: int = os.cpu_count() or 8
 # e.g.
 #   ~/.cache/huggingface/hub
 #   ~/.cache/torch/sentence_transformers
-
-# The default device type to compute with
-DEFAULT_DEVICE_TYPE: str = "cpu"
-DEFAULT_N_CTX: int = 512
-# The default llama.cpp GPU settings
-DEFAULT_N_GPU_LAYERS: int = 0
-DEFAULT_N_BATCH: int = 512
-
-# The default embedding model
-DEFAULT_EMBEDDING_MODEL: str = "hkunlp/instructor-large"
-# The default embedding type
-DEFAULT_EMBEDDING_TYPE: str = "HuggingFaceInstructEmbeddings"
-# The default model git repository
 DEFAULT_MODEL_REPOSITORY: str = "TheBloke/orca_mini_7B-GGML"
 # The default ggml model filename from the given git repository
 DEFAULT_MODEL_FILENAME: str = "orca-mini-7b.ggmlv3.q2_K.bin"
