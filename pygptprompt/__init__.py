@@ -105,7 +105,7 @@ DEFAULT_EMBEDDING_TYPE: str = "HuggingFaceInstructEmbeddings"
 # The default model git repository
 DEFAULT_MODEL_REPOSITORY: str = "TheBloke/orca_mini_7B-GGML"
 # The default ggml model filename from the given git repository
-DEFAULT_MODEL_FILENAME: str = "orca-mini-7b.ggmlv3.q4_0.bin"
+DEFAULT_MODEL_FILENAME: str = "orca-mini-7b.ggmlv3.q2_K.bin"
 
 # A mapping of MIME types to loader classes
 MIME_TYPES: Tuple[Tuple[str, Type[BaseLoader]], ...] = (
