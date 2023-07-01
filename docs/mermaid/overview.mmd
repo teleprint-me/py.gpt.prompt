@@ -1,15 +1,10 @@
 graph TB
   userExec["User Execution"] -- "Uses chat.py" --> chatPy["chat.py"]
   userExec -- "Uses embed.py" --> embedPy["embed.py"]
-  chatPy -- "Model API Functions" --> functionJson["function.json"]
-  chatPy -- "Model Settings" --> modelJson["model.json"]
-  chatPy -- "Model System Prompts" --> promptJson["prompt.json"]
-  chatPy -- "User Settings" --> settingJson["setting.json"]
-  functionJson -- "Load configuration" --> globalConfig[Global Configuration]
-  modelJson -- "Load configuration" --> globalConfig
-  promptJson -- "Load configuration" --> globalConfig
-  settingJson -- "Load configuration" --> globalConfig
-  globalConfig -- "Session Exists?" --> sessionInvokation[Session Invokation]
+  chatPy -- "Load JSON Config" --> settingJson["Mapping Template"]
+  embedPy -- "Load JSON Config" --> settingJson
+  settingJson -- "Configuration Mapping" --> globalConfig[Global Configuration]
+  globalConfig -- "Session Exists?" --> sessionInvokation[Session Invocation]
   sessionInvokation -- "No" --> newSession[New Session]
   newSession -- "Prompt for Label" --> promptLabel[Prompt for Label]
   promptLabel -- "Create Label" --> createLabel[Create Label]
@@ -34,8 +29,6 @@ graph TB
   existingSession -- "Prompt for Label" --> promptLabel2[Prompt for Label]
   promptLabel2 -- "Load Existing Session" --> loadExistingSession[Load Existing Session]
   loadExistingSession -- "Open Context Window" --> contextWindow
-  embedPy -- "Model Settings" --> modelJson
-  embedPy -- "User Settings" --> settingJson
   globalConfig -- "Embed input data" --> embeddingsModel
   style contextWindow fill:#008B57
   style chatLoop fill:#008B8B
