@@ -23,8 +23,8 @@ interaction.
   models, saving time and improving productivity.
 
 - **Multiple Model Support:** It integrates with OpenAI and GGML models,
-  supporting those quantized to 4, 5, and 8-bit variations using the llama.cpp
-  library scripts.
+  supporting those quantized to 4, 5, and 8-bit variations supported by the
+  llama.cpp library.
 
 - **First-Class Support for OpenAI GPT Models:** Designed with OpenAI's GPT
   models in mind, PyGPTPrompt integrates with these AI models through their
