@@ -1,13 +1,17 @@
 graph TB
-  script["Script"] -- "JSON Input" --> functionJson["function.json"]
-  script -- "JSON Input" --> modelJson["model.json"]
-  script -- "JSON Input" --> promptJson["prompt.json"]
-  script -- "JSON Input" --> settingJson["setting.json"]
-  settingJson -- "Application Preferences" --> macd
-  functionJson -- "Function Metadata" --> macd["Model, Application, and Context Configuration"]
-  modelJson -- "Model Preferences" --> macd
-  promptJson -- "System Prompts" --> macd
-  macd -- "User Preferences" --> globalConfig["Global Configuration"]
+  userExec["User Execution"] -- "Uses chat.py" --> chatPy["chat.py"]
+  userExec -- "Uses embed.py" --> embedPy["embed.py"]
+  chatPy -- "Loads function.json" --> functionJson["function.json"]
+  chatPy -- "Loads model.json" --> modelJson["model.json"]
+  chatPy -- "Loads prompt.json" --> promptJson["prompt.json"]
+  chatPy -- "Loads setting.json" --> settingJson["setting.json"]
+  embedPy -- "Loads model.json" --> modelJson
+  embedPy -- "Loads setting.json" --> settingJson
+  functionJson -- "Load configuration" --> macd[Model, Access, and Context Definition]
+  modelJson -- "Load configuration" --> macd
+  promptJson -- "Load configuration" --> macd
+  settingJson -- "Load configuration" --> macd
+  macd -- "Model, Access, and Context Definition" --> globalConfig[Global Configuration]
   globalConfig -- "Local or Remote Ingest" --> vectorDb["Vector Database"]
   globalConfig -- "Local or Remote Model" --> inferenceModel["Model for Inference"]
   globalConfig -- "Policy Settings" --> modelPermissions["Model Permissions"]
