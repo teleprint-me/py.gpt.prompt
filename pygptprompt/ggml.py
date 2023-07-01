@@ -112,18 +112,17 @@ def main(
     if not text_input:
         text_input = input("> ")
 
-    # chat_completion_message = ChatCompletionMessage(
-    #     role="system",
-    #     content="My name is Orca. I am a helpful AI assistant.",
-    # )
+    system_prompt = ChatCompletionMessage(
+        role="system",
+        content="My name is Orca. I am a helpful AI assistant.",
+    )
 
-    system_prompt = "### System:\nMy name is Orca. I am a helpful AI assistant.\n\n"
+    user_prompt = ChatCompletionMessage(
+        role="user",
+        content=text_input,
+    )
 
-    user_prompt = f"### User:\n{text_input}\n\n"
-
-    model_prompt = "### Response:"
-
-    prompt = system_prompt + user_prompt + model_prompt
+    messages: List[ChatCompletionMessage] = [system_prompt, user_prompt]
 
     try:
         llama_model = Llama(
@@ -137,20 +136,23 @@ def main(
 
         logging.info("Generating response...")
 
-        response = llama_model.create_completion(
-            prompt=prompt,
+        response = llama_model.create_chat_completion(
+            messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,
             top_p=top_p,
-            echo=echo,
             stream=True,
         )
 
+        print(type(response))
         print("assistant:", end="")
         sys.stdout.flush()
         for token in response:
-            print(token["choices"][0]["text"], end="")
-            sys.stdout.flush()
+            try:
+                print(token["choices"][0]["delta"]["content"], end="")
+                sys.stdout.flush()
+            except KeyError:
+                continue
         print()
     except Exception as e:
         logging.error(f"Error generating response: {e}")
