@@ -1,4 +1,7 @@
 {
+  "choices": {
+    "providers": ["huggingface", "openai"]
+  },
   "defaults": {
     "temperature": 1,
     "max_tokens": 512,
@@ -8,54 +11,80 @@
     "best_of": 1
   },
   "context_window": {
-    "max_input_tokens": 4096,
-    "base_limit_percentage": 0.2,
-    "max_length": 2048
-  },
-  "choices": {
-    "providers": ["huggingface", "openai"],
-    "device_types": ["cpu", "cuda", "hip", "mps", "opencl", "vulkan", "lazy"],
-    "embeddings_classes": [
-      "HuggingFaceEmbeddings",
-      "HuggingFaceInstructEmbeddings",
-      "OpenAIEmbeddings"
-    ],
-    "embeddings_models": [
-      "hkunlp/instructor-base",
-      "hkunlp/instructor-large",
-      "hkunlp/instructor-xl",
-      "sentence-transformers/all-MiniLM-L6-v2",
-      "sentence-transformers/all-MiniLM-L12-v2"
-    ],
-    "repo_ids": [
-      "TheBloke/orca_mini_3B-GGML",
-      "TheBloke/orca_mini_7B-GGML",
-      "TheBloke/orca_mini_13B-GGML",
-      "TheBloke/WizardLM-7B-V1.0-Uncensored-GGML",
-      "TheBloke/WizardLM-13B-V1.0-Uncensored-GGML",
-      "TheBloke/falcon-7b-instruct-GGML",
-      "TheBloke/WizardLM-Uncensored-Falcon-7B-GGML"
-    ]
+    "base_limit_percentage": 0.2
   },
   "huggingface": {
+    "choices": {
+      "device_types": ["cpu", "cuda", "hip", "mps", "opencl", "vulkan", "lazy"],
+      "embeddings_classes": [
+        "HuggingFaceEmbeddings",
+        "HuggingFaceInstructEmbeddings",
+        "OpenAIEmbeddings"
+      ],
+      "embeddings_models": [
+        "hkunlp/instructor-base",
+        "hkunlp/instructor-large",
+        "hkunlp/instructor-xl",
+        "sentence-transformers/all-MiniLM-L6-v2",
+        "sentence-transformers/all-MiniLM-L12-v2"
+      ],
+      "repo_ids": [
+        "TheBloke/orca_mini_3B-GGML",
+        "TheBloke/orca_mini_7B-GGML",
+        "TheBloke/orca_mini_13B-GGML"
+      ]
+    },
+    "device_type": "cpu",
     "embeddings": {
       "repository": "hkunlp/instructor-large",
       "class": "HuggingFaceInstructEmbeddings"
     },
-    "completions": {
-      "repository": "TheBloke/orca_mini_7B-GGML",
-      "filename": "orca-mini-7b.ggmlv3.q4_0.bin"
+    "models": {
+      "orca_mini_7B-GGML": {
+        "type": "completions",
+        "repository": "TheBloke/orca_mini_7B-GGML",
+        "filename": "orca-mini-7b.ggmlv3.q4_0.bin",
+        "max_tokens": 256,
+        "max_context": 2048
+      }
     }
   },
   "openai": {
     "embeddings": {
-      "model": "text-embedding-ada-002"
+      "model": "text-embedding-ada-002",
+      "max_token_limit": 8191
     },
-    "completions": {
-      "model": "text-davinci-003"
-    },
-    "chat_completions": {
-      "model": "gpt-3.5-turbo-0613"
+    "models": {
+      "text-davinci-003": {
+        "type": "completions",
+        "model": "text-davinci-003",
+        "max_tokens": 512,
+        "max_context": 4097
+      },
+      "gpt-3.5-turbo": {
+        "type": "chat_completions",
+        "model": "gpt-3.5-turbo",
+        "max_tokens": 1024,
+        "max_context": 4096
+      },
+      "gpt-3.5-turbo-0613": {
+        "type": "chat_completions",
+        "model": "gpt-3.5-turbo-16k-0613",
+        "max_tokens": 2048,
+        "max_context": 16384
+      },
+      "gpt-4": {
+        "type": "chat_completions",
+        "model": "gpt-4",
+        "max_tokens": 1024,
+        "max_context": 8192
+      },
+      "gpt-4-0613": {
+        "type": "chat_completions",
+        "model": "gpt-4-0613",
+        "max_tokens": 1024,
+        "max_context": 8192
+      }
     }
   }
 }
