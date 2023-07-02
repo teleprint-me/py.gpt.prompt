@@ -14,30 +14,25 @@ from llama_cpp import (
 
 from pygptprompt import PATH_HOME, logging
 
-LlamaMessage = dict[str, str]
+LlamaMessage = Dict[str, str]
 
 LlamaCompletion = Union[str, Completion]
 
-LlamaChatCompletion = Union[
-    Dict[str, str],
-    ChatCompletion,
-]
+LlamaChatCompletion = Union[Dict[str, str], ChatCompletion]
 
-LlamaResponse = Union[
-    str,
-    Dict[str, str],
-    Completion,
-    ChatCompletion,
-]
+LlamaResponse = Union[str, Dict[str, str], Completion, ChatCompletion]
 
 
 class LlamaCppRequests:
-    def __init__(
-        self,
-        repo_id: str,
-        filename: str,
-        **kwargs,
-    ):
+    def __init__(self, repo_id: str, filename: str, **kwargs):
+        """
+        Initialize LlamaCppRequests.
+
+        Args:
+            repo_id (str): The repository ID.
+            filename (str): The filename of the model from the given repository.
+            **kwargs: Additional arguments for Llama initialization.
+        """
         self.repo_id = repo_id
         self.filename = filename
         self.cache_dir = os.path.join(PATH_HOME, ".cache", "huggingface", "hub")
@@ -45,6 +40,12 @@ class LlamaCppRequests:
         self.llama_model = Llama(model_path=self.model_path, **kwargs)
 
     def _download_model(self) -> str:
+        """
+        Download the model file if not already present in the cache.
+
+        Returns:
+            str: The path to the downloaded model file.
+        """
         logging.info(f"Using {self.repo_id} to load {self.filename}")
 
         try:
@@ -62,10 +63,16 @@ class LlamaCppRequests:
 
         return model_path
 
-    def _stream_completion(
-        self,
-        response_generator: Iterator[CompletionChunk],
-    ) -> str:
+    def _stream_completion(self, response_generator: Iterator[CompletionChunk]) -> str:
+        """
+        Process the stream of completion chunks and return the generated content.
+
+        Args:
+            response_generator (Iterator[CompletionChunk]): The completion chunk stream.
+
+        Returns:
+            str: The generated content.
+        """
         content = ""
 
         for stream in response_generator:
@@ -81,9 +88,17 @@ class LlamaCppRequests:
         return content
 
     def _stream_chat_completion(
-        self,
-        response_generator: Iterator[ChatCompletionChunk],
+        self, response_generator: Iterator[ChatCompletionChunk]
     ) -> LlamaMessage:
+        """
+        Process the stream of chat completion chunks and return the generated message.
+
+        Args:
+            response_generator (Iterator[ChatCompletionChunk]): The chat completion chunk stream.
+
+        Returns:
+            LlamaMessage: The generated message.
+        """
         content = ""
 
         for stream in response_generator:
@@ -102,6 +117,15 @@ class LlamaCppRequests:
         return {"role": "assistant", "content": content}
 
     def _get_completions(self, **kwargs) -> LlamaCompletion:
+        """
+        Generate completions for the given prompt.
+
+        Args:
+            **kwargs: Additional arguments for generating completions.
+
+        Returns:
+            LlamaCompletion: The generated completions.
+        """
         if "prompt" not in kwargs or not kwargs["prompt"]:
             raise ValueError("Prompt cannot be empty or None.")
 
@@ -116,6 +140,15 @@ class LlamaCppRequests:
         return response
 
     def _get_chat_completions(self, **kwargs) -> LlamaChatCompletion:
+        """
+        Generate chat completions for the given messages.
+
+        Args:
+            **kwargs: Additional arguments for generating chat completions.
+
+        Returns:
+            LlamaChatCompletion: The generated chat completions.
+        """
         if "messages" not in kwargs or not kwargs["messages"]:
             raise ValueError("Messages cannot be empty or None.")
 
@@ -134,6 +167,16 @@ class LlamaCppRequests:
         endpoint: str = "completions",
         **kwargs,
     ) -> LlamaResponse:
+        """
+        Perform a GET request to the Llama API.
+
+        Args:
+            endpoint (str): The API endpoint to access.
+            **kwargs: Additional arguments for the API request.
+
+        Returns:
+            LlamaResponse: The response from the Llama API.
+        """
         if endpoint == "completions":
             return self._get_completions(**kwargs)
         elif endpoint == "chat_completions":
