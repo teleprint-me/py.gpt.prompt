@@ -1,12 +1,13 @@
 # pygptprompt/api/ggml/requests.py
 import os
 import sys
-from typing import Dict, Iterator, Union
+from typing import Iterator, Union
 
 from huggingface_hub import hf_hub_download
 from llama_cpp import (
     ChatCompletion,
     ChatCompletionChunk,
+    ChatCompletionMessage,
     Completion,
     CompletionChunk,
     Llama,
@@ -14,13 +15,11 @@ from llama_cpp import (
 
 from pygptprompt import PATH_HOME, logging
 
-LlamaMessage = Dict[str, str]
-
 LlamaCompletion = Union[str, Completion]
 
-LlamaChatCompletion = Union[Dict[str, str], ChatCompletion]
+LlamaChatCompletion = Union[ChatCompletion, ChatCompletionMessage]
 
-LlamaResponse = Union[str, Dict[str, str], Completion, ChatCompletion]
+LlamaResponse = Union[str, Completion, ChatCompletion, ChatCompletionMessage]
 
 
 class LlamaCppRequests:
@@ -89,7 +88,7 @@ class LlamaCppRequests:
 
     def _stream_chat_completion(
         self, response_generator: Iterator[ChatCompletionChunk]
-    ) -> LlamaMessage:
+    ) -> ChatCompletionMessage:
         """
         Process the stream of chat completion chunks and return the generated message.
 
@@ -97,7 +96,7 @@ class LlamaCppRequests:
             response_generator (Iterator[ChatCompletionChunk]): The chat completion chunk stream.
 
         Returns:
-            LlamaMessage: The generated message.
+            ChatCompletionMessage: The generated message.
         """
         content = ""
 
@@ -114,7 +113,7 @@ class LlamaCppRequests:
         print()  # Add newline to model output
         sys.stdout.flush()
 
-        return {"role": "assistant", "content": content}
+        return ChatCompletionMessage(role="assistant", content=content)
 
     def _get_completions(self, **kwargs) -> LlamaCompletion:
         """
@@ -131,7 +130,7 @@ class LlamaCppRequests:
 
         try:
             response = self.llama_model.create_completion(**kwargs)
-            if not isinstance(response, Completion):
+            if "stream" in kwargs and kwargs["stream"]:
                 response = self._stream_completion(response)
         except Exception as e:
             logging.error(f"Error generating completions: {e}")
@@ -154,11 +153,11 @@ class LlamaCppRequests:
 
         try:
             response = self.llama_model.create_chat_completion(**kwargs)
-            if not isinstance(response, ChatCompletion):
+            if "stream" in kwargs and kwargs["stream"]:
                 response = self._stream_chat_completion(response)
         except Exception as e:
             logging.error(f"Error generating chat completions: {e}")
-            return dict(error=str(e))
+            return ChatCompletionMessage(role="assistant", content=str(e))
 
         return response
 
@@ -181,7 +180,7 @@ class LlamaCppRequests:
             return self._get_completions(**kwargs)
         elif endpoint == "chat_completions":
             return self._get_chat_completions(**kwargs)
-        elif endpoint == "embedding":
+        elif endpoint == "embeddings":
             raise NotImplementedError(f"llama.cpp: {endpoint}")
         else:
             raise ValueError(f"Invalid Endpoint: {endpoint}")

@@ -1,10 +1,8 @@
-import os
 import sys
 from typing import List
 
 import click
-from huggingface_hub import hf_hub_download
-from llama_cpp import ChatCompletionMessage, Llama
+from llama_cpp import ChatCompletionMessage
 
 from pygptprompt import (
     DEFAULT_LOW_VRAM,
@@ -18,37 +16,7 @@ from pygptprompt import (
     DEFAULT_TOP_P,
     logging,
 )
-
-
-def generate_response(llama_model, messages, max_tokens, temperature, top_p):
-    content = ""
-    response_generator = llama_model.create_chat_completion(
-        messages=messages,
-        max_tokens=max_tokens,
-        temperature=temperature,
-        top_p=top_p,
-        stream=True,
-    )
-
-    print()  # Add padding between user input and assistant response
-    print("assistant")
-    sys.stdout.flush()
-    for stream in response_generator:
-        try:
-            token = stream["choices"][0]["delta"]["content"]
-            if token:
-                print(token, end="")
-                sys.stdout.flush()
-                content += token
-        except KeyError:
-            continue
-    print("\n")  # Add padding between user input and assistant response
-    chat_completion = ChatCompletionMessage(
-        role="assistant",
-        content=content,
-    )
-    messages.append(chat_completion)
-    return messages
+from pygptprompt.api.ggml.requests import LlamaCppRequests, LlamaResponse
 
 
 @click.command()
@@ -131,26 +99,15 @@ def main(
     prompt,
     chat,
 ):
-    cache_dir = os.path.join(
-        os.path.expanduser("~"),
-        ".cache",
-        "huggingface",
-        "hub",
+    llama_requests = LlamaCppRequests(
+        repo_id=repo_id,
+        filename=filename,
+        n_ctx=n_ctx,
+        n_gpu_layers=n_gpu_layers,
+        n_batch=n_batch,
+        low_vram=low_vram,
+        verbose=False,
     )
-
-    logging.info(f"Using {repo_id} to load {filename}")
-
-    try:
-        model_path = hf_hub_download(
-            repo_id=repo_id,
-            filename=filename,
-            cache_dir=cache_dir,
-        )
-    except Exception as e:
-        logging.error(f"Error downloading model: {e}")
-        sys.exit(1)
-
-    logging.info(f"Using {model_path} to load {repo_id} into memory")
 
     system_prompt = ChatCompletionMessage(
         role="system",
@@ -165,17 +122,6 @@ def main(
         )  # NOTE: Only one option at a time!
 
     try:
-        llama_model = Llama(
-            model_path=model_path,
-            n_ctx=n_ctx,
-            n_gpu_layers=n_gpu_layers,
-            n_batch=n_batch,
-            low_vram=low_vram,
-            verbose=False,
-        )
-
-        logging.info("Generating response...")
-
         if prompt:
             # Add a single message to the list and generate a response
             user_prompt = ChatCompletionMessage(
@@ -183,13 +129,20 @@ def main(
                 content=prompt,
             )
             messages.append(user_prompt)
-            messages = generate_response(
-                llama_model,
-                messages,
-                max_tokens,
-                temperature,
-                top_p,
+            print("assistant")
+            llama_response = llama_requests.get(
+                endpoint="chat_completions",
+                messages=messages,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                top_p=top_p,
+                stream=True,
             )
+            llama_message = ChatCompletionMessage(
+                role=llama_response["role"],
+                content=llama_response["content"],
+            )
+            messages.append(llama_message)
 
         elif chat:
             # Enter a chat loop
@@ -199,20 +152,30 @@ def main(
                     text_input = input("> ")
                 except (EOFError, KeyboardInterrupt):
                     break
-
-                user_prompt = ChatCompletionMessage(
+                user_message = ChatCompletionMessage(
                     role="user",
                     content=text_input,
                 )
-                messages.append(user_prompt)
-                messages = generate_response(
-                    llama_model,
-                    messages,
-                    max_tokens,
-                    temperature,
-                    top_p,
-                )
+                messages.append(user_message)
 
+                print()
+                print("assistant")
+                llama_response: LlamaResponse = llama_requests.get(
+                    endpoint="chat_completions",
+                    messages=messages,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    top_p=top_p,
+                    stream=True,
+                )
+                print()
+                llama_message = ChatCompletionMessage(
+                    role=llama_response["role"],
+                    content=llama_response["content"],
+                )
+                messages.append(llama_message)
+        else:
+            print("Nothing to do.")
     except Exception as e:
         logging.error(f"Error generating response: {e}")
         sys.exit(1)
