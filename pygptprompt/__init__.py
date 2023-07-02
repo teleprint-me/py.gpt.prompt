@@ -1,4 +1,4 @@
-# pygptprompt/database/__init__.py
+# pygptprompt/__init__.py
 #
 # Copyright 2023 PromtEngineer/localGPT
 #
@@ -17,35 +17,40 @@
 "No plan survives contact with the enemy."
     - Helmuth von Moltke
 
-This module contains the initialization code and configuration
-settings for the package.
+Initialization code and configuration settings for the PyGPTPrompt package.
 
 Constants:
-- ROOT_DIRECTORY: The absolute path of the current working directory.
-- SOURCE_DIRECTORY: The folder path for storing the source documents.
-- PERSIST_DIRECTORY: The folder path for storing the database.
-- INGEST_THREADS: The number of CPU threads for ingestion.
-- CHROMA_SETTINGS: The settings object for the Chroma database.
-- MIME_TYPES: A mapping of MIME types to loader classes.
-- LANGUAGE_TYPES: A mapping of file extensions to the Language enumeration.
-- EMBEDDING_TYPES: A mapping of embedding type names to embedding classes.
+- PATH_HOME: The user's home path.
+- PATH_CACHE: The default cache path for PyGPTPrompt.
+- PATH_CONFIG: The default config path for PyGPTPrompt.
+- PATH_LOCAL: The default local path for PyGPTPrompt.
+- PATH_SOURCE: The default path for storing source documents.
+- PATH_DATABASE: The default path for storing the database.
 - DEFAULT_DEVICE_TYPE: The default device type for embeddings.
-- DEFAULT_EMBEDDING_MODEL: The default embedding model.
-- DEFAULT_EMBEDDING_TYPE: The default embedding type.
+- DEFAULT_CPU_COUNT: The default number of CPU threads for ingestion.
+- DEFAULT_N_CTX: The default context window size for llama.cpp Model.
+- DEFAULT_MAX_TOKENS: The default maximum number of tokens for llama.cpp Model.
+- DEFAULT_TEMPERATURE: The default temperature for llama.cpp Model.
+- DEFAULT_TOP_P: The default top-p value for llama.cpp Model.
+- DEFAULT_N_GPU_LAYERS: The default number of GPU layers for llama.cpp GPU settings.
+- DEFAULT_N_BATCH: The default batch size for llama.cpp GPU settings.
+- DEFAULT_LOW_VRAM: The default low VRAM flag for llama.cpp GPU settings.
+- DEFAULT_EMBEDDINGS_MODEL: The default embeddings model.
+- DEFAULT_EMBEDDINGS_CLASS: The default embeddings class definition.
 - DEFAULT_MODEL_REPOSITORY: The default model git repository.
-- DEFAULT_MODEL_SAFETENSORS: The default model weights base name.
+- DEFAULT_MODEL_FILENAME: The default ggml model filename.
 
 Classes:
 - Language: An enumeration representing programming language types.
 
-Note: The default paths for SOURCE_DIRECTORY and PERSIST_DIRECTORY are 
-set based on the package structure and can be customized if needed.
+Note: The default paths for SOURCE_DIRECTORY and PERSIST_DIRECTORY are set based
+on the package structure and can be customized if needed.
 """
 
 import logging
-import multiprocessing
 import os
-from typing import List, Tuple, Type
+from pathlib import Path
+from typing import List, Tuple, Type, Union
 
 from langchain.document_loaders import (
     CSVLoader,
@@ -70,20 +75,26 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-# Get the path for this source file
-SOURCE_PATH: str = os.path.dirname(os.path.realpath(__file__))
-# Get the absolute path of the package root directory
-ROOT_DIRECTORY: str = os.path.abspath(os.path.join(SOURCE_PATH, ".."))
+# Get the user's home path
+PATH_HOME: Union[str, Path] = Path.home()
+# Set the default cache path
+PATH_CACHE: Union[str, Path] = Path(PATH_HOME, ".cache", "pygptprompt")
+# Set the default config path
+PATH_CONFIG: Union[str, Path] = Path(PATH_HOME, ".config", "pygptprompt")
+# Set the default local path
+PATH_LOCAL: Union[str, Path] = Path(PATH_HOME, ".local", "share", "pygptprompt")
 # Set the default path for storing the source documents
-SOURCE_DIRECTORY: str = os.path.join(ROOT_DIRECTORY, "SOURCE_DOCUMENTS")
+PATH_SOURCE: Union[str, Path] = Path(PATH_CACHE, "source")
 # Set the default path for storing the database
-PERSIST_DIRECTORY: str = os.path.join(ROOT_DIRECTORY, "DB")
+PATH_DATABASE: Union[str, Path] = Path(PATH_CACHE, "database")
 
 # The default device type to compute with
 DEFAULT_DEVICE_TYPE: str = "cpu"
+
 # The number of CPU threads for ingestion
-# Defaults to 2 if if cpu_count() is unavailable
-INGEST_THREADS: int = multiprocessing.cpu_count() or 2
+# Use os.sched_getaffinity(0) to get the set of CPUs the current process can run on
+# If the count cannot be determined, assume duo-core CPU availability as a fallback
+DEFAULT_CPU_COUNT: int = len(os.sched_getaffinity(0)) or 2
 
 # The default llama.cpp Model settings
 DEFAULT_N_CTX: int = 512
@@ -97,23 +108,36 @@ DEFAULT_N_BATCH: int = 512
 DEFAULT_LOW_VRAM: bool = False
 
 # The default embedding model
-DEFAULT_EMBEDDING_MODEL: str = "hkunlp/instructor-large"
+DEFAULT_EMBEDDINGS_MODEL: str = "hkunlp/instructor-large"
+
 # The default embedding type
-DEFAULT_EMBEDDING_TYPE: str = "HuggingFaceInstructEmbeddings"
-# The default model git repository
+DEFAULT_EMBEDDINGS_CLASS: str = "HuggingFaceInstructEmbeddings"
+
 # NOTE: IMPORTANT: MODEL_REPOSITORY
 # Models are downloaded at runtime.
 # The label convention is <username>/<repository>
 # where <username>/<repository> represents the url endpoint
-# e.g.
-#   ~/.cache/huggingface/hub
-#   ~/.cache/torch/sentence_transformers
+# where `hf_hub_download` writes [source] to [destination].
+# For example:
+#   ~/.cache/huggingface/hub/models--TheBloke--orca_mini_7B-GGML
+
+# The default model git repository
 DEFAULT_MODEL_REPOSITORY: str = "TheBloke/orca_mini_7B-GGML"
+
 # The default ggml model filename from the given git repository
+# NOTE: IMPORTANT: MODEL_FILENAME
+# Models are downloaded at runtime.
+# The identifier convention is
+# <model-id>.<n-params>.<ggml-version>.<quant-type>.<extension>
+# where <model-id> represents the specific model identifier.
+# For example:
+#   orca-mini-7b.ggmlv3.q2_K.bin
+# The filename follows the convention for the downloaded model files.
+
 DEFAULT_MODEL_FILENAME: str = "orca-mini-7b.ggmlv3.q2_K.bin"
 
 # A mapping of MIME types to loader classes
-MIME_TYPES: Tuple[Tuple[str, Type[BaseLoader]], ...] = (
+MAP_MIME_TYPES: Tuple[Tuple[str, Type[BaseLoader]], ...] = (
     ("text/plain", TextLoader),
     ("application/pdf", PDFMinerLoader),
     ("text/csv", CSVLoader),
@@ -121,7 +145,7 @@ MIME_TYPES: Tuple[Tuple[str, Type[BaseLoader]], ...] = (
 )
 
 # A mapping of file extensions to the Language enumeration
-LANGUAGE_TYPES: Tuple[Tuple[str, str], ...] = (
+MAP_LANGUAGE_ENUM: Tuple[Tuple[str, str], ...] = (
     ("cpp", Language.CPP),  # C++ source files
     ("go", Language.GO),  # Go source files
     ("java", Language.JAVA),  # Java source files
@@ -140,19 +164,21 @@ LANGUAGE_TYPES: Tuple[Tuple[str, str], ...] = (
     ("sol", Language.SOL),  # Solidity files
 )
 
-# A mapping of embedding type names to embedding classes
-EMBEDDING_TYPES: dict[str, Type[Embeddings]] = {
+# A mapping of embeddings identifiers to classes
+MAP_EMBEDDINGS_CLASS: dict[str, Type[Embeddings]] = {
     "HuggingFaceInstructEmbeddings": HuggingFaceInstructEmbeddings,
     "HuggingFaceEmbeddings": HuggingFaceEmbeddings,
     "SentenceTransformerEmbeddings": SentenceTransformerEmbeddings,
     "OpenAIEmbeddings": OpenAIEmbeddings,
 }
 
+# A List of supported embeddings class definitions
 CHOICE_EMBEDDING_TYPES: List[str] = [
     "HuggingFaceEmbeddings",
     "HuggingFaceInstructEmbeddings",
 ]
 
+# A List of supported embeddings instruct models
 CHOICE_EMBEDDING_MODELS: List[str] = [
     "hkunlp/instructor-base",
     "hkunlp/instructor-large",
@@ -161,6 +187,7 @@ CHOICE_EMBEDDING_MODELS: List[str] = [
     "sentence-transformers/all-MiniLM-L12-v2",
 ]
 
+# A List of recommended instruct models
 CHOICE_MODEL_REPOSITORIES: List[str] = [
     # 3B GGML Models
     "TheBloke/orca_mini_3B-GGML",
@@ -173,7 +200,8 @@ CHOICE_MODEL_REPOSITORIES: List[str] = [
     "TheBloke/orca_mini_13B-GGML",
 ]
 
-CHOICE_DEVICE_TYPES: list[str] = [
+# A List of PyTorch supported device types
+CHOICE_DEVICE_TYPES: List[str] = [
     "cpu",
     "cuda",
     "ipu",

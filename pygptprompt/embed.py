@@ -22,9 +22,9 @@ Usage:
 
 Options:
     --source_directory TEXT       The path where the documents are read from
-                                  (default: SOURCE_DIRECTORY)
+                                  (default: PATH_SOURCE)
     --persist_directory TEXT      The path where the embeddings are written to
-                                  (default: PERSIST_DIRECTORY)
+                                  (default: PATH_DATABASE)
     --embedding_model TEXT        The embedding model to use for generating embeddings
                                   (default: DEFAULT_EMBEDDING_MODEL)
     --embedding_type TEXT         The type of embeddings to use
@@ -58,10 +58,10 @@ from pygptprompt import (
     CHOICE_EMBEDDING_MODELS,
     CHOICE_EMBEDDING_TYPES,
     DEFAULT_DEVICE_TYPE,
-    DEFAULT_EMBEDDING_MODEL,
-    DEFAULT_EMBEDDING_TYPE,
-    PERSIST_DIRECTORY,
-    SOURCE_DIRECTORY,
+    DEFAULT_EMBEDDINGS_CLASS,
+    DEFAULT_EMBEDDINGS_MODEL,
+    PATH_DATABASE,
+    PATH_SOURCE,
 )
 from pygptprompt.database.chroma import ChromaDBLoader
 from pygptprompt.database.document import load_documents, split_documents
@@ -70,33 +70,33 @@ from pygptprompt.database.document import load_documents, split_documents
 @click.command()
 @click.option(
     "--source_directory",
-    default=SOURCE_DIRECTORY,
+    default=PATH_SOURCE,
     type=click.STRING,
-    help=f"The path the documents are read from (default: {SOURCE_DIRECTORY})",
+    help=f"The path the documents are read from (default: {PATH_SOURCE})",
 )
 @click.option(
     "--persist_directory",
-    default=PERSIST_DIRECTORY,
+    default=PATH_DATABASE,
     type=click.STRING,
-    help=f"The path the embeddings are written to (default: {PERSIST_DIRECTORY})",
+    help=f"The path the embeddings are written to (default: {PATH_DATABASE})",
 )
 @click.option(
     "--embedding_model",
-    default=DEFAULT_EMBEDDING_MODEL,
+    default=DEFAULT_EMBEDDINGS_MODEL,
     type=click.Choice(CHOICE_EMBEDDING_MODELS),
-    help="Instruct model to generate embeddings (default: hkunlp/instructor-large)",
+    help=f"Instruct model to generate embeddings (default: {DEFAULT_EMBEDDINGS_MODEL})",
 )
 @click.option(
     "--embedding_type",
-    default=DEFAULT_EMBEDDING_TYPE,
+    default=DEFAULT_EMBEDDINGS_CLASS,
     type=click.Choice(CHOICE_EMBEDDING_TYPES),
-    help="Embedding type to use (default: HuggingFaceInstructEmbeddings)",
+    help=f"Embedding type to use (default: {DEFAULT_EMBEDDINGS_CLASS})",
 )
 @click.option(
     "--device_type",
     default=DEFAULT_DEVICE_TYPE,
     type=click.Choice(CHOICE_DEVICE_TYPES),
-    help="Device to run on (default: cuda)",
+    help=f"Device to run on (default: {DEFAULT_DEVICE_TYPE})",
 )
 def main(
     source_directory,

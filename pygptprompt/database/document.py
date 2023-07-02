@@ -21,7 +21,7 @@ from typing import List, Tuple
 from langchain.docstore.document import Document
 from langchain.text_splitter import Language, RecursiveCharacterTextSplitter
 
-from pygptprompt import INGEST_THREADS
+from pygptprompt import DEFAULT_CPU_COUNT
 from pygptprompt.database.registry import LoaderRegistry, TextSplitterRegistry
 
 loader_registry = LoaderRegistry()
@@ -42,9 +42,9 @@ def load_single_document(file_path: str) -> Document:
         ValueError: If the document type is undefined.
     """
     mime_type = loader_registry.get_mime_type(file_path)
-    loader_class = loader_registry.get_loader(mime_type)
-    if loader_class:
-        loader = loader_class(file_path)
+    cls_DocumentLoader = loader_registry.get_loader(mime_type)
+    if cls_DocumentLoader:
+        loader = cls_DocumentLoader(file_path)
     else:
         raise ValueError(f"Document type is undefined: {mime_type}")
     return loader.load()[0]
@@ -108,7 +108,7 @@ def load_documents(source_dir: str) -> List[Document]:
             paths.append(source_file_path)
 
     # Have at least one worker and at most INGEST_THREADS workers
-    n_workers = min(INGEST_THREADS, max(len(paths), 1))
+    n_workers = min(DEFAULT_CPU_COUNT, max(len(paths), 1))
     chunk_size = round(len(paths) / n_workers)
     docs = []
 

@@ -21,7 +21,7 @@ import magic
 from langchain.docstore.document import Document
 from langchain.document_loaders.base import BaseLoader
 
-from pygptprompt import LANGUAGE_TYPES, MIME_TYPES
+from pygptprompt import MAP_LANGUAGE_ENUM, MAP_MIME_TYPES
 
 
 class LoaderRegistry:
@@ -37,7 +37,7 @@ class LoaderRegistry:
 
         # Register loaders for MIME_TYPES
         # MIME_TYPES: Tuple[Tuple[str, Type[BaseLoader]], ...]
-        for mime_type, loader in MIME_TYPES:
+        for mime_type, loader in MAP_MIME_TYPES:
             self.register_loader(mime_type, loader)
 
     @staticmethod
@@ -82,9 +82,9 @@ class LoaderRegistry:
         Returns:
             Optional[Type[BaseLoader]]: The loader class if found, None otherwise.
         """
-        loader_class = self.loader_map.get(mime_type)
-        if loader_class:
-            return loader_class  # Return the first matching loader class
+        cls_DocumentLoader = self.loader_map.get(mime_type)
+        if cls_DocumentLoader:
+            return cls_DocumentLoader  # Return the first matching loader class
         else:
             return None
 
@@ -101,7 +101,7 @@ class TextSplitterRegistry:
         self.language_map = defaultdict()
 
         # Register languages for file extensions
-        for file_extension, language in LANGUAGE_TYPES:
+        for file_extension, language in MAP_LANGUAGE_ENUM:
             self.register_language(file_extension, language)
 
     @staticmethod

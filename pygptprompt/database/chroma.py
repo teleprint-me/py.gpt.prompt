@@ -53,11 +53,11 @@ from langchain.vectorstores.base import VectorStoreRetriever
 
 from pygptprompt import (
     DEFAULT_DEVICE_TYPE,
-    DEFAULT_EMBEDDING_MODEL,
-    DEFAULT_EMBEDDING_TYPE,
-    EMBEDDING_TYPES,
-    PERSIST_DIRECTORY,
-    SOURCE_DIRECTORY,
+    DEFAULT_EMBEDDINGS_CLASS,
+    DEFAULT_EMBEDDINGS_MODEL,
+    MAP_EMBEDDINGS_CLASS,
+    PATH_DATABASE,
+    PATH_SOURCE,
 )
 
 
@@ -91,10 +91,10 @@ class ChromaDBLoader:
         device_type: str | None,
         settings: Settings | None,
     ):
-        self.source_directory = source_directory or SOURCE_DIRECTORY
-        self.persist_directory = persist_directory or PERSIST_DIRECTORY
-        self.embedding_model = embedding_model or DEFAULT_EMBEDDING_MODEL
-        self.embedding_type = embedding_type or DEFAULT_EMBEDDING_TYPE
+        self.source_directory = source_directory or PATH_SOURCE
+        self.persist_directory = persist_directory or PATH_DATABASE
+        self.embedding_model = embedding_model or DEFAULT_EMBEDDINGS_MODEL
+        self.embedding_type = embedding_type or DEFAULT_EMBEDDINGS_CLASS
         self.device_type = device_type or DEFAULT_DEVICE_TYPE
 
         # The settings for the Chroma database
@@ -103,7 +103,7 @@ class ChromaDBLoader:
         # - anonymized_telemetry: Whether anonymized telemetry is enabled (False)
         self.settings: Settings = settings or Settings(
             chroma_db_impl="duckdb+parquet",
-            persist_directory=self.persist_directory,
+            persist_directory=str(self.persist_directory),
             anonymized_telemetry=False,
         )
 
@@ -117,8 +117,8 @@ class ChromaDBLoader:
         Raises:
             AttributeError: If an unsupported embedding type is provided.
         """
-        if self.embedding_type in EMBEDDING_TYPES.keys():
-            cls_EmbeddingType = EMBEDDING_TYPES[self.embedding_type]
+        if self.embedding_type in MAP_EMBEDDINGS_CLASS.keys():
+            cls_EmbeddingType = MAP_EMBEDDINGS_CLASS[self.embedding_type]
             return cls_EmbeddingType(
                 model_name=self.embedding_model,
                 model_kwargs={"device": self.device_type},
@@ -136,7 +136,7 @@ class ChromaDBLoader:
             VectorStoreRetriever: VectorStoreRetriever object.
         """
         database = Chroma(
-            persist_directory=self.persist_directory,
+            persist_directory=str(self.persist_directory),
             embedding_function=self.load_embedding_function(),
             client_settings=self.settings,
         )
@@ -170,7 +170,7 @@ class ChromaDBLoader:
         database = Chroma.from_documents(
             documents=documents,
             embedding=self.load_embedding_function(),
-            persist_directory=self.persist_directory,
+            persist_directory=str(self.persist_directory),
             client_settings=self.settings,
         )
         database.persist()

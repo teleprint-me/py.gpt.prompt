@@ -42,7 +42,7 @@ def generate_response(llama_model, messages, max_tokens, temperature, top_p):
                 content += token
         except KeyError:
             continue
-    print()
+    print("\n")  # Add padding between user input and assistant response
     chat_completion = ChatCompletionMessage(
         role="assistant",
         content=content,
