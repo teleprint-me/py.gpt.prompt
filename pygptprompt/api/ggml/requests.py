@@ -14,7 +14,16 @@ from llama_cpp import (
 
 from pygptprompt import PATH_HOME, logging
 
-LlamaGetResponse = Union[
+LlamaMessage = dict[str, str]
+
+LlamaCompletion = Union[str, Completion]
+
+LlamaChatCompletion = Union[
+    Dict[str, str],
+    ChatCompletion,
+]
+
+LlamaResponse = Union[
     str,
     Dict[str, str],
     Completion,
@@ -74,7 +83,7 @@ class LlamaCppRequests:
     def _stream_chat_completion(
         self,
         response_generator: Iterator[ChatCompletionChunk],
-    ) -> Dict[str, str]:
+    ) -> LlamaMessage:
         content = ""
 
         for stream in response_generator:
@@ -92,7 +101,7 @@ class LlamaCppRequests:
 
         return {"role": "assistant", "content": content}
 
-    def _get_completions(self, **kwargs) -> Union[str, Completion]:
+    def _get_completions(self, **kwargs) -> LlamaCompletion:
         if "prompt" not in kwargs or not kwargs["prompt"]:
             raise ValueError("Prompt cannot be empty or None.")
 
@@ -106,7 +115,7 @@ class LlamaCppRequests:
 
         return response
 
-    def _get_chat_completions(self, **kwargs) -> Union[Dict[str, str], ChatCompletion]:
+    def _get_chat_completions(self, **kwargs) -> LlamaChatCompletion:
         if "messages" not in kwargs or not kwargs["messages"]:
             raise ValueError("Messages cannot be empty or None.")
 
@@ -124,10 +133,12 @@ class LlamaCppRequests:
         self,
         endpoint: str = "completions",
         **kwargs,
-    ) -> LlamaGetResponse:
+    ) -> LlamaResponse:
         if endpoint == "completions":
             return self._get_completions(**kwargs)
         elif endpoint == "chat_completions":
             return self._get_chat_completions(**kwargs)
+        elif endpoint == "embedding":
+            raise NotImplementedError(f"llama.cpp: {endpoint}")
         else:
-            raise NotImplementedError(f"Endpoint: {endpoint}")
+            raise ValueError(f"Invalid Endpoint: {endpoint}")
