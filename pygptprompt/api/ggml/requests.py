@@ -1,12 +1,25 @@
 # pygptprompt/api/ggml/requests.py
 import os
 import sys
-from typing import Any, Dict, Optional
+from typing import Dict, Iterator, Union
 
 from huggingface_hub import hf_hub_download
-from llama_cpp import ChatCompletionMessage, Llama
+from llama_cpp import (
+    ChatCompletion,
+    ChatCompletionChunk,
+    Completion,
+    CompletionChunk,
+    Llama,
+)
 
 from pygptprompt import PATH_HOME, logging
+
+LlamaGetResponse = Union[
+    str,
+    Dict[str, str],
+    Completion,
+    ChatCompletion,
+]
 
 
 class LlamaCppRequests:
@@ -40,10 +53,30 @@ class LlamaCppRequests:
 
         return model_path
 
-    def _process_stream_response(self, response_generator) -> Dict[str, Any]:
+    def _stream_completion(
+        self,
+        response_generator: Iterator[CompletionChunk],
+    ) -> str:
         content = ""
 
+        for stream in response_generator:
+            token = stream["choices"][0]["text"]
+            if token:
+                print(token, end="")
+                sys.stdout.flush()
+                content += token
+
+        print()
         sys.stdout.flush()
+
+        return content
+
+    def _stream_chat_completion(
+        self,
+        response_generator: Iterator[ChatCompletionChunk],
+    ) -> Dict[str, str]:
+        content = ""
+
         for stream in response_generator:
             try:
                 token = stream["choices"][0]["delta"]["content"]
@@ -53,19 +86,48 @@ class LlamaCppRequests:
                     content += token
             except KeyError:
                 continue
-        print()  # Add padding between user input and assistant response
+
+        print()  # Add newline to model output
         sys.stdout.flush()
+
         return {"role": "assistant", "content": content}
 
-    def get(endpoint: str = "completions", **kwargs) -> dict[str, Any]:
-        # if stream is true, then returns a generator of dictionaries
-        # matching the completions streaming api
-        # if stream is false, then returns a dictionary matching
-        # the OpenAI response object
-        response_generator = self.llama_api.create_chat_completion(
-            messages=messages,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            top_p=top_p,
-            stream=stream,
-        )
+    def _get_completions(self, **kwargs) -> Union[str, Completion]:
+        if "prompt" not in kwargs or not kwargs["prompt"]:
+            raise ValueError("Prompt cannot be empty or None.")
+
+        try:
+            response = self.llama_model.create_completion(**kwargs)
+            if not isinstance(response, Completion):
+                response = self._stream_completion(response)
+        except Exception as e:
+            logging.error(f"Error generating completions: {e}")
+            return str(e)
+
+        return response
+
+    def _get_chat_completions(self, **kwargs) -> Union[Dict[str, str], ChatCompletion]:
+        if "messages" not in kwargs or not kwargs["messages"]:
+            raise ValueError("Messages cannot be empty or None.")
+
+        try:
+            response = self.llama_model.create_chat_completion(**kwargs)
+            if not isinstance(response, ChatCompletion):
+                response = self._stream_chat_completion(response)
+        except Exception as e:
+            logging.error(f"Error generating chat completions: {e}")
+            return dict(error=str(e))
+
+        return response
+
+    def get(
+        self,
+        endpoint: str = "completions",
+        **kwargs,
+    ) -> LlamaGetResponse:
+        if endpoint == "completions":
+            return self._get_completions(**kwargs)
+        elif endpoint == "chat_completions":
+            return self._get_chat_completions(**kwargs)
+        else:
+            raise NotImplementedError(f"Endpoint: {endpoint}")
