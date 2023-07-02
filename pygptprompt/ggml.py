@@ -16,7 +16,11 @@ from pygptprompt import (
     DEFAULT_TOP_P,
     logging,
 )
-from pygptprompt.api.ggml.requests import LlamaCppRequests, LlamaResponse
+from pygptprompt.api.ggml.requests import (
+    LlamaChatCompletion,
+    LlamaCppRequests,
+    LlamaResponse,
+)
 
 
 @click.command()
@@ -130,7 +134,7 @@ def main(
             )
             messages.append(user_prompt)
             print("assistant")
-            llama_response = llama_requests.get(
+            llama_response: LlamaResponse = llama_requests.get(
                 endpoint="chat_completions",
                 messages=messages,
                 max_tokens=max_tokens,
@@ -138,11 +142,7 @@ def main(
                 top_p=top_p,
                 stream=True,
             )
-            llama_message = ChatCompletionMessage(
-                role=llama_response["role"],
-                content=llama_response["content"],
-            )
-            messages.append(llama_message)
+            messages.append(llama_response)
 
         elif chat:
             # Enter a chat loop
@@ -169,11 +169,7 @@ def main(
                     stream=True,
                 )
                 print()
-                llama_message = ChatCompletionMessage(
-                    role=llama_response["role"],
-                    content=llama_response["content"],
-                )
-                messages.append(llama_message)
+                messages.append(llama_response)
         else:
             print("Nothing to do.")
     except Exception as e:
