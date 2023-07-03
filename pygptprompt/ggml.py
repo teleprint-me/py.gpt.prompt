@@ -16,11 +16,7 @@ from pygptprompt import (
     DEFAULT_TOP_P,
     logging,
 )
-from pygptprompt.api.ggml.requests import (
-    LlamaChatCompletion,
-    LlamaCppRequests,
-    LlamaResponse,
-)
+from pygptprompt.api.ggml.requests import LlamaCppRequests, LlamaResponse
 
 
 @click.command()
