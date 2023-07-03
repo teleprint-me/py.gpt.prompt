@@ -137,7 +137,7 @@ DEFAULT_MODEL_REPOSITORY: str = "TheBloke/orca_mini_7B-GGML"
 #   orca-mini-7b.ggmlv3.q2_K.bin
 # The filename follows the convention for the downloaded model files.
 
-DEFAULT_MODEL_FILENAME: str = "orca-mini-7b.ggmlv3.q2_K.bin"
+DEFAULT_MODEL_FILENAME: str = "orca-mini-7b.ggmlv3.q5_1.bin"
 
 # A mapping of MIME types to loader classes
 MAP_MIME_TYPES: Tuple[Tuple[str, Type[BaseLoader]], ...] = (
