@@ -5,8 +5,85 @@
 
 ## Huggingface
 
-- Creator: [Pankaj Mathur](https://huggingface.co/psmathur)): Responsible for creating the models.
-- Quantization: [Tom Jobbins](https://huggingface.co/TheBloke)): Specialized in the quantization process for the models.
+- Creator: [Pankaj Mathur](https://huggingface.co/psmathur): Responsible for
+  creating the models.
+- Quantization: [Tom Jobbins](https://huggingface.co/TheBloke): Specialized in
+  the quantization process for the models.
+
+## Prompt Template
+
+```
+### System:
+You are an AI assistant that follows instruction extremely well. Help as much as you can.
+
+### User:
+prompt
+
+### Response:
+```
+
+or
+
+```
+### System:
+You are an AI assistant that follows instruction extremely well. Help as much as you can.
+
+### User:
+prompt
+
+### Input:
+input
+
+### Response:
+```
+
+## Compatibility
+
+- Original llama.cpp quant methods: q4_0, q4_1, q5_0, q5_1, q8_0
+
+  - These quantization methods have been quantized using an older version of
+    llama.cpp to ensure compatibility with llama.cpp as of May 19th, commit
+    2d5db48.
+  - They are guaranteed to be compatible with any UIs, tools, and libraries
+    released since late May.
+
+- New k-quant methods: q2_K, q3_K_S, q3_K_M, q3_K_L, q4_K_S, q4_K_M, q5_K_S,
+  q6_K
+  - These new quantization methods are compatible with llama.cpp as of June 6th,
+    commit 2d43387.
+  - They are now also compatible with recent releases of text-generation-webui,
+    KoboldCpp, llama-cpp-python, and ctransformers. For compatibility with other
+    tools and libraries, please refer to their respective documentation.
+
+## Explanation of the New k-quant Methods
+
+The new methods available are:
+
+- GGML_TYPE_Q2_K: "type-1" 2-bit quantization in super-blocks containing 16
+  blocks, each block having 16 weights. Block scales and mins are quantized with
+  4 bits. This effectively uses 2.5625 bits per weight (bpw).
+
+- GGML_TYPE_Q3_K: "type-0" 3-bit quantization in super-blocks containing 16
+  blocks, each block having 16 weights. Scales are quantized with 6 bits. This
+  uses 3.4375 bpw.
+
+- GGML_TYPE_Q4_K: "type-1" 4-bit quantization in super-blocks containing 8
+  blocks, each block having 32 weights. Scales and mins are quantized with 6
+  bits. This uses 4.5 bpw.
+
+- GGML_TYPE_Q5_K: "type-1" 5-bit quantization. Same super-block structure as
+  GGML_TYPE_Q4_K, resulting in 5.5 bpw.
+
+- GGML_TYPE_Q6_K: "type-0" 6-bit quantization. Super-blocks with 16 blocks, each
+  block having 16 weights. Scales are quantized with 8 bits. This uses 6.5625
+  bpw.
+
+- GGML_TYPE_Q8_K: "type-0" 8-bit quantization. Only used for quantizing
+  intermediate results. The block size is 256. All 2-6 bit dot products are
+  implemented for this quantization type.
+
+Please refer to the Provided Files table below to see which files use which
+methods and how.
 
 ## GGML Repository Identifiers
 
@@ -64,35 +141,70 @@
 
 ## Notes
 
-- **3B models**: These models do not self-identify or role-play. They assume no
-  identity or reference to self. They can be useful for smaller scoped problems,
-  but require more time and effort to work with.
+- **3B Models:** These models do not self-identify or role-play. They are best
+  suited for smaller scoped problems but require more effort to work with due to
+  their lack of self-reference.
 
-- **7B models**: The 7B billion models perform much better. They are willing to
-  self-identify and assume a role, making them suitable for fulfilling the role
-  of a programming assistant. The 4-bit and 5-bit models are the best performing
-  ones. The 8-bit models have better cognitive reasoning but are slower during
-  inference compared to the 4-bit and 5-bit models.
+- **7B Models:** The 7B models perform significantly better, capable of
+  self-identifying and assuming roles. This makes them ideal for tasks like
+  programming assistance. Among them, the 4-bit and 5-bit models deliver the
+  best performance. The 8-bit models, while slower, offer superior cognitive
+  reasoning.
 
-- **Formatting issues**: There are serious issues with the way the model formats
-  its output. These issues may potentially be mitigated by using precise,
-  accurate prompting and corrective formatting. One approach could be using a
-  Finite-State Machine to process streamed tokens and produce properly formatted
-  Markdown output.
+  - **Formatting Challenges:** The 7B models have notable issues with output
+    formatting. Potential solutions include using precise prompts and corrective
+    formatting, or employing a Finite-State Machine to process streamed tokens
+    for proper Markdown output.
+  - Alternatively, streaming could be turned off, allowing for the output to be
+    formatted before being displayed to the user. This simple approach, however,
+    sacrifices the ability to stream token outputs.
+  - Using streamed tokens with prompt-toolkit and pygments could recreate a
+    ChatGPT UI-like experience. This would require careful planning and
+    thoughtful implementation.
+  - An extension of the previous idea could involve using prompt-toolkit to
+    display the formatted output in a split window, either vertically or
+    horizontally.
 
-- **TODO: 13B models**: Further testing and evaluation is needed for the 13B
-  models.
+- **13B Models (To Be Evaluated):** The 13B models require further testing and
+  evaluation.
 
-**GPT's Observations and Suggestions**:
+**GPT's Observations and Suggestions:**
 
-- Models tend to rely on Markdown for proper formatting, as it's a commonly used
-  format for sharing information. However, the formatting issues you mentioned
-  are related to the model's interpretation and generation of Markdown output.
-  By providing specific and accurate prompts, as well as implementing a precise
-  formatting process, we can improve the quality of the generated Markdown.
+- Models often rely on Markdown for formatting, as it's a widely used format for
+  information sharing. However, the formatting issues are tied to the model's
+  interpretation and generation of Markdown output. By using specific and
+  accurate prompts, and implementing a precise formatting process, the quality
+  of the generated Markdown can be improved.
+- A Finite-State Machine could be set up to process the streamed tokens
+  generated by the model, producing Markdown output that meets your formatting
+  requirements. This would allow for greater control over the output formatting.
 
-- It might be beneficial to set up a Finite-State Machine that can process the
-  streamed tokens generated by the model and produce a Markdown format that
-  meets your desired formatting requirements. This way, you can have more
-  control over the output formatting and ensure it aligns with your
-  expectations.
+**Additional GPT's Observations and Suggestions:**
+
+- **Quantization and Model Output:** The quantization process can impact the
+  output of the model. Quantization is a method that reduces the numerical
+  precision of the model's weights, which can lead to a decrease in model size
+  and inference speed at the cost of a slight degradation in model performance.
+  As the number of bits used in quantization increases, the model's output
+  format improves, enhancing its capabilities. This is because a higher number
+  of bits allows for a more accurate representation of the original weights,
+  leading to better performance. However, it's important to balance this with
+  the increased computational resources required for higher bit models.
+- **Model Selection Based on Task:** When choosing a model, consider the
+  specific requirements of your task. If you need a model that can self-identify
+  and role-play, a 7B model might be more suitable. If you're working with
+  smaller scoped problems and can invest more time in crafting prompts, a 3B
+  model could suffice. For tasks requiring superior cognitive reasoning, despite
+  slower inference, an 8-bit model might be the best choice.
+
+- **Prompt Design:** The design of your prompts can significantly influence the
+  model's output. For instance, if you're experiencing issues with the model's
+  Markdown formatting, you could experiment with different prompt structures or
+  provide explicit instructions within the prompt to guide the model's output
+  formatting.
+
+- **Post-Processing:** Consider implementing a post-processing step to handle
+  any formatting issues. This could involve a script or function that takes the
+  model's output and reformats it according to your requirements. This could be
+  particularly useful when working with lower bit models that may have more
+  pronounced formatting issues due to quantization.
