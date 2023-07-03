@@ -5,10 +5,10 @@
 
 ## Huggingface
 
-- Pankaj Mathur: Creator: https://huggingface.co/psmathur
-- Tom Jobbins: Quantization: https://huggingface.co/TheBloke
+- Creator: [Pankaj Mathur](https://huggingface.co/psmathur)): Responsible for creating the models.
+- Quantization: [Tom Jobbins](https://huggingface.co/TheBloke)): Specialized in the quantization process for the models.
 
-## Repositories
+## GGML Repository Identifiers
 
 - Orca Mini 3B: TheBloke/orca_mini_3B-GGML
 - Orca Mini 7B: TheBloke/orca_mini_7B-GGML
@@ -61,11 +61,6 @@
 | orca-mini-13b.ggmlv3.q5_K_S.bin | q5_K_S       | 5    | 8.97 GB  | 11.47 GB         | New k-quant method. Uses GGML_TYPE_Q5_K for all tensors.                                                                                   |
 | orca-mini-13b.ggmlv3.q6_K.bin   | q6_K         | 6    | 10.68 GB | 13.18 GB         | New k-quant method. Uses GGML_TYPE_Q8_K for all tensors.                                                                                   |
 | orca-mini-13b.ggmlv3.q8_0.bin   | q8_0         | 8    | 13.83 GB | 16.33 GB         | Original llama.cpp quant method, 8-bit. Almost indistinguishable from float16. High resource use and slow. Not recommended for most users. |
-
-Certainly! Here's an updated version of your notes that incorporates my
-observations and suggestions:
-
----
 
 ## Notes
 
