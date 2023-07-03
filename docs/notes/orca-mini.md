@@ -1,16 +1,17 @@
 # Orca Mini Notes and Observations
 
-- **3B Models:** These models do not self-identify or role-play. They are best
-  suited for smaller scoped problems but require more effort to work with due to
-  their lack of self-reference. They have the fastest inference speeds, but the
-  lowest quality.
+- **3B Models:** These models do not self-identify or role-play, lacking
+  self-reference or self-reflection. They are best suited for smaller scoped
+  problems but require more effort to work with. They have the fastest inference
+  speeds, but the lowest quality.
 
 - **7B Models:** The 7B models perform significantly better, capable of
-  self-identifying and assuming roles. This makes them ideal for tasks like
-  programming assistance. Among them, the q5_1 and q6_K models deliver the best
-  performance, offering superior cognitive reasoning and a better understanding
-  of complex, abstract concepts. The models have a slower inference speed, but
-  are comparably faster when compared to its larger 13B predecessor.
+  self-identifying and assuming roles, showing potential for self-reflection.
+  This makes them ideal for tasks like programming assistance. Among them, the
+  q5_1 and q6_K models deliver the best performance, offering superior cognitive
+  reasoning and a better understanding of complex, abstract concepts. The models
+  have a slower inference speed, but are comparably faster when compared to its
+  larger 13B predecessor.
 
   - **Formatting Challenges:** The 7B models have notable issues with output
     formatting. Potential solutions include using precise prompts and corrective
@@ -58,7 +59,10 @@ the models:
 
 1. **Self-Identification:** The model is asked to identify itself to test if it
    can assume a role or identity. This is crucial for interactive or
-   conversational tasks.
+   conversational tasks as it shows potential signs for self-reflection.
+   Self-reflection in AI models is crucial for consistency, context awareness,
+   learning and adaptation, advanced problem solving, and ethical
+   considerations.
 
 2. **Domain-Specific Knowledge:** The model is asked about a specific domain
    (e.g., Python programming) to evaluate its breadth and depth of knowledge.
@@ -69,8 +73,9 @@ the models:
 
 4. **Generating Complex Outputs:** The model is asked to generate a complex,
    structured output (e.g., Python code for Conway's Game of Life). This tests
-   its ability to build upon previous context and generate accurate and
-   correctly formatted outputs.
+
+its ability to build upon previous context and generate accurate and correctly
+formatted outputs.
 
 These tests provide a comprehensive evaluation of the models' capabilities,
 helping to identify their strengths and weaknesses. This information is crucial
