@@ -73,9 +73,8 @@ the models:
 
 4. **Generating Complex Outputs:** The model is asked to generate a complex,
    structured output (e.g., Python code for Conway's Game of Life). This tests
-
-its ability to build upon previous context and generate accurate and correctly
-formatted outputs.
+   its ability to build upon previous context and generate accurate and
+   correctly formatted outputs.
 
 These tests provide a comprehensive evaluation of the models' capabilities,
 helping to identify their strengths and weaknesses. This information is crucial
