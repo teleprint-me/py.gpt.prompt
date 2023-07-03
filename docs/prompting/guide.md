@@ -69,39 +69,60 @@ Prompt:
 The model is expected to generate a persuasive essay on the given topic,
 including at least three supporting reasons.
 
-## Creative Prompt
-
-A creative prompt encourages the model to generate imaginative or novel
-responses. It often involves open-ended or ambiguous instructions.
-
-**Example:**
-
-Prompt: `"Create a short story about a mysterious key found in an old attic."`
-
-The model is expected to generate a creative short story based on the given
-prompt.
-
 ## Conditional Prompt
 
 A conditional prompt provides specific conditions or constraints to guide the
 model's output. It can be in the form of input-output pairs, explicit criteria,
-or following an input, example, and output style.
+or instructions.
+
+**Example:**
+
+Prompt:
+`"Translate the following English sentence to German: 'I love to travel.'"`
+
+The model is expected to provide the German translation of the given English
+sentence as specified in the prompt.
+
+## Function/API Calling
+
+Function/API calling allows you to describe functions to the language model and
+generate JSON objects adhering to the defined function schema. It enables the
+model to perform specific actions or retrieve structured data.
 
 **Example:**
 
 Prompt:
 
-```
-Instruction: "Translate the following English sentence to German:"
-Input: "I love to travel."
-Example: "Ich liebe es zu reisen."
-Input: "I'd love to go to France."
-Output:
+```json
+[
+  {
+    "name": "get_current_weather",
+    "description": "Get the current weather in a given location",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "type": "string",
+          "description": "The city and state, e.g. San Francisco, CA"
+        },
+        "unit": { "type": "string", "enum": ["celsius", "fahrenheit"] }
+      },
+      "required": ["location"]
+    }
+  }
+]
 ```
 
-The model is expected to provide the German translation of the given English
-sentence as specified in the input and output sections.
+**User:** What's the weather today for New York City, New York?
 
-Feel free to experiment with these prompt styles and adapt them to your specific
-needs. Remember, providing clear instructions and utilizing the appropriate
-prompt style are key to achieving the desired results.
+**Assistant:**
+
+```python
+get_current_weather(
+    location="New York City, New York"
+)
+```
+
+By incorporating both conditional prompting and function/API calling, you can
+effectively control the model's behavior and utilize its ability to generate
+structured data or perform specific actions based on predefined conditions.
