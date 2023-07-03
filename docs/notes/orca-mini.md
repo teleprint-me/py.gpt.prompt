@@ -2,30 +2,31 @@
 
 - **3B Models:** These models do not self-identify or role-play. They are best
   suited for smaller scoped problems but require more effort to work with due to
-  their lack of self-reference.
+  their lack of self-reference. They have the fastest inference speeds, but the
+  lowest quality.
 
 - **7B Models:** The 7B models perform significantly better, capable of
   self-identifying and assuming roles. This makes them ideal for tasks like
   programming assistance. Among them, the q5_1 and q6_K models deliver the best
   performance, offering superior cognitive reasoning and a better understanding
-  of complex, abstract concepts.
+  of complex, abstract concepts. The models have a slower inference speed, but
+  are comparably faster when compared to its larger 13B predecessor.
 
   - **Formatting Challenges:** The 7B models have notable issues with output
     formatting. Potential solutions include using precise prompts and corrective
     formatting, or employing a Finite-State Machine to process streamed tokens
     for proper Markdown output.
-  - Alternatively, streaming could be turned off, allowing for the output to be
-    formatted before being displayed to the user. This simple approach, however,
-    sacrifices the ability to stream token outputs.
-  - Using streamed tokens with prompt-toolkit and pygments could recreate a
-    ChatGPT UI-like experience. This would require careful planning and
-    thoughtful implementation.
-  - An extension of the previous idea could involve using prompt-toolkit to
-    display the formatted output in a split window, either vertically or
-    horizontally.
 
-- **13B Models (To Be Evaluated):** The 13B models require further testing and
-  evaluation.
+- **13B Models:** The 13B models are similar. The q4_1 13B is the best so far.
+  These models are much slower and have shown about the same amount of
+  comprehension as the 7B models so far. The 13B q4_1 is the first model to
+  succeed in completing complex output when compared to the others who all
+  previously failed.
+
+  - **Formatting Challenges:** The 13B models also have issues with output
+    formatting. The q4_1 model, for instance, failed to properly format the
+    rules it listed. This is something to note and consider when using these
+    models.
 
 **GPT's Observations and Suggestions:**
 
