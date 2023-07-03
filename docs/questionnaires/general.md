@@ -1,19 +1,4 @@
-# Model Questionnaire for Programming Assistance
-
-- Hello, what is your name?
-
-- What is the Python programming language?
-
-- What is John Conway's Game of Life?
-
-- What are the rules for Conway's Game of Life?
-
-- Can you show me a simple example of the Game of Life in Python?
-
----
-
-Given the constraints of smaller models, it's important to design questions that
-not only assess the model's capabilities but also its limitations:
+# Model Questionnaire for General Assistance
 
 1. **Greeting and Basic Information Retrieval**
 
@@ -25,11 +10,13 @@ not only assess the model's capabilities but also its limitations:
 
    - "What is the Python programming language?"
    - "Can you explain the concept of machine learning?"
+   - "What is climate change?"
 
 3. **Specialized Knowledge**
 
    - "What is John Conway's Game of Life?"
    - "What are the rules for Conway's Game of Life?"
+   - "Can you explain the theory of relativity?"
 
 4. **Code Generation**
 
@@ -39,30 +26,26 @@ not only assess the model's capabilities but also its limitations:
 
    - "Can you explain how a neural network works?"
    - "What is the difference between supervised and unsupervised learning?"
+   - "Can you explain the concept of quantum physics?"
 
 6. **Handling Ambiguity**
 
    - "What do you mean by 'training a model'?"
+   - "What does 'apple' mean in different contexts?"
 
 7. **Error Handling and Correction**
 
    - "What is the Pythno programming language?" (Intentional misspelling to test
      error detection)
+   - "Can you correct this sentence? (provide a sentence with grammatical
+     errors)"
 
 8. **Contextual Understanding**
+
    - "Who won the world series last year?" (Requires up-to-date information)
    - "What is the weather like today?" (Requires real-time data, which the model
      may not handle)
-
-Remember, smaller models might struggle with some of these tasks, especially
-those requiring up-to-date or real-time information. The goal is to understand
-the strengths and weaknesses of the model to better utilize it in its areas of
-strength and provide support in areas where it struggles.
-
----
-
-Conditional prompting can be a great way to test the model's ability to maintain
-context and respond appropriately based on previous interactions:
+   - "What's the capital of France?"
 
 9. **Conditional Prompting**
 
@@ -92,5 +75,7 @@ context and respond appropriately based on previous interactions:
 
 These prompts are designed to test the model's ability to maintain and utilize
 context, handle changes in context, and respond appropriately to complex,
-multi-condition prompts. Remember, smaller models might struggle with some of
-these tasks, but the goal is to understand their capabilities and limitations.
+multi-condition prompts.
+
+Remember, smaller models might struggle with some of these tasks, but the goal
+is to understand their capabilities and limitations.
