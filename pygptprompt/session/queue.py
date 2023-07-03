@@ -7,7 +7,7 @@ from typing import Optional
 from prompt_toolkit import prompt
 from prompt_toolkit.history import FileHistory
 
-from pygptprompt.openai import OpenAI
+from pygptprompt.api.openai import OpenAI
 from pygptprompt.session.model import SessionModel
 from pygptprompt.session.policy import SessionPolicy
 from pygptprompt.session.token import SessionToken
