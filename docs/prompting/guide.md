@@ -92,9 +92,11 @@ or following an input, example, and output style.
 Prompt:
 
 ```
-Input: "Translate the following English sentence to German:"
-Example: "I love to travel."
-Output: "Ich liebe es zu reisen."
+Instruction: "Translate the following English sentence to German:"
+Input: "I love to travel."
+Example: "Ich liebe es zu reisen."
+Input: "I'd love to go to France."
+Output:
 ```
 
 The model is expected to provide the German translation of the given English
