@@ -190,6 +190,153 @@ good understanding of abstract concepts and can provide explanations, it may
 struggle with generating complex outputs such as accurate and correctly
 formatted code.
 
+### 13B q4_1
+
+````
+02:30:10 | ~/Documents/code/git/pygptprompt                                                                                                          [62/1078]
+ git:(main | Δ) λ python -m pygptprompt.ggml --chat True --repo_id "TheBloke/orca_mini_13B-GGML"  --filename "orca-mini-13b.ggmlv3.q4_1.bin"
+2023-07-03 02:31:38,161 - INFO - requests.py:48 - Using TheBloke/orca_mini_13B-GGML to load orca-mini-13b.ggmlv3.q4_1.bin
+Downloading (…)-13b.ggmlv3.q4_1.bin: 100%|███████████████████████████████████████████████████████████████████████████████| 8.14G/8.14G [03:17<00:00, 18.4MB/s]
+2023-07-03 02:34:55,930 - INFO - requests.py:61 - Using /home/austin/.cache/huggingface/hub/models--TheBloke--orca_mini_13B-GGML/snapshots/ce69cbc2ff6a795ee89
+f4f7bb663c6f8186ac620/orca-mini-13b.ggmlv3.q4_1.bin to load TheBloke/orca_mini_13B-GGML into memory
+llama.cpp: loading model from /home/austin/.cache/huggingface/hub/models--TheBloke--orca_mini_13B-GGML/snapshots/ce69cbc2ff6a795ee89f4f7bb663c6f8186ac620/orca
+-mini-13b.ggmlv3.q4_1.bin
+llama_model_load_internal: format     = ggjt v3 (latest)
+llama_model_load_internal: n_vocab    = 32000
+llama_model_load_internal: n_ctx      = 2048
+llama_model_load_internal: n_embd     = 5120                                                                                                                  llama_model_load_internal: n_mult     = 256                                                                                                                   llama_model_load_internal: n_head     = 40
+llama_model_load_internal: n_layer    = 40
+llama_model_load_internal: n_rot      = 128
+llama_model_load_internal: ftype      = 3 (mostly Q4_1)
+llama_model_load_internal: n_ff       = 13824
+llama_model_load_internal: n_parts    = 1
+llama_model_load_internal: model size = 13B                                                                                                                   llama_model_load_internal: ggml ctx size =    0.09 MB                                                                                                         llama_model_load_internal: mem required  = 9807.48 MB (+ 1608.00 MB per state)                                                                                llama_new_context_with_model: kv self size  = 1600.00 MB
+user
+> Hello, what is your name?
+
+assistant
+ Hello! My name is Orca.
+
+user
+> What is your primary role?
+
+assistant
+My primary role is to assist you with any tasks or questions you may have.
+
+user
+> Can you explain the concept of object-oriented programming?
+
+assistant
+ Of course! Object-oriented programming (OOP) is a programming paradigm that focuses on creating objects which interact with each other to perform tasks. In O
+OP, everything is an object, and the relationships between these objects are defined by messages or actions that they can send to each other. This allows for
+complex programs to be built with reusable and modular components, which makes it easier to maintain and update the code over time.
+
+user
+> What is the Python programming language?
+
+assistant
+ Python is a high-level, interpreted programming language that is widely used for various applications such as data analysis, web development, artificial inte
+lligence, and scientific computing. It has a clean syntax and a vast collection of libraries and modules that make it easy to perform complex tasks.
+
+user
+> What is the difference between a list and a tuple in Python?
+
+assistant
+ In Python, lists and tuples are both used to store collections of items, but they differ in how they define and manipulate the items. A list uses square brac
+kets [] and appends items to the end of the list using the "+" operator. A tuple, on the other hand, uses parentheses and returns a single item at the end of
+the expression. Additionally, lists are iterable, while tuples are not.
+
+user
+> What is John Conway's Game of Life?
+
+assistant
+ John Conway's Game of Life is a cellular automaton game where small living organisms called "cells" evolve and grow on a two-dimensional grid. The game invol
+ves several rules for how cells can move and interact with each other, and players can build and modify the game by adding new rules or creatures to the game.
+ It's a very interesting and complex game that has been played by millions of people worldwide.
+
+user
+> What are the rules for Conway's Game of Life?
+
+assistant
+ The basic rules for John Conway's Game of Life are as follows: 1. Each cell can move in four directions (up, down, left, or right) to its adjacent neighbors.
+ 2. Any size of cell can be created by combining smaller cells. 3. A cell that is smaller than a certain size (currently set to 10 in the game) cannot be made
+. 4. A cell can be born from an empty cell if it has offspring. 5. The offspring of a cell can be any number of cells, and they can be born in any direction.
+6. The game is played on a two-dimensional grid, with each player taking turns updating the grid according to the rules.
+
+user
+> Can you show me a simple example of the Game of Life in Python?
+
+assistant
+ Sure! Here's an example of how to create and play the game in Python:
+```python
+import math
+
+def make_cell(size):
+ return " " * (math.sqrt(2) - 1) + " " + str(int("{:.2e}".format(size**0.5)))
+
+def update_game(grid, start_row, start_col, cell_size, num_cells):
+ grid[start_row][start_col] = make_cell(cell_size)
+ for i in range(num_cells):
+ row_index = i % 4
+ col_index = (i // 4) * 4
+ grid[row_index][col_index] = make_cell(cell_size)
+ for i in range(num_cells):
+ row_index = i % 4
+ col_index = (i // 4) * 4
+ grid[row_index][col_index] = make_cell(cell_size)
+ return grid
+
+def play_game():
+ size = 50
+ num_grid_rows = int(math.sqrt(2)) - 1
+ num_grid_cols = int(math.sqrt(2)) - 1
+ grid = [[0 for _ in range(num_grid_rows)] for _ in range(num_grid_cols)]
+ update_game(grid, 0, 0, size, num_cells = int(math.sqrt(2)))
+ print("Game of Life:")
+ print("-----------")
+ for i in range(num_grid_rows):
+ print("| " + "| ".join(map(" ", grid[i])) + " |")
+ print("-----------")
+```
+
+This code creates a 50x50 grid and populates it with empty cells. It then calls the `update_game` function to fill the grid with living cells according to the
+ rules of the Game of Life. Finally, it prints out the game board.
+
+user
+>
+````
+
+**GPT's review and summarization of the models performance:**
+
+In this chat completion transcript, the assistant performs fairly well in
+responding to the user's queries. The assistant correctly introduces itself as
+Orca, explains its primary role, and provides clear, detailed explanations of
+object-oriented programming (OOP), the Python programming language, and the
+differences between a list and a tuple in Python.
+
+One notable strength of the assistant is its ability to provide concise and
+accurate responses to complex questions. This is evident in its explanations of
+OOP, Python, and Conway's Game of Life. The assistant also correctly identified
+Conway's Game of Life as a cellular automaton game, demonstrating its strong
+domain-specific knowledge.
+
+However, when asked to specify the rules of Conway's Game of Life, the assistant
+did not provide the correct, established rules of the game. Instead, it provided
+a general, abstract interpretation, suggesting the presence of inaccuracies in
+its understanding of more complex, abstract concepts.
+
+Furthermore, the assistant's attempt to provide a Python implementation of the
+Game of Life was inaccurate and unclear, highlighting a key weakness in
+generating complex outputs. The provided Python code doesn't reflect the rules
+of the Game of Life and contains numerous errors, rendering it non-functional.
+
+In conclusion, the assistant demonstrated proficiency in self-identification,
+handling straightforward queries, and demonstrating domain-specific knowledge.
+However, it fell short when required to explain more complex, abstract concepts
+accurately and generate complex, accurate outputs. This could be addressed
+through more targeted training or through the use of post-processing scripts to
+correct formatting issues and inaccuracies in code generation.
+
 ### 13B q5_1 Results
 
 ````
