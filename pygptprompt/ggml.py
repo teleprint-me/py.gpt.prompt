@@ -160,7 +160,7 @@ def main(
                         "> ",
                         multiline=True,
                         wrap_lines=True,
-                        prompt_continuation="> ",
+                        prompt_continuation=". ",
                     )
                 except (EOFError, KeyboardInterrupt):
                     break
