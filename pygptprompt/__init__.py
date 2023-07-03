@@ -97,7 +97,10 @@ DEFAULT_DEVICE_TYPE: str = "cpu"
 DEFAULT_CPU_COUNT: int = len(os.sched_getaffinity(0)) or 2
 
 # The default llama.cpp Model settings
-DEFAULT_N_CTX: int = 512
+# NOTE: Llama models usually have a maximum token limit of 2048.
+# The context window size may vary from model to model and can
+# be easily adjusted as required.
+DEFAULT_N_CTX: int = 2048
 DEFAULT_MAX_TOKENS: int = 512
 DEFAULT_TEMPERATURE: float = 0.8
 DEFAULT_TOP_P: float = 0.95
