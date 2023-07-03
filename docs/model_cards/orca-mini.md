@@ -139,17 +139,23 @@ methods and how.
 | orca-mini-13b.ggmlv3.q6_K.bin   | q6_K         | 6    | 10.68 GB | 13.18 GB         | New k-quant method. Uses GGML_TYPE_Q8_K for all tensors.                                                                                   |
 | orca-mini-13b.ggmlv3.q8_0.bin   | q8_0         | 8    | 13.83 GB | 16.33 GB         | Original llama.cpp quant method, 8-bit. Almost indistinguishable from float16. High resource use and slow. Not recommended for most users. |
 
+That's a great idea! Here's how we could update the model card based on your
+testing process and the new information:
+
+---
+
 ## Notes
 
 - **3B Models:** These models do not self-identify or role-play. They are best
   suited for smaller scoped problems but require more effort to work with due to
-  their lack of self-reference.
+  their lack of self-reference. They may struggle with complex, abstract
+  concepts and generating structured outputs like code.
 
 - **7B Models:** The 7B models perform significantly better, capable of
   self-identifying and assuming roles. This makes them ideal for tasks like
-  programming assistance. Among them, the 4-bit and 5-bit models deliver the
-  best performance. The 8-bit models, while slower, offer superior cognitive
-  reasoning.
+  programming assistance. Among them, the q5_1 and q6_K models deliver the best
+  performance, offering superior cognitive reasoning and a better understanding
+  of complex, abstract concepts.
 
   - **Formatting Challenges:** The 7B models have notable issues with output
     formatting. Potential solutions include using precise prompts and corrective
@@ -196,15 +202,119 @@ methods and how.
   smaller scoped problems and can invest more time in crafting prompts, a 3B
   model could suffice. For tasks requiring superior cognitive reasoning, despite
   slower inference, an 8-bit model might be the best choice.
-
 - **Prompt Design:** The design of your prompts can significantly influence the
   model's output. For instance, if you're experiencing issues with the model's
   Markdown formatting, you could experiment with different prompt structures or
   provide explicit instructions within the prompt to guide the model's output
   formatting.
-
 - **Post-Processing:** Consider implementing a post-processing step to handle
   any formatting issues. This could involve a script or function that takes the
   model's output and reformats it according to your requirements. This could be
   particularly useful when working with lower bit models that may have more
   pronounced formatting issues due to quantization.
+
+**Model Testing Process:**
+
+The following process is used to evaluate the capabilities and limitations of
+the models:
+
+1. **Self-Identification:** The model is asked to identify itself to test if it
+   can assume a role or identity. This is crucial for interactive or
+   conversational tasks.
+
+2. **Domain-Specific Knowledge:** The model is asked about a specific domain
+   (e.g., Python programming) to evaluate its breadth and depth of knowledge.
+
+3. **Understanding Abstract Concepts:** The model is asked to explain a complex,
+   abstract concept (e.g., Conway's Game of Life) to test its problem-solving
+   abilities and conceptual understanding.
+
+4. **Generating Complex Outputs:** The model is asked to generate a complex,
+   structured output (e.g., Python code for Conway's Game of Life). This tests
+   its ability to build upon previous context and generate accurate and
+   correctly formatted outputs.
+
+These tests provide a comprehensive evaluation of the models' capabilities,
+helping to identify their strengths and weaknesses. This information is crucial
+for understanding how the models can be best used or improved.
+
+### q5_1 Results
+
+````
+18:45:52 | ~/Documents/code/git/pygptprompt                                                                                                          [157/651]
+ git:(main | Δ) λ python -m pygptprompt.ggml --chat True --filename "orca-mini-7b.ggmlv3.q5_1.bin"
+2023-07-02 18:46:20,166 - INFO - requests.py:48 - Using TheBloke/orca_mini_7B-GGML to load orca-mini-7b.ggmlv3.q5_1.bin
+Downloading (…)i-7b.ggmlv3.q5_1.bin: 100%|███████████████████████████████████████████████████████████████████████████████| 5.06G/5.06G [04:11<00:00, 20.1MB/s]
+2023-07-02 18:50:32,623 - INFO - requests.py:61 - Using /home/austin/.cache/huggingface/hub/models--TheBloke--orca_mini_7B-GGML/snapshots/709dfca2e5523319777f
+d59fa522ea4e32a33d93/orca-mini-7b.ggmlv3.q5_1.bin to load TheBloke/orca_mini_7B-GGML into memory
+llama.cpp: loading model from /home/austin/.cache/huggingface/hub/models--TheBloke--orca_mini_7B-GGML/snapshots/709dfca2e5523319777fd59fa522ea4e32a33d93/orca-
+mini-7b.ggmlv3.q5_1.bin
+llama_model_load_internal: format     = ggjt v3 (latest)
+llama_model_load_internal: n_vocab    = 32000
+llama_model_load_internal: n_ctx      = 512
+llama_model_load_internal: n_embd     = 4096
+llama_model_load_internal: n_mult     = 256
+llama_model_load_internal: n_head     = 32
+llama_model_load_internal: n_layer    = 32
+llama_model_load_internal: n_rot      = 128
+llama_model_load_internal: ftype      = 9 (mostly Q5_1)
+llama_model_load_internal: n_ff       = 11008
+llama_model_load_internal: n_parts    = 1
+llama_model_load_internal: model size = 7B
+llama_model_load_internal: ggml ctx size =    0.07 MB
+llama_model_load_internal: mem required  = 6612.59 MB (+ 1026.00 MB per state)
+llama_new_context_with_model: kv self size  =  256.00 MB
+user
+> Hello! What is your name?
+
+assistant
+Hello! My name is Orca.
+
+user
+> What is the Python programming language?
+
+assistant
+Python is a high-level, interpreted programming language that was first released in 1991. It is known for its simplicity, readability, and ease of use. Python
+ is widely used in various fields such as web development, data analysis, artificial intelligence, scientific computing, and more.
+
+user
+> What is Conway's Game of Life?
+
+assistant
+Conway's Game of Life is a cellular automaton created by mathematician John H. Conway in 1970. It is a two-dimensional game that involves the evolution of an
+initial population of cells over time, based on the laws of physics and a set of rules. The game can be played visually or with just a set of rules, and it ha
+s gained popularity as a computer game and educational tool in various fields such as artificial intelligence and complexity science.
+
+user
+> Can you show me a simple implementation in Python?
+
+assistant
+Sure! Here is a simple implementation of Conway's Game of Life in Python:
+```
+# Define the initial conditions for the population
+population = [0, 0, 0, 0, 0, 0, 0, 0]
+
+# Define the rules of the game
+def update_cells(cells):
+ for i in range(len(cells)):
+ if (i+1) % 2 == 0 and sum([x for x in cells]) == 3:
+ # If the cell is alive, add one to its counter
+ cells[i] += 1
+ else:
+ # Otherwise, remove one from its counter
+ cells[i] -= 1
+ for j in range(len(cells)):
+ if (j+2) % 2 == 0 and sum([x for x in cells]) == 3:
+ # If the cell is alive, add one to its counter
+ cells[j] += 1
+ else:
+ # Otherwise, remove one from its counter
+ cells[j] -= 1
+
+# Define a function to draw the cells
+def draw_cells(cells):
+ for i in
+
+user
+> %
+````
