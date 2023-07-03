@@ -85,9 +85,9 @@ sentence as specified in the prompt.
 
 ## API Function Prompt
 
-API Function Prompting allows you to describe functions to the language model and
-generate JSON objects adhering to the defined function schema. It enables the
-model to perform specific actions or retrieve structured data.
+API Function Prompting allows you to describe functions to the language model
+and generate JSON objects adhering to the defined function schema. It enables
+the model to perform specific actions or retrieve structured data.
 
 **Example:**
 
@@ -118,11 +118,9 @@ Prompt:
 **Assistant:**
 
 ```python
-get_current_weather(
-    location="New York City, New York"
-)
+get_current_weather(location="New York City, New York")
 ```
 
-By incorporating both conditional prompting and function/API calling, you can
+By incorporating both conditional prompting and function API calling, you can
 effectively control the model's behavior and utilize its ability to generate
 structured data or perform specific actions based on predefined conditions.
