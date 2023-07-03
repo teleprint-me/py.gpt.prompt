@@ -204,13 +204,18 @@ llama.cpp: loading model from /home/austin/.cache/huggingface/hub/models--TheBlo
 llama_model_load_internal: format     = ggjt v3 (latest)
 llama_model_load_internal: n_vocab    = 32000
 llama_model_load_internal: n_ctx      = 2048
-llama_model_load_internal: n_embd     = 5120                                                                                                                  llama_model_load_internal: n_mult     = 256                                                                                                                   llama_model_load_internal: n_head     = 40
+llama_model_load_internal: n_embd     = 5120
+llama_model_load_internal: n_mult     = 256
+llama_model_load_internal: n_head     = 40
 llama_model_load_internal: n_layer    = 40
 llama_model_load_internal: n_rot      = 128
 llama_model_load_internal: ftype      = 3 (mostly Q4_1)
 llama_model_load_internal: n_ff       = 13824
 llama_model_load_internal: n_parts    = 1
-llama_model_load_internal: model size = 13B                                                                                                                   llama_model_load_internal: ggml ctx size =    0.09 MB                                                                                                         llama_model_load_internal: mem required  = 9807.48 MB (+ 1608.00 MB per state)                                                                                llama_new_context_with_model: kv self size  = 1600.00 MB
+llama_model_load_internal: model size = 13B
+llama_model_load_internal: ggml ctx size =    0.09 MB
+llama_model_load_internal: mem required  = 9807.48 MB (+ 1608.00 MB per state)
+llama_new_context_with_model: kv self size  = 1600.00 MB
 user
 > Hello, what is your name?
 
