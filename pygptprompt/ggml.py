@@ -3,6 +3,7 @@ from typing import List
 
 import click
 from llama_cpp import ChatCompletionMessage
+from prompt_toolkit import prompt as input
 
 from pygptprompt import (
     DEFAULT_LOW_VRAM,
@@ -30,7 +31,7 @@ from pygptprompt.api.ggml.requests import LlamaCppRequests, LlamaResponse
     "--filename",
     type=click.STRING,
     default=DEFAULT_MODEL_FILENAME,
-    help="The filename of the model from the given repository. Default is orca-mini-7b.ggmlv3.q2_K.bin.",
+    help="The filename of the model from the given repository. Default is orca-mini-7b.ggmlv3.q5_1.bin.",
 )
 @click.option(
     "--prompt",
@@ -116,12 +117,22 @@ def main(
 
     messages: List[ChatCompletionMessage] = [system_prompt]
 
+    if not prompt and not chat:
+        raise ValueError(
+            "Neither prompt nor chat were provided. "
+            "Did you forget to set the options value?"
+        )
+
     if prompt and chat:
         raise ValueError(
             "Use either --prompt or --chat, but not both."
         )  # NOTE: Only one option at a time!
 
     try:
+        print(system_prompt.get("role"))
+        print(system_prompt.get("content"))
+        print()
+
         if prompt:
             # Add a single message to the list and generate a response
             user_prompt = ChatCompletionMessage(
@@ -145,7 +156,12 @@ def main(
             while True:
                 try:
                     print("user")
-                    text_input = input("> ")
+                    text_input = input(
+                        "> ",
+                        multiline=True,
+                        wrap_lines=True,
+                        prompt_continuation="> ",
+                    )
                 except (EOFError, KeyboardInterrupt):
                     break
                 user_message = ChatCompletionMessage(
