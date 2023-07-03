@@ -83,7 +83,7 @@ Prompt:
 The model is expected to provide the German translation of the given English
 sentence as specified in the prompt.
 
-## API Function Prompting
+## API Function Prompt
 
 API Function Prompting allows you to describe functions to the language model and
 generate JSON objects adhering to the defined function schema. It enables the
