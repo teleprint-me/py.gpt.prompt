@@ -22,7 +22,7 @@ pyopencl = "^2023.1.1"
 tiktoken = "^0.4.0"
 chromadb = "^0.3.26"
 huggingface_hub = "^0.15.1"
-langchain = "^0.0.219"
+langchain = "^0.0.225"
 llama-cpp-python = "0.1.67"
 
 [tool.poetry.group.dev.dependencies]
