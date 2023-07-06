@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant CPU
+    participant GPU
+    participant Model
+    CPU->>Model: Load Model
+    Model-->>CPU: Model Loaded
+    CPU->>GPU: Load n_gpu_layers to GPU
+    GPU-->>CPU: Layers Loaded
+    CPU->>Model: Perform Inference on CPU Layers
+    GPU->>Model: Perform Inference on GPU Layers
+    Model-->>CPU: Combine Results
+    CPU->>User: Return Results
