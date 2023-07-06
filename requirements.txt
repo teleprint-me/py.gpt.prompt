@@ -38,7 +38,7 @@ idna==3.4
 importlib-metadata==6.7.0
 iniconfig==2.0.0
 isort==5.12.0
-langchain==0.0.219
+langchain==0.0.225
 langchainplus-sdk==0.0.20
 llama-cpp-python==0.1.67
 lz4==4.3.2
