@@ -1,6 +1,7 @@
 # Local
 /sessions
 /cache
+/source
 
 /assets/*
 !/assets/*.gif
