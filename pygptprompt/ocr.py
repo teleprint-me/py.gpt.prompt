@@ -3,101 +3,54 @@ import numpy as np
 import pytesseract
 
 
-def load_image(file_path):
-    # Load the image
-    image = cv2.imread(file_path)  # "flags=0 == grayscale"?
-    base_image = image.copy()
-    return image, base_image
+class ImageProcessor:
+    def __init__(self, file_path):
+        self.image, self.base_image = self.load_image(file_path)
 
+    def load_image(self, file_path):
+        image = cv2.imread(file_path)
+        base_image = image.copy()
+        return image, base_image
 
-def add_grayscale(image):
-    # Convert the image to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    return gray
+    def add_grayscale(self):
+        self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
 
+    def scale_image(self):
+        height, width = self.image.shape[:2]
+        self.image = cv2.resize(
+            self.image,
+            (int(width * 1.5), int(height * 1.5)),
+            interpolation=cv2.INTER_AREA,
+        )
 
-def scale_image(image):
-    # Calculate the new dimensions of the image
-    width = int(image.shape[1] * 1.5)  # increase width by 50%
-    height = int(image.shape[0] * 1.5)  # increase height by 50%
-    dim = (width, height)
+    def increase_contrast(self):
+        self.image = cv2.equalizeHist(self.image)
 
-    # Resize the image
-    resized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
-    return resized
+    def preprocess_image(self):
+        binary = cv2.adaptiveThreshold(
+            self.image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
+        )
+        kernel = np.ones((1, 1), np.uint8)
+        dilated = cv2.dilate(binary, kernel, iterations=1)
+        self.image = cv2.erode(dilated, kernel, iterations=1)
 
+    def rotate_image(self, angle):
+        height, width = self.image.shape[:2]
+        image_center = (width / 2, height / 2)
+        rotation_matrix = cv2.getRotationMatrix2D(image_center, angle, 1)
+        self.image = cv2.warpAffine(self.image, rotation_matrix, (width, height))
 
-def increase_contrast(image):
-    # Apply histogram equalization
-    equalized = cv2.equalizeHist(image)
-    return equalized
-
-
-def preprocess_image(image):
-    # Apply adaptive thresholding to convert the image to binary
-    binary = cv2.adaptiveThreshold(
-        src=image,
-        maxValue=255,
-        adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        thresholdType=cv2.THRESH_BINARY,
-        blockSize=11,
-        C=2,  # constant subtracted from weighted mean
-    )
-
-    # Create a kernel for dilation and erosion
-    kernel = np.ones((1, 1), np.uint8)
-
-    # Use dilation and erosion to remove noise
-    dilated = cv2.dilate(binary, kernel, iterations=1)
-    eroded = cv2.erode(dilated, kernel, iterations=1)
-
-    return eroded
-
-
-def rotate_image(image, angle):
-    # Get the dimensions of the image
-    height, width = image.shape[:2]
-
-    # Define the center of the image
-    image_center = (width / 2, height / 2)
-
-    # Get the rotation matrix
-    rotation_matrix = cv2.getRotationMatrix2D(image_center, angle, 1)
-
-    # Perform the rotation
-    rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height))
-
-    return rotated_image
-
-
-def extract_text(image, base_image):
-    # Find contours
-    contours, _ = cv2.findContours(
-        image,
-        cv2.RETR_EXTERNAL,
-        cv2.CHAIN_APPROX_SIMPLE,
-    )
-
-    # Sort contours by their y-position (top to bottom)
-    contours = sorted(contours, key=lambda x: cv2.boundingRect(x)[1])
-
-    # Initialize an empty string to hold the extracted text
-    extracted_text = ""
-
-    # Iterate over the contours
-    for contour in contours:
-        # Get the bounding box coordinates (x, y)
-        # and the width and height (w, h)
-        x, y, w, h = cv2.boundingRect(contour)
-
-        # Extract the region of interest (ROI) from the base image
-        roi = base_image[y : y + h, x : x + w]
-
-        # Convert the ROI to text using pytesseract and append
-        # it to the extracted_text string
-        extracted_text += pytesseract.image_to_string(roi)
-
-    return extracted_text
+    def extract_text(self):
+        contours, _ = cv2.findContours(
+            self.image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
+        contours = sorted(contours, key=lambda x: cv2.boundingRect(x)[1])
+        extracted_text = ""
+        for contour in contours:
+            x, y, w, h = cv2.boundingRect(contour)
+            roi = self.base_image[y : y + h, x : x + w]
+            extracted_text += pytesseract.image_to_string(roi)
+        return extracted_text
 
 
 def main():
