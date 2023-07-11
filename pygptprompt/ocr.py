@@ -188,6 +188,7 @@ class ImageProcessor:
 )
 @click.option("--grayscale", is_flag=True, help="Convert image to grayscale.")
 @click.option("--contrast", is_flag=True, help="Increase image contrast.")
+@click.option("--burn", is_flag=True, help="Burn the image by decreasing brightness.")
 @click.option(
     "--preprocess",
     is_flag=True,
