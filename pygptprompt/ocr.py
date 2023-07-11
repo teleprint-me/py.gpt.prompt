@@ -73,8 +73,8 @@ class ImageProcessor:
 )
 @click.option(
     "--path_text",
-    prompt="File path to text output",
-    help="The file path for the given text output.",
+    default=str(),
+    help="The file path for the given text output. Default is empty string.",
 )
 @click.option(
     "--rotate",
@@ -130,10 +130,11 @@ def main(
     else:
         text = processor.extract_text()
 
-    print(text)
-
-    with open(path_text, "w") as plaintext:
-        plaintext.writelines(text.splitlines())
+    if path_text:
+        with open(path_text, "w") as plaintext:
+            plaintext.writelines(text.splitlines())
+    else:
+        print(text)
 
 
 if __name__ == "__main__":
