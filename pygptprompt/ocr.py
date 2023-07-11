@@ -1,3 +1,11 @@
+"""
+pygptprompt/ocr.py
+
+https://docs.opencv.org/4.x/
+https://docs.opencv.org/4.x/d7/d4d/tutorial_py_thresholding.html
+https://docs.opencv.org/3.4/db/df6/tutorial_erosion_dilatation.html
+"""
+import click
 import cv2
 import numpy as np
 import pytesseract
@@ -40,7 +48,7 @@ class ImageProcessor:
         rotation_matrix = cv2.getRotationMatrix2D(image_center, angle, 1)
         self.image = cv2.warpAffine(self.image, rotation_matrix, (width, height))
 
-    def extract_text(self):
+    def find_contours(self):
         contours, _ = cv2.findContours(
             self.image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
@@ -52,28 +60,59 @@ class ImageProcessor:
             extracted_text += pytesseract.image_to_string(roi)
         return extracted_text
 
+    def extract_text(self, image):
+        extracted_text = pytesseract.image_to_string(image)
+        return extracted_text
 
-def main():
-    # Load the image
-    image, base_image = load_image("data/Arithmetic-Scanned-Document.jpg")
 
-    # Convert the image to grayscale
-    gray = add_grayscale(image)
+@click.command()
+@click.option("--path", prompt="Path to image", help="The path to the image.")
+@click.option("--rotate", default=0, help="Rotate image by a certain angle.")
+@click.option("--scale", is_flag=True, help="Scale image.")
+@click.option("--grayscale", is_flag=True, help="Convert image to grayscale.")
+@click.option("--contrast", is_flag=True, help="Increase image contrast.")
+@click.option(
+    "--preprocess",
+    is_flag=True,
+    help="Preprocess image using a binary gaussian-weighted sum and dilation.",
+)
+@click.option(
+    "--contours",
+    is_flag=True,
+    help="Add contours to the image using a bound rectangular area.",
+)
+def main(
+    path,
+    rotate,
+    scale,
+    grayscale,
+    contrast,
+    preprocess,
+    contours,
+):
+    processor = ImageProcessor(path)
 
-    # Scale the image
-    scaled = scale_image(gray)
+    if rotate:
+        processor.rotate_image(rotate)
 
-    # Increase contrast
-    contrasted = increase_contrast(scaled)
+    if scale:
+        processor.scale_image()
 
-    # Preprocess the image
-    preprocessed = preprocess_image(contrasted)
+    if grayscale:
+        processor.add_grayscale()
 
-    # Extract text
-    extracted_text = extract_text(preprocessed, base_image)
+    if contrast:
+        processor.increase_contrast()
 
-    # Print the extracted text
-    print(extracted_text)
+    if preprocess:
+        processor.preprocess_image()
+
+    if contours:
+        text = processor.find_contours()
+    else:
+        text = processor.extract_text()
+
+    print(text)
 
 
 if __name__ == "__main__":
