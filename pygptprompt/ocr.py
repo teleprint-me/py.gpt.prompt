@@ -23,11 +23,11 @@ class ImageProcessor:
     def add_grayscale(self):
         self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
 
-    def scale_image(self):
+    def scale_image(self, n: float):
         height, width = self.image.shape[:2]
         self.image = cv2.resize(
             self.image,
-            (int(width * 1.5), int(height * 1.5)),
+            (int(width * n), int(height * n)),
             interpolation=cv2.INTER_AREA,
         )
 
@@ -48,7 +48,7 @@ class ImageProcessor:
         rotation_matrix = cv2.getRotationMatrix2D(image_center, angle, 1)
         self.image = cv2.warpAffine(self.image, rotation_matrix, (width, height))
 
-    def find_contours(self):
+    def find_contours_and_extract_text(self):
         contours, _ = cv2.findContours(
             self.image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
@@ -66,9 +66,26 @@ class ImageProcessor:
 
 
 @click.command()
-@click.option("--path", prompt="Path to image", help="The path to the image.")
-@click.option("--rotate", default=0, help="Rotate image by a certain angle.")
-@click.option("--scale", is_flag=True, help="Scale image.")
+@click.option(
+    "--path_image",
+    prompt="File path to input image",
+    help="The file path to the given input image.",
+)
+@click.option(
+    "--path_text",
+    prompt="File path to text output",
+    help="The file path for the given text output.",
+)
+@click.option(
+    "--rotate",
+    default=0,
+    help="Rotate the image by a given angle. Default is 0.",
+)
+@click.option(
+    "--scale",
+    default=0,
+    help="Scale the image by a given factor. Default is 0.",
+)
 @click.option("--grayscale", is_flag=True, help="Convert image to grayscale.")
 @click.option("--contrast", is_flag=True, help="Increase image contrast.")
 @click.option(
@@ -79,10 +96,11 @@ class ImageProcessor:
 @click.option(
     "--contours",
     is_flag=True,
-    help="Add contours to the image using a bound rectangular area.",
+    help="Add contours to the image using bound rectangular areas.",
 )
 def main(
-    path,
+    path_image,
+    path_text,
     rotate,
     scale,
     grayscale,
@@ -90,13 +108,13 @@ def main(
     preprocess,
     contours,
 ):
-    processor = ImageProcessor(path)
+    processor = ImageProcessor(path_image)
 
     if rotate:
         processor.rotate_image(rotate)
 
     if scale:
-        processor.scale_image()
+        processor.scale_image(scale)
 
     if grayscale:
         processor.add_grayscale()
@@ -108,11 +126,14 @@ def main(
         processor.preprocess_image()
 
     if contours:
-        text = processor.find_contours()
+        text = processor.find_contours_and_extract_text()
     else:
         text = processor.extract_text()
 
     print(text)
+
+    with open(path_text, "w") as plaintext:
+        plaintext.writelines(text.splitlines())
 
 
 if __name__ == "__main__":
