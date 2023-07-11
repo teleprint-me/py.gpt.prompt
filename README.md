@@ -47,7 +47,7 @@ models' context windows and facilitating user interactions.
 PyGPTPrompt offers the following features for interacting with various
 components:
 
-![GPT-3.5 Turbo Demo](./assets/gpt-3.5-turbo.gif)
+![GPT-3.5 Turbo Demo](./docs/assets/gpt-3.5-turbo.gif)
 
 ### Web Pages
 

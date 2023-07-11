@@ -10,6 +10,11 @@ by the llama.cpp Python API. By streamlining data ingestion and facilitating
 task automation, PyGPTPrompt serves as an effective interface for AI model
 interaction.
 
+## Prerequisites
+
+- Python 3.11 or later
+- Poetry (Python packaging and dependency management tool)
+
 ## Features
 
 - **Context Window Management:** PyGPTPrompt's core functionality lies in its

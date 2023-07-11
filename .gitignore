@@ -3,8 +3,8 @@
 /cache
 /source
 
-/assets/*
-!/assets/*.gif
+/docs/assets/*
+!/docs/assets/*.gif
 !/sessions/gpt-3.5-turbo.*
 
 # Byte-compiled / optimized / DLL files
