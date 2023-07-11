@@ -17,14 +17,14 @@ interaction.
 - [poetry](https://python-poetry.org/docs/)
 
 - Minimum Hardware
-  - Quad-Core Processor 
-  - 8 GB CPU RAM
-  - 6 GB GPU VRAM
+    - Quad-Core Processor 
+    - 8 GB CPU RAM
+    - 6 GB GPU VRAM
 
 - Recommended Hardware
-  - Octa-Core Processor
-  - 64 GB CPU RAM
-  - 24 GB GPU VRAM
+    - Octa-Core Processor
+    - 64 GB CPU RAM
+    - 24 GB GPU VRAM
 
 ## Features
 
