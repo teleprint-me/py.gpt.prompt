@@ -23,6 +23,10 @@ Usage:
     processor.burn_image(alpha=1.5, beta=-30)
     processor.preprocess_image()
     extracted_text = processor.extract_text_from_image()
+
+For more information about OpenCV, visit: https://docs.opencv.org/4.x/
+For more information about image thresholding, visit: https://docs.opencv.org/4.x/d7/d4d/tutorial_py_thresholding.html
+For more information about image erosion and dilation, visit: https://docs.opencv.org/3.4/db/df6/tutorial_erosion_dilatation.html
 """
 
 

@@ -1,10 +1,9 @@
 """
 pygptprompt/ocr.py
 
-https://docs.opencv.org/4.x/
-https://docs.opencv.org/4.x/d7/d4d/tutorial_py_thresholding.html
-https://docs.opencv.org/3.4/db/df6/tutorial_erosion_dilatation.html
+A command-line OCR tool that performs various image processing operations and extracts text from images.
 """
+
 import click
 
 from pygptprompt.processor.image import ImageProcessor
@@ -14,35 +13,39 @@ from pygptprompt.processor.image import ImageProcessor
 @click.option(
     "--path_image",
     prompt="File path to input image",
-    help="The file path to the given input image.",
+    help="The file path to the input image.",
 )
 @click.option(
     "--path_text",
-    default=str(),
-    help="The file path for the given text output. Default is empty string.",
+    default="",
+    help="The file path to save the extracted text. Default is an empty string (print to console).",
 )
 @click.option(
     "--rotate",
     default=0,
-    help="Rotate the image by a given angle. Default is 0.",
+    help="Rotate the image by the specified angle in degrees. Default is 0.",
 )
 @click.option(
     "--scale",
     default=0,
-    help="Scale the image by a given factor. Default is 0.",
+    help="Scale the image by the specified factor. Default is 0.",
 )
-@click.option("--grayscale", is_flag=True, help="Convert image to grayscale.")
-@click.option("--contrast", is_flag=True, help="Increase image contrast.")
-@click.option("--burn", is_flag=True, help="Burn the image by decreasing brightness.")
+@click.option("--grayscale", is_flag=True, help="Convert the image to grayscale.")
+@click.option("--contrast", is_flag=True, help="Enhance the image contrast.")
+@click.option(
+    "--burn",
+    is_flag=True,
+    help="Burn the image by adjusting brightness and contrast.",
+)
 @click.option(
     "--preprocess",
     is_flag=True,
-    help="Preprocess image using a binary gaussian-weighted sum and dilation.",
+    help="Preprocess the image for text extraction using adaptive thresholding and erosion-dilation.",
 )
 @click.option(
     "--contours",
     is_flag=True,
-    help="Add contours to the image using bound rectangular areas.",
+    help="Extract text from image using contours and bounding rectangular areas.",
 )
 def main(
     path_image,
@@ -55,6 +58,9 @@ def main(
     preprocess,
     contours,
 ):
+    """
+    Perform image processing operations and extract text from images.
+    """
     processor = ImageProcessor(path_image)
 
     if rotate:
