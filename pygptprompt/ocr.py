@@ -22,25 +22,22 @@ class ImageProcessor:
         This method loads the image file specified by `file_path` and creates two copies
         of it: `self.image` and `self.base_image`.
         """
-        self.image, self.base_image = self.load_image(file_path)
+        self.image: np.ndarray = np.ndarray((0, 0))
+        self.base_image: np.ndarray = np.ndarray((0, 0))
+        self.load_image(file_path)
 
-    def load_image(self, file_path: str) -> tuple[np.ndarray, np.ndarray]:
+    def load_image(self, file_path: str) -> None:
         """
         Load an image from a file.
 
         Parameters:
         - file_path: The path to the image file.
 
-        Returns:
-        - image: The loaded image.
-        - base_image: A copy of the loaded image.
-
         This method uses OpenCV's `imread` function to read the image file from `file_path`.
-        It creates a copy of the image and returns both the image and the copy.
+        It creates a copy of the image and assigns it to `self.image` and `self.base_image`.
         """
-        image = cv2.imread(file_path)
-        base_image = image.copy()
-        return image, base_image
+        self.image = cv2.imread(file_path)
+        self.base_image = self.image.copy()
 
     def grayscale_image(self) -> None:
         """
@@ -124,7 +121,7 @@ class ImageProcessor:
         dilated = cv2.dilate(binary, kernel, iterations=1)
         self.image = cv2.erode(dilated, kernel, iterations=1)
 
-    def find_contours_and_extract_text(self) -> str:
+    def extract_text_from_image_contours(self) -> str:
         """
         Find contours in the image and extract text from regions.
 
@@ -147,21 +144,17 @@ class ImageProcessor:
             extracted_text += pytesseract.image_to_string(roi)
         return extracted_text
 
-    @staticmethod
-    def extract_text(image: np.ndarray) -> str:
+    def extract_text_from_image(self) -> str:
         """
-        Extract text from an image.
-
-        Parameters:
-        - image: The input image.
+        Extract text from the current image.
 
         Returns:
         - extracted_text: The extracted text from the image.
 
-        This static method uses pytesseract's `image_to_string` function to extract text
-        from the given image and returns it as a string.
+        This method uses pytesseract's `image_to_string` function to extract text from the
+        current image and returns it as a string.
         """
-        extracted_text = pytesseract.image_to_string(image)
+        extracted_text = pytesseract.image_to_string(self.image)
         return extracted_text
 
 
@@ -231,9 +224,9 @@ def main(
         processor.preprocess_image()
 
     if contours:
-        text = processor.find_contours_and_extract_text()
+        text = processor.extract_text_from_image_contours()
     else:
-        text = processor.extract_text()
+        text = processor.extract_text_from_image()
 
     if path_text:
         with open(path_text, "w") as plaintext:
