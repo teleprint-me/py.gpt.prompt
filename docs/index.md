@@ -12,8 +12,19 @@ interaction.
 
 ## Prerequisites
 
-- Python 3.11 or later
-- Poetry (Python packaging and dependency management tool)
+- [python](https://www.python.org/) 3.10 or later
+- [pipx](https://pypa.github.io/pipx/)
+- [poetry](https://python-poetry.org/docs/)
+
+- Minimum Hardware
+  - Quad-Core Processor 
+  - 8 GB CPU RAM
+  - 6 GB GPU VRAM
+
+- Recommended Hardware
+  - Octa-Core Processor
+  - 64 GB CPU RAM
+  - 24 GB GPU VRAM
 
 ## Features
 
