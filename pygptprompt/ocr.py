@@ -20,7 +20,7 @@ class ImageProcessor:
         base_image = image.copy()
         return image, base_image
 
-    def add_grayscale(self):
+    def grayscale_image(self):
         self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
 
     def scale_image(self, n: float):
@@ -31,8 +31,28 @@ class ImageProcessor:
             interpolation=cv2.INTER_AREA,
         )
 
-    def increase_contrast(self):
+    def rotate_image(self, angle):
+        height, width = self.image.shape[:2]
+        image_center = (width / 2, height / 2)
+        rotation_matrix = cv2.getRotationMatrix2D(image_center, angle, 1)
+        self.image = cv2.warpAffine(self.image, rotation_matrix, (width, height))
+
+    def contrast_image(self):
         self.image = cv2.equalizeHist(self.image)
+
+    def burn_image(self, alpha=1.0, beta=-50):
+        """
+        Burn an image by decreasing brightness or increasing contrast.
+
+        Parameters:
+        - image: The input image.
+        - alpha: The contrast control (1.0-3.0).
+        - beta: The brightness control (-50 to 50).
+
+        Returns:
+        - The burned image.
+        """
+        self.image = cv2.convertScaleAbs(self.image, alpha=alpha, beta=beta)
 
     def preprocess_image(self):
         binary = cv2.adaptiveThreshold(
@@ -41,12 +61,6 @@ class ImageProcessor:
         kernel = np.ones((1, 1), np.uint8)
         dilated = cv2.dilate(binary, kernel, iterations=1)
         self.image = cv2.erode(dilated, kernel, iterations=1)
-
-    def rotate_image(self, angle):
-        height, width = self.image.shape[:2]
-        image_center = (width / 2, height / 2)
-        rotation_matrix = cv2.getRotationMatrix2D(image_center, angle, 1)
-        self.image = cv2.warpAffine(self.image, rotation_matrix, (width, height))
 
     def find_contours_and_extract_text(self):
         contours, _ = cv2.findContours(
@@ -105,6 +119,7 @@ def main(
     scale,
     grayscale,
     contrast,
+    burn,
     preprocess,
     contours,
 ):
@@ -117,10 +132,13 @@ def main(
         processor.scale_image(scale)
 
     if grayscale:
-        processor.add_grayscale()
+        processor.grayscale_image()
 
     if contrast:
-        processor.increase_contrast()
+        processor.contrast_image()
+
+    if burn:
+        processor.burn_image()
 
     if preprocess:
         processor.preprocess_image()
