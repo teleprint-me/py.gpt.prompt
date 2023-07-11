@@ -10,7 +10,7 @@ def load_image(file_path):
     return image, base_image
 
 
-def convert_to_grayscale(image):
+def add_grayscale(image):
     # Convert the image to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     return gray
@@ -54,6 +54,22 @@ def preprocess_image(image):
     return eroded
 
 
+def rotate_image(image, angle):
+    # Get the dimensions of the image
+    height, width = image.shape[:2]
+
+    # Define the center of the image
+    image_center = (width / 2, height / 2)
+
+    # Get the rotation matrix
+    rotation_matrix = cv2.getRotationMatrix2D(image_center, angle, 1)
+
+    # Perform the rotation
+    rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height))
+
+    return rotated_image
+
+
 def extract_text(image, base_image):
     # Find contours
     contours, _ = cv2.findContours(
@@ -89,7 +105,7 @@ def main():
     image, base_image = load_image("data/Arithmetic-Scanned-Document.jpg")
 
     # Convert the image to grayscale
-    gray = convert_to_grayscale(image)
+    gray = add_grayscale(image)
 
     # Scale the image
     scaled = scale_image(gray)
