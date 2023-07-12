@@ -2,29 +2,43 @@ import os
 
 import click
 import nltk
+import spacy
 from poppler import load_from_file
 
 
-def normalize_indentation(chunks: list[str]) -> list[str]:
+def chunk_text_with_spacy(text: str, max_length: int):
     """
-    Normalize the indentation of the chunks. This function assumes that if a line has less leading
-    whitespace than the previous line, it should be indented to the same level as the previous line.
+    Split a text into chunks that are less than max_length using sentence segmentation from spaCy.
+
     Args:
-        chunks: A list of strings representing the text chunks to be normalized.
+        text: The input text to be chunked.
+        max_length: The maximum length of each chunk.
 
     Returns:
-        A list of strings with normalized indentation.
+        A list of strings representing the text chunks.
     """
-    normalized_chunks = []
-    for chunk in chunks:
-        lines = chunk.splitlines()
-        for i in range(len(lines)):
-            lines[i] = lines[i].strip()
-        normalized_chunks.append("\n".join(lines))
-    return normalized_chunks
+    nlp = spacy.load("en_core_web_trf")
+    doc = nlp(text)
+
+    chunks = []
+    current_chunk = ""
+    for sentence in doc.sents:
+        if len(current_chunk) + len(sentence.text) <= max_length:
+            # If the current sentence fits in the current chunk, add it
+            current_chunk += " " + sentence.text
+        else:
+            # If the current sentence doesn't fit in the current chunk, start a new chunk
+            chunks.append(current_chunk.strip())
+            current_chunk = sentence.text
+
+    # Don't forget to add the last chunk
+    if current_chunk:
+        chunks.append(current_chunk.strip())
+
+    return chunks
 
 
-def chunk_text(text: str, max_length: int) -> list[str]:
+def chunk_text_with_nltk(text: str, max_length: int) -> list[str]:
     """
     Split a text into chunks that are less than max_length. This version splits the text up into
     sentences and then combines those sentences to form chunks that are at most max_length long.
@@ -99,17 +113,16 @@ def main(path_input, path_output):
         exit(1)
 
     pages = convert_pdf_to_text(path_input)
-    for page in pages:
-        print(page)
+
     chunks = []
-    # for page in pages:
-    #     chunks.extend(chunk_text(page, 512))  # or 256 for the MiniLM model
-    # chunks = normalize_indentation(chunks)
-    # print("---")
-    # for index, chunk in zip(range(len(chunks)), chunks):
-    #     print(index)
-    #     print(chunk)
-    #     print("---")
+    for page in pages:
+        chunks.extend(chunk_text_with_spacy(page, 512))  # or 256 for the MiniLM model
+
+    print("---")
+    for index, chunk in zip(range(len(chunks)), chunks):
+        print(index)
+        print(chunk)
+        print("---")
 
 
 if __name__ == "__main__":
