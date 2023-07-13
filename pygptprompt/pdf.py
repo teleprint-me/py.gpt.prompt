@@ -48,15 +48,14 @@ def main(path_input, path_output, chunk_length, spacy_model):
 
     pages = processor.convert_pdf_to_text()
 
-    chunks = []
-    for page in pages:
-        chunks.extend(processor.chunk_text_with_spacy(page))
-
     if path_output:
-        with open(path_output, "w") as text_file:
-            for chunk in chunks:
-                text_file.write(chunk + "\n\n")
+        with open(path_output, "a+") as text_file:
+            for page in pages:
+                text_file.write(page)
     else:
+        chunks = []
+        for page in pages:
+            chunks.extend(processor.chunk_text_with_spacy(page))
         print("---")
         for index, chunk in enumerate(chunks):
             print(index)
