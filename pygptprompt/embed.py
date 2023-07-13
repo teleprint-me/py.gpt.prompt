@@ -1,137 +1,114 @@
-# pygptprompt/embed.py
-#
-# Copyright 2023 PromtEngineer/localGPT
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 """
+pygptprompt/embed.py
+
 This script provides functionality for ingesting documents,
 generating embeddings, and persisting them to the Chroma database.
-
-Usage:
-    $ python ingest.py [OPTIONS]
-
-Options:
-    --source_directory TEXT       The path where the documents are read from
-                                  (default: PATH_SOURCE)
-    --persist_directory TEXT      The path where the embeddings are written to
-                                  (default: PATH_DATABASE)
-    --embedding_model TEXT        The embedding model to use for generating embeddings
-                                  (default: DEFAULT_EMBEDDING_MODEL)
-    --embedding_type TEXT         The type of embeddings to use
-                                  (default: DEFAULT_EMBEDDING_TYPE)
-    --device_type TEXT            The device type to run on
-                                  (default: DEFAULT_DEVICE_TYPE)
-
-The script uses the provided options to load documents from the source
-directory, split them into chunks, generate embeddings using the specified
-embedding model and type, and persist the embeddings to the Chroma
-database located in the persist directory.
-
-The default values for the options are set based on the configuration in
-the localGPT package.
-
-You can specify different values for the options by providing the corresponding
-command-line arguments.
-
-Example usage:
-    $ python ingest.py \
-            --source_directory path/to/documents \
-            --persist_directory path/to/embeddings
 """
 
 import logging
 
 import click
+from chromadb import API, Client, Settings
+from chromadb.api.models.Collection import Collection
+from chromadb.api.types import Documents, QueryResult
 
 from pygptprompt import (
-    CHOICE_DEVICE_TYPES,
-    CHOICE_EMBEDDING_MODELS,
-    CHOICE_EMBEDDING_TYPES,
-    DEFAULT_DEVICE_TYPE,
-    DEFAULT_EMBEDDINGS_CLASS,
-    DEFAULT_EMBEDDINGS_MODEL,
+    EMBEDDINGS_MODEL,
     PATH_DATABASE,
     PATH_SOURCE,
+    TORCH_DEVICE_TYPE,
+    TORCH_DEVICE_TYPES,
+    TORCH_TRITON_TYPE,
 )
-from pygptprompt.database.chroma import ChromaDBLoader
-from pygptprompt.database.document import load_documents, split_documents
 
 
 @click.command()
 @click.option(
-    "--source_directory",
+    "--path_source",
     default=PATH_SOURCE,
     type=click.STRING,
     help=f"The path the documents are read from (default: {PATH_SOURCE})",
 )
 @click.option(
-    "--persist_directory",
+    "--path_database",
     default=PATH_DATABASE,
     type=click.STRING,
     help=f"The path the embeddings are written to (default: {PATH_DATABASE})",
 )
 @click.option(
-    "--embedding_model",
-    default=DEFAULT_EMBEDDINGS_MODEL,
-    type=click.Choice(CHOICE_EMBEDDING_MODELS),
-    help=f"Instruct model to generate embeddings (default: {DEFAULT_EMBEDDINGS_MODEL})",
+    "--embeddings_model",
+    default=EMBEDDINGS_MODEL,
+    type=click.STRING,
+    help=f"Instruct model to generate embeddings (default: {EMBEDDINGS_MODEL})",
 )
 @click.option(
-    "--embedding_type",
-    default=DEFAULT_EMBEDDINGS_CLASS,
-    type=click.Choice(CHOICE_EMBEDDING_TYPES),
-    help=f"Embedding type to use (default: {DEFAULT_EMBEDDINGS_CLASS})",
+    "--torch_device_type",
+    default=TORCH_DEVICE_TYPE,
+    type=click.Choice(TORCH_DEVICE_TYPES),
+    help=f"Device to run on (default: {TORCH_DEVICE_TYPE})",
 )
 @click.option(
-    "--device_type",
-    default=DEFAULT_DEVICE_TYPE,
-    type=click.Choice(CHOICE_DEVICE_TYPES),
-    help=f"Device to run on (default: {DEFAULT_DEVICE_TYPE})",
+    "--torch_triton_type",
+    default=TORCH_TRITON_TYPE,
+    type=click.BOOL,
+    help=f"Device to run on (default: {TORCH_TRITON_TYPE})",
 )
 def main(
-    source_directory,
-    persist_directory,
-    embedding_model,
-    embedding_type,
-    device_type,
+    path_source,
+    path_database,
+    embeddings_model,
+    torch_device_type,
+    torch_triton_type,
 ):
     # Using model and types
-    logging.info(f"Using Embedding Model: {embedding_model}")
-    logging.info(f"Using Embedding Type: {embedding_type}")
-    logging.info(f"Using Device Type: {device_type}")
+    logging.info(f"Using Embedding Model: {embeddings_model}")
+    logging.info(f"Using Device Type: {torch_device_type}")
+    logging.info(f"Device Type is Triton: {torch_triton_type}")
 
-    # Load documents and split them into chunks
-    logging.info(f"Loading documents from {source_directory}")
+    name: str = "my_collection"
 
-    documents = load_documents(source_directory)
-    texts = split_documents(documents)
-
-    logging.info(f"Loaded {len(documents)} documents from {source_directory}")
-    logging.info(f"Split into {len(texts)} chunks of text")
-
-    # Create ChromaDBLoader instance
-    db_loader = ChromaDBLoader(
-        source_directory=source_directory,
-        persist_directory=persist_directory,
-        embedding_model=embedding_model,
-        embedding_type=embedding_type,
-        device_type=device_type,
-        settings=None,
+    # Uses PostHog library to collect telemetry
+    settings: Settings = Settings(
+        chroma_db_impl="duckdb+parquet",
+        persist_directory=str(path_database),
+        anonymized_telemetry=False,
     )
 
-    # Persist the embeddings to Chroma database
-    db_loader.persist(texts)
-    logging.info("Embeddings persisted to Chroma database.")
+    chroma_client: API = Client(settings=settings)
+
+    try:
+        collection: Collection = chroma_client.create_collection(name=name)
+    except ValueError:
+        logging.info(f"Collection with name {name} already exists")
+        exit(1)
+
+    # Load documents and split them into chunks
+    logging.info(f"Loading documents from {path_source}")
+
+    documents: Documents = [
+        "This is the first synthetic document.",
+        "Here is another synthetic document.",
+        "This is the third synthetic document.",
+    ]
+
+    # Each document needs a unique ID
+    ids: list[str] = ["doc1", "doc2", "doc3"]
+
+    collection.add(documents=documents, ids=ids)
+
+    query = "synthetic document"
+    results: QueryResult = collection.query(query_texts=[query], n_results=2)
+
+    print(f"Document IDs: {results['ids']}")
+    if results["documents"]:
+        print(f"Document Texts: {results['documents']}")
+    if results["distances"]:
+        print(f"Similarity Scores: {results['distances']}")
+
+    logging.info(f"Loaded {len(documents)} documents from {path_source}")
+    # logging.info(f"Split into {len(texts)} chunks of text")
+
+    # logging.info("Embeddings persisted to Chroma database.")
 
 
 if __name__ == "__main__":

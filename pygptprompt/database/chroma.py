@@ -1,19 +1,6 @@
-# pygptprompt/database/chroma.py
-#
-# Copyright 2023 PromtEngineer/localGPT
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 """
+pygptprompt/database/chroma.py
+
 This module provides functionality for loading and persisting
 documents to the Chroma database.
 
@@ -43,22 +30,8 @@ Usage:
 """
 
 from chromadb.config import Settings
-from langchain.base_language import BaseLanguageModel
-from langchain.chains import RetrievalQA
-from langchain.chains.retrieval_qa.base import BaseRetrievalQA
-from langchain.docstore.document import Document
-from langchain.embeddings.base import Embeddings
-from langchain.vectorstores import Chroma
-from langchain.vectorstores.base import VectorStoreRetriever
 
-from pygptprompt import (
-    DEFAULT_DEVICE_TYPE,
-    DEFAULT_EMBEDDINGS_CLASS,
-    DEFAULT_EMBEDDINGS_MODEL,
-    MAP_EMBEDDINGS_CLASS,
-    PATH_DATABASE,
-    PATH_SOURCE,
-)
+from pygptprompt import EMBEDDINGS_MODEL, PATH_DATABASE, PATH_SOURCE, TORCH_DEVICE_TYPE
 
 
 class ChromaDBLoader:
@@ -84,24 +57,21 @@ class ChromaDBLoader:
 
     def __init__(
         self,
-        source_directory: str | None,
-        persist_directory: str | None,
-        embedding_model: str | None,
-        embedding_type: str | None,
-        device_type: str | None,
-        settings: Settings | None,
+        path_source: str | None,
+        path_database: str | None,
+        embeddings_model: str | None,
+        torch_device_type: str | None,
     ):
-        self.source_directory = source_directory or PATH_SOURCE
-        self.persist_directory = persist_directory or PATH_DATABASE
-        self.embedding_model = embedding_model or DEFAULT_EMBEDDINGS_MODEL
-        self.embedding_type = embedding_type or DEFAULT_EMBEDDINGS_CLASS
-        self.device_type = device_type or DEFAULT_DEVICE_TYPE
+        self.source_directory = path_source or PATH_SOURCE
+        self.persist_directory = path_database or PATH_DATABASE
+        self.embedding_model = embeddings_model or EMBEDDINGS_MODEL
+        self.device_type = torch_device_type or TORCH_DEVICE_TYPE
 
         # The settings for the Chroma database
         # - chroma_db_impl: Chroma database implementation (duckdb+parquet)
         # - persist_directory: Directory for persisting the database
         # - anonymized_telemetry: Whether anonymized telemetry is enabled (False)
-        self.settings: Settings = settings or Settings(
+        self.settings: Settings = Settings(
             chroma_db_impl="duckdb+parquet",
             persist_directory=str(self.persist_directory),
             anonymized_telemetry=False,
