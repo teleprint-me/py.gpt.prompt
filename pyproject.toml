@@ -28,7 +28,7 @@ huggingface_hub = "^0.15.1"
 chromadb = "^0.3.26"
 llama-cpp-python = "0.1.67"
 tiktoken = "^0.4.0"
-openai = "^0.27.8"
+openai = {extras = ["embeddings"], version = "^0.27.8"}
 
 [tool.poetry.group.dev.dependencies]
 pre_commit = "^3.3.3"
