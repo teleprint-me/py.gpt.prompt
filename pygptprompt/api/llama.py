@@ -34,18 +34,18 @@ class LlamaAPI(BaseAPI):
         self.repo_id = repo_id
         self.filename = filename
 
-        if "cache_dir" in kwargs:
+        if "cache_dir" in kwargs and kwargs["cache_dir"]:
             self.cache_dir = kwargs["cache_dir"]
         else:
             self.cache_dir = os.path.join(Path.home(), ".cache", "huggingface", "hub")
 
-        if "model_path" in kwargs["model_path"]:
+        if "model_path" in kwargs and kwargs["model_path"]:
             self.model_path = kwargs["model_path"]
         else:
             self.model_path = self._download_model()
 
         if "verbose" not in kwargs:
-            kwargs["verbose"] = False  # Coerce silent output
+            kwargs["verbose"] = False  # NOTE: Assume silent output
 
         self.llama_model = Llama(model_path=self.model_path, **kwargs)
 
