@@ -9,6 +9,8 @@ import os
 from pathlib import Path
 from typing import List, Union
 
+__version__ = "0.0.10"
+
 # Set logging configuration
 # NOTE: Can be overridden on a script-by-script basis
 logging.basicConfig(
