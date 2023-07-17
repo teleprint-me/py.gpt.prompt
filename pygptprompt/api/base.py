@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 
 class BaseAPI(ABC):
+    @abstractmethod
     def get_completions(self, **kwargs):
         # completions will eventually be deprecated
         # according to the OpenAI API documentation.
