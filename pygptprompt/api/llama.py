@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Iterator
 
 from huggingface_hub import hf_hub_download
-from llama_cpp import ChatCompletionChunk, ChatCompletionMessage, Embedding, Llama
+from llama_cpp import ChatCompletionChunk, ChatCompletionMessage, EmbeddingData, Llama
 
 from pygptprompt import logging
 from pygptprompt.api.base import BaseAPI
@@ -130,15 +130,16 @@ class LlamaAPI(BaseAPI):
         if "messages" not in kwargs or not kwargs["messages"]:
             raise ValueError("Messages cannot be empty or None.")
 
+        kwargs["stream"] = True  # NOTE: Always coerce streaming
+
         try:
-            kwargs["stream"] = True  # NOTE: Always coerce streaming
             response = self.llama_model.create_chat_completion(**kwargs)
             return self._stream_chat_completion(response)
         except Exception as e:
             logging.error(f"Error generating chat completions: {e}")
             return ChatCompletionMessage(role="assistant", content=str(e))
 
-    def get_embeddings(self, **kwargs) -> Embedding:
+    def get_embeddings(self, **kwargs) -> EmbeddingData:
         """
         Generate embeddings using the Llama language model.
 
@@ -146,7 +147,7 @@ class LlamaAPI(BaseAPI):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Embedding: The generated embedding.
+            EmbeddingData: The generated embedding vector.
 
         Raises:
             ValueError: If the 'input' argument is empty or None.
@@ -155,4 +156,9 @@ class LlamaAPI(BaseAPI):
         if "input" not in kwargs or not kwargs["input"]:
             raise ValueError("Input cannot be empty or None.")
 
-        return self.llama_model.create_embedding(kwargs["input"])
+        try:
+            response = self.llama_model.create_embedding(kwargs["input"])
+            return response["data"][0]
+        except Exception as e:
+            logging.error(f"Error generating embeddings: {e}")
+            return EmbeddingData(index=0, object="list", embedding=[])

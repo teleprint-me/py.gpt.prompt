@@ -2,11 +2,12 @@
 pygptprompt/api/openai.py
 """
 import sys
-from typing import Any, Iterator
+from typing import Iterator
 
 import openai
-from llama_cpp import ChatCompletionMessage
+from llama_cpp import ChatCompletionChunk, ChatCompletionMessage, EmbeddingData
 
+from pygptprompt import logging
 from pygptprompt.api.base import BaseAPI
 
 
@@ -26,13 +27,13 @@ class OpenAIAPI(BaseAPI):
         openai.api_key = api_key
 
     def _stream_chat_completion(
-        self, response_generator: Iterator[dict[str, Any]]
+        self, response_generator: Iterator[ChatCompletionChunk]
     ) -> ChatCompletionMessage:
         """
         Process the stream of chat completion chunks and return the generated message.
 
         Args:
-            response_generator (Iterator[dict[str, Any]]): The chat completion chunk stream.
+            response_generator (Iterator[ChatCompletionChunk]): The chat completion chunk stream.
 
         Returns:
             ChatCompletionMessage: The generated message.
@@ -42,15 +43,14 @@ class OpenAIAPI(BaseAPI):
         for stream in response_generator:
             try:
                 token = stream.choices[0].delta["content"]
-
-                if stream.choices[0].delta:
+                if token:
                     print(token, end="")
                     sys.stdout.flush()
                     content += token
             except KeyError:
                 continue
 
-        print()
+        print()  # Add newline to model output
         sys.stdout.flush()
 
         return ChatCompletionMessage(role="assistant", content=content)
@@ -79,6 +79,9 @@ class OpenAIAPI(BaseAPI):
 
         Raises:
             KeyError: If the 'messages' argument is missing.
+
+        Note:
+            This method always coerces streaming by setting 'stream' to True.
         """
         if "model" not in kwargs:
             kwargs["model"] = "gpt-3.5-turbo"
@@ -86,15 +89,17 @@ class OpenAIAPI(BaseAPI):
         if "messages" not in kwargs:
             raise KeyError("Messages is a required argument.")
 
-        if "stream" not in kwargs:
-            kwargs["stream"] = True
+        kwargs["stream"] = True  # NOTE: Always coerce streaming
 
-        # Call the OpenAI API's chat.completion endpoint
-        response = openai.ChatCompletion.create(**kwargs)
-        # Return the generated message
-        return self._stream_chat_completion(response)
+        try:
+            # Call the OpenAI API's /v1/chat/completions endpoint
+            response = openai.ChatCompletion.create(**kwargs)
+            return self._stream_chat_completion(response)
+        except Exception as e:
+            logging.error(f"Error generating chat completions: {e}")
+            return ChatCompletionMessage(role="error", content=str(e))
 
-    def get_embeddings(self, **kwargs):
+    def get_embeddings(self, **kwargs) -> EmbeddingData:
         """
         Generate embeddings using the OpenAI language models.
 
@@ -102,7 +107,7 @@ class OpenAIAPI(BaseAPI):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            List[float]: The generated embedding vector.
+            EmbeddingData: The generated embedding vector.
 
         Raises:
             KeyError: If the 'input' argument is missing.
@@ -113,7 +118,10 @@ class OpenAIAPI(BaseAPI):
         if "input" not in kwargs:
             raise KeyError("Input is a required argument.")
 
-        # Call the OpenAI API's embeddings endpoint
-        response = openai.Embedding.create(**kwargs)
-        # Return the embedding vector
-        return response["data"][0]["embedding"]
+        try:
+            # Call the OpenAI API's /v1/embeddings endpoint
+            response = openai.Embedding.create(**kwargs)
+            return EmbeddingData(**response["data"][0])
+        except Exception as e:
+            logging.error(f"Error generating embeddings: {e}")
+            return EmbeddingData(index=0, object="list", embedding=[])
