@@ -1,3 +1,6 @@
+"""
+pygptprompt/api/llama.py
+"""
 import os
 import sys
 from pathlib import Path
@@ -11,6 +14,22 @@ from pygptprompt.api.base import BaseAPI
 
 
 class LlamaAPI(BaseAPI):
+    """
+    API class for interacting with the Llama language model.
+
+    Args:
+        repo_id (str): The ID of the model repository.
+        filename (str): The name of the model file.
+        **kwargs: Additional keyword arguments.
+
+    Attributes:
+        repo_id (str): The ID of the model repository.
+        filename (str): The name of the model file.
+        cache_dir (str): The directory to cache the downloaded model.
+        model_path (str): The path to the downloaded model file.
+        llama_model (Llama): The Llama language model instance.
+    """
+
     def __init__(self, repo_id: str, filename: str, **kwargs):
         self.repo_id = repo_id
         self.filename = filename
@@ -84,9 +103,30 @@ class LlamaAPI(BaseAPI):
         return ChatCompletionMessage(role="assistant", content=content)
 
     def get_completions(self, **kwargs):
+        """
+        Get completions from the Llama language model.
+
+        Raises:
+            NotImplementedError: This method is not implemented in the LlamaAPI class.
+        """
         raise NotImplementedError
 
     def get_chat_completions(self, **kwargs) -> ChatCompletionMessage:
+        """
+        Generate chat completions using the Llama language model.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            ChatCompletionMessage: The generated chat completion message.
+
+        Raises:
+            ValueError: If the 'messages' argument is empty or None.
+
+        Note:
+            This method always coerces streaming by setting 'stream' to True.
+        """
         if "messages" not in kwargs or not kwargs["messages"]:
             raise ValueError("Messages cannot be empty or None.")
 
@@ -99,6 +139,18 @@ class LlamaAPI(BaseAPI):
             return ChatCompletionMessage(role="assistant", content=str(e))
 
     def get_embeddings(self, **kwargs) -> Embedding:
+        """
+        Generate embeddings using the Llama language model.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Embedding: The generated embedding.
+
+        Raises:
+            ValueError: If the 'input' argument is empty or None.
+        """
         # NOTE: `input` is required and is type `Union[str, List[str]]`.
         if "input" not in kwargs or not kwargs["input"]:
             raise ValueError("Input cannot be empty or None.")

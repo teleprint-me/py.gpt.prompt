@@ -1,3 +1,6 @@
+"""
+pygptprompt/api/openai.py
+"""
 import sys
 from typing import Any, Iterator
 
@@ -8,12 +11,32 @@ from pygptprompt.api.base import BaseAPI
 
 
 class OpenAIAPI(BaseAPI):
+    """
+    API class for interacting with the OpenAI language models.
+
+    Args:
+        api_key (str): The OpenAI API key.
+
+    Attributes:
+        api_key (str): The OpenAI API key.
+    """
+
     def __init__(self, api_key: str):
+        self.api_key = api_key
         openai.api_key = api_key
 
     def _stream_chat_completion(
         self, response_generator: Iterator[dict[str, Any]]
     ) -> ChatCompletionMessage:
+        """
+        Process the stream of chat completion chunks and return the generated message.
+
+        Args:
+            response_generator (Iterator[dict[str, Any]]): The chat completion chunk stream.
+
+        Returns:
+            ChatCompletionMessage: The generated message.
+        """
         content = ""
 
         for stream in response_generator:
@@ -33,14 +56,30 @@ class OpenAIAPI(BaseAPI):
         return ChatCompletionMessage(role="assistant", content=content)
 
     def get_completions(self, **kwargs):
-        # For now, we'll raise a NotImplementedError
-        # You can implement this method later if you decide to support completions
+        """
+        Get completions from the OpenAI language models.
+
+        Raises:
+            NotImplementedError: This method is not implemented in the OpenAIAPI class.
+        """
         raise NotImplementedError
 
     def get_chat_completions(
         self,
         **kwargs,
     ) -> ChatCompletionMessage:
+        """
+        Generate chat completions using the OpenAI language models.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            ChatCompletionMessage: The generated chat completion message.
+
+        Raises:
+            KeyError: If the 'messages' argument is missing.
+        """
         if "model" not in kwargs:
             kwargs["model"] = "gpt-3.5-turbo"
 
@@ -56,6 +95,18 @@ class OpenAIAPI(BaseAPI):
         return self._stream_chat_completion(response)
 
     def get_embeddings(self, **kwargs):
+        """
+        Generate embeddings using the OpenAI language models.
+
+        Args:
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            List[float]: The generated embedding vector.
+
+        Raises:
+            KeyError: If the 'input' argument is missing.
+        """
         if "model" not in kwargs:
             kwargs["model"] = "text-embedding-ada-002"
 
