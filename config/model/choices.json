@@ -53,21 +53,15 @@
       "max_token_limit": 8191
     },
     "models": {
-      "text-davinci-003": {
-        "type": "completions",
-        "model": "text-davinci-003",
-        "max_tokens": 512,
-        "max_context": 4097
-      },
       "gpt-3.5-turbo": {
         "type": "chat_completions",
         "model": "gpt-3.5-turbo",
         "max_tokens": 1024,
         "max_context": 4096
       },
-      "gpt-3.5-turbo-0613": {
+      "gpt-3.5-turbo-16k": {
         "type": "chat_completions",
-        "model": "gpt-3.5-turbo-16k-0613",
+        "model": "gpt-3.5-turbo-16k",
         "max_tokens": 2048,
         "max_context": 16384
       },
@@ -77,9 +71,9 @@
         "max_tokens": 1024,
         "max_context": 8192
       },
-      "gpt-4-0613": {
+      "gpt-4-32k": {
         "type": "chat_completions",
-        "model": "gpt-4-0613",
+        "model": "gpt-4-32k",
         "max_tokens": 1024,
         "max_context": 8192
       }
