@@ -1,23 +1,13 @@
 {
   "providers": ["huggingface", "openai"],
-  "defaults": {
-    "temperature": 1,
-    "max_tokens": 512,
-    "top_p": 1,
-    "frequency_penalty": 0.0,
-    "presence_penalty": 0.0,
-    "best_of": 1
-  },
-  "context_window": {
-    "base_limit_percentage": 0.2
-  },
   "huggingface": {
     "choices": {
       "device_types": ["cpu", "cuda", "opencl", "vulkan", "hip", "mps", "lazy"],
       "embeddings_classes": [
         "HuggingFaceEmbeddings",
         "HuggingFaceInstructEmbeddings",
-        "OpenAIEmbeddings"
+        "OpenAIEmbeddings",
+        "LlamaCppEmbeddings"
       ],
       "embeddings_models": [
         "hkunlp/instructor-base",
@@ -50,7 +40,7 @@
   "openai": {
     "embeddings": {
       "model": "text-embedding-ada-002",
-      "max_token_limit": 8191
+      "max_token_limit": 8192
     },
     "models": {
       "gpt-3.5-turbo": {
@@ -75,7 +65,7 @@
         "type": "chat_completions",
         "model": "gpt-4-32k",
         "max_tokens": 1024,
-        "max_context": 8192
+        "max_context": 32768
       }
     }
   }
