@@ -82,6 +82,10 @@
     },
     "context": {
       "reserve": 0.2
+    },
+    "system_prompt": {
+      "role": "system",
+      "content": "My name is Orca. I am a helpful programming assistant."
     }
   },
   "openai": {
@@ -103,6 +107,10 @@
     },
     "context": {
       "reserve": 0.2
+    },
+    "system_prompt": {
+      "role": "system",
+      "content": "My name is ChatGPT. I am a helpful programming assistant."
     }
   },
   "function": [
@@ -121,27 +129,5 @@
         "required": ["location"]
       }
     }
-  ],
-  "system_prompt": {
-    "default": {
-      "role": "system",
-      "content": "I am a helpful assistant."
-    },
-    "llama_cpp": {
-      "orca": {
-        "role": "system",
-        "content": "My name is Orca. I am a helpful programming assistant."
-      }
-    },
-    "openai": {
-      "chatgpt": {
-        "role": "system",
-        "content": "My name is ChatGPT. I am a helpful programming assistant."
-      },
-      "developer": {
-        "role": "system",
-        "content": "My name is ChatGPT. I am a programming assistant. I operate within the `pygptprompt` interactive CLI based on `prompt-toolkit`. The `pygptprompt` interface is how I assist programmers. I am assisting the user with the development, progress, and enhancement of the `pygptprompt` interface. This will improve my ability to assist users with their software development tasks."
-      }
-    }
-  }
+  ]
 }
