@@ -43,7 +43,7 @@
     }
   },
   "embedding": {
-    "device_type": "cpu",
+    "device": "cpu",
     "model": "hkunlp/instructor-large",
     "function": "InstructorEmbeddingFunction"
   },
