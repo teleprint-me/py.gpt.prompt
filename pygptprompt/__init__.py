@@ -2,6 +2,27 @@
 pygptprompt/__init__.py
 
 Initialization code and configuration settings for the PyGPTPrompt package.
+
+NOTE: Llama models usually have a maximum token limit of 2048.
+The context window size may vary from model to model and can
+be easily adjusted as required.
+
+NOTE: IMPORTANT: MODEL_REPOSITORY
+Models are downloaded at runtime.
+The label convention is <username>/<repository>
+where <username>/<repository> represents the url endpoint
+where `hf_hub_download` writes [source] to [destination].
+For example:
+  ~/.cache/huggingface/hub/models--TheBloke--orca_mini_7B-GGML
+
+NOTE: IMPORTANT: MODEL_FILENAME
+Models are downloaded at runtime.
+The identifier convention is
+<model-id>.<n-params>.<ggml-version>.<quant-type>.<extension>
+where <model-id> represents the specific model identifier.
+For example:
+  orca-mini-7b.ggmlv3.q2_K.bin
+The filename follows the convention for the downloaded model files.
 """
 
 import logging
@@ -42,55 +63,11 @@ try:
 except AttributeError:
     CPU_COUNT: int = os.cpu_count() or 2
 
-# The default llama.cpp Model settings
-# NOTE: Llama models usually have a maximum token limit of 2048.
-# The context window size may vary from model to model and can
-# be easily adjusted as required.
-GGML_N_CTX: int = 2048
-GGML_MAX_TOKENS: int = 512
-GGML_TEMPERATURE: float = 0.8
-GGML_TOP_P: float = 0.95
-
-# The default llama.cpp GPU settings
-GGML_N_GPU_LAYERS: int = 0
-GGML_N_BATCH: int = 512
-GGML_LOW_VRAM: bool = False
-
-# NOTE: IMPORTANT: MODEL_REPOSITORY
-# Models are downloaded at runtime.
-# The label convention is <username>/<repository>
-# where <username>/<repository> represents the url endpoint
-# where `hf_hub_download` writes [source] to [destination].
-# For example:
-#   ~/.cache/huggingface/hub/models--TheBloke--orca_mini_7B-GGML
-
-# The default model git repository
-GGML_REPO_ID: str = "TheBloke/orca_mini_7B-GGML"
-
-# The default ggml model filename from the given git repository
-# NOTE: IMPORTANT: MODEL_FILENAME
-# Models are downloaded at runtime.
-# The identifier convention is
-# <model-id>.<n-params>.<ggml-version>.<quant-type>.<extension>
-# where <model-id> represents the specific model identifier.
-# For example:
-#   orca-mini-7b.ggmlv3.q2_K.bin
-# The filename follows the convention for the downloaded model files.
-
-# The default model filename from the git repository
-GGML_FILENAME: str = "orca-mini-7b.ggmlv3.q5_1.bin"
-
-# A List of supported embeddings class definitions
-CHOICE_EMBEDDING_TYPES: List[str] = [
-    "HuggingFaceEmbeddings",
-    "HuggingFaceInstructEmbeddings",
-]
-
-# The default device type to compute with
-TORCH_DEVICE_TYPE: str = "cpu"
-
-# Boolean representing if the device is using AMD Triton or not
-TORCH_TRITON_TYPE: bool = False
+# The default system message for the employed model
+SYSTEM_MESSAGE = {
+    "role": "system",
+    "content": "My name is GPT. I am a helpful programming assistant.",
+}
 
 # A List of PyTorch supported device types
 TORCH_DEVICE_TYPES: List[str] = [
