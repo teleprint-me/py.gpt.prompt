@@ -1,37 +1,147 @@
 {
-    "chat_completions": {
-        "model": "gpt-3.5-turbo",
-        "max_tokens": 1024,
-        "temperature": 0.5,
-        "base_limit_percentage": 0.2,
-        "system_message": {
-            "role": "system",
-            "content": "Hello, I am ChatGPT, your AI programming assistant. I operate within the `pygptprompt` interactive CLI based on `prompt-toolkit`. I can execute commands, browse the internet, and access local software development projects.\n\n## Commands:\n\n**Sub-Process**\n/: Execute shell command (restricted by configuration).\n\n**Web Pages**\n/robots <url>: Fetch URL's robots.txt.\n/browse <url>: Fetch, markdown-convert, and cache URL's HTML.\n\n**RSS Feeds**\n/rss <url>: Display full-text articles from RSS feed.\n\n**Filesystem** (access restricted by configuration)\n/cd <directory>: Change current working directory (defaults to current dir).\n/ls <directory>: List files in directory (defaults to current dir).\n/read <file_path> [start_line] [end_line]: Read the content of a local file.\n\n**Help**\n/help [command]: Show help information. If a command is specified, it shows detailed help for that command.\n\n## Subprocess Commands:\n/date, /cal, /pwd, /cat, /grep, and /git\n\nBoth you and I can execute commands. To issue a command, simply start a line with `/` followed by the desired command. For example, to get more information, use the command `/help`.\n\nI respect your security, privacy, and machine at all times and will execute commands upon your request or ask for your permission in advance. Our interaction is based on transparency, mutual benefit, and trust. You can review and audit the commands and operations I execute. I strive to be curious, creative, honest, focused, forthright, and true."
-        }
-    },
+  "application": {
     "path": {
-        "session": "/path/to/sessions",
-        "environment": "/path/to/env",
-        "storage": "/path/to/storage"
+      "local": "${HOME}/.local/share/pygptprompt",
+      "cache": "${HOME}/.cache/pygptprompt",
+      "config": "${HOME}/.config/pygptprompt",
+      "chroma": "${HOME}/.cache/pygptprompt/chromadb"
     },
     "access": {
-        "shell": {
-            "allowed_commands": ["date", "cal", "pwd", "cat", "grep", "git"],
-            "disallowed_commands": ["rm", "sudo", "su"],
-            "disallowed_strings": ["-rf /", ":(){ :|:& };:"],
-            "disallowed_chars": ["&", ";", "*", ">", ">>", "|"]
-        },
-        "file": {
-            "allowed_paths": ["/path/to/source/code", "/path/to/files"],
-            "disallowed_paths": [
-                "/path/to/env",
-                "/path/to/private/keys",
-                "/path/to/config.json"
-            ]
-        }
+      "confirm": true,
+      "shell": {
+        "allowed_commands": [
+          "date",
+          "cal",
+          "pwd",
+          "cat",
+          "grep",
+          "git",
+          "tree",
+          "virtualenv",
+          "poetry",
+          "pytest"
+        ],
+        "disallowed_commands": ["rm", "sudo", "su"],
+        "disallowed_strings": ["-rf /", ":(){ :|:& };:"],
+        "disallowed_chars": ["&", ";", "*", ">", ">>", "|"]
+      },
+      "file": {
+        "allowed_paths": [
+          "${HOME}/.local/share/pygptprompt",
+          "${HOME}/.cache/pygptprompt"
+        ],
+        "disallowed_paths": [
+          ".env",
+          "${HOME}/.local/config/pygptprompt/env",
+          "${HOME}/.local/config/pygptprompt/config"
+        ]
+      }
     },
     "style": {
-        "italic": "italic",
-        "bold": "bold"
+      "italic": "italic",
+      "bold": "bold"
     }
+  },
+  "embedding": {
+    "device_type": "cpu",
+    "model": "hkunlp/instructor-large",
+    "function": "InstructorEmbeddingFunction"
+  },
+  "llama_cpp": {
+    "provider": "huggingface",
+    "model": {
+      "repo_id": "TheBloke/orca_mini_7B-GGML",
+      "filename": "orca-mini-7b.ggmlv3.q5_1.bin",
+      "n_ctx": 512,
+      "n_parts": -1,
+      "seed": 1337,
+      "f16_kv": true,
+      "logits_all": false,
+      "vocab_only": false,
+      "use_mmap": true,
+      "use_mlock": false,
+      "embedding": true,
+      "n_threads": null,
+      "n_batch": 512,
+      "last_n_tokens_size": 64,
+      "lora_base": null,
+      "lora_path": null,
+      "tensor_split": null,
+      "rope_freq_base": 10000.0,
+      "rope_freq_scale": 1.0,
+      "verbose": false
+    },
+    "chat_completions": {
+      "max_tokens": 512,
+      "temperature": 0.8,
+      "top_p": 0.95,
+      "top_k": 40,
+      "stream": true,
+      "stop": [],
+      "repeat_penalty": 1.1
+    },
+    "context": {
+      "reserve": 0.2
+    }
+  },
+  "openai": {
+    "provider": "openai",
+    "chat_completions": {
+      "model": "gpt-3.5-turbo",
+      "temperature": 0.8,
+      "max_tokens": 512,
+      "top_p": 0.95,
+      "n": 1,
+      "stream": false,
+      "stop": null,
+      "presence_penalty": 0,
+      "frequency_penalty": 0,
+      "logit_bias": null
+    },
+    "embeddings": {
+      "model": "text-embedding-ada-002"
+    },
+    "context": {
+      "reserve": 0.2
+    }
+  },
+  "function": [
+    {
+      "name": "get_current_weather",
+      "description": "Get the current weather in a given location",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "The city and state, e.g. San Francisco, CA"
+          },
+          "unit": { "type": "string", "enum": ["celsius", "fahrenheit"] }
+        },
+        "required": ["location"]
+      }
+    }
+  ],
+  "system_prompt": {
+    "default": {
+      "role": "system",
+      "content": "I am a helpful assistant."
+    },
+    "llama_cpp": {
+      "orca": {
+        "role": "system",
+        "content": "My name is Orca. I am a helpful programming assistant."
+      }
+    },
+    "openai": {
+      "chatgpt": {
+        "role": "system",
+        "content": "My name is ChatGPT. I am a helpful programming assistant."
+      },
+      "developer": {
+        "role": "system",
+        "content": "My name is ChatGPT. I am a programming assistant. I operate within the `pygptprompt` interactive CLI based on `prompt-toolkit`. The `pygptprompt` interface is how I assist programmers. I am assisting the user with the development, progress, and enhancement of the `pygptprompt` interface. This will improve my ability to assist users with their software development tasks."
+      }
+    }
+  }
 }
