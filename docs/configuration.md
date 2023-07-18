@@ -56,9 +56,9 @@ The `llama_cpp` section contains configuration options for LLAMA CPP:
 
 - `provider`: The provider for LLAMA CPP. Default: `huggingface`
 - `model.repo_id`: The repository ID for the LLAMA CPP model. Default:
-  `TheBloke/orca_mini_7B-GGML`
+  `TheBloke/Llama-2-7B-Chat-GGML`
 - `model.filename`: The filename of the LLAMA CPP model. Default:
-  `orca-mini-7b.ggmlv3.q5_1.bin`
+  `llama-2-7b-chat.ggmlv3.q5_1.bin`
 - `model.n_ctx`: The number of context tokens for the LLAMA CPP model. Default:
   `512`
 - `model.n_parts`: The number of model parts to use. Default: `-1`
