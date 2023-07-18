@@ -13,7 +13,7 @@ from pygptprompt import logging
 from pygptprompt.api.base import BaseAPI
 
 
-class LlamaAPI(BaseAPI):
+class LlamaCppAPI(BaseAPI):
     """
     API class for interacting with the Llama language model.
 
@@ -31,8 +31,8 @@ class LlamaAPI(BaseAPI):
     """
 
     def __init__(self, repo_id: str, filename: str, **kwargs):
-        self.repo_id = repo_id
-        self.filename = filename
+        self._repo_id = repo_id
+        self._filename = filename
 
         if "cache_dir" in kwargs and kwargs["cache_dir"]:
             self.cache_dir = kwargs["cache_dir"]
@@ -56,12 +56,12 @@ class LlamaAPI(BaseAPI):
         Returns:
             str: The path to the downloaded model file.
         """
-        logging.info(f"Using {self.repo_id} to load {self.filename}")
+        logging.info(f"Using {self._repo_id} to load {self._filename}")
 
         try:
             model_path = hf_hub_download(
-                repo_id=self.repo_id,
-                filename=self.filename,
+                repo_id=self._repo_id,
+                filename=self._filename,
                 cache_dir=self.cache_dir,
                 resume_download=True,
             )
@@ -69,7 +69,7 @@ class LlamaAPI(BaseAPI):
             logging.error(f"Error downloading model: {e}")
             sys.exit(1)
 
-        logging.info(f"Using {model_path} to load {self.repo_id} into memory")
+        logging.info(f"Using {model_path} to load {self._filename} into memory")
 
         return model_path
 

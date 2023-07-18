@@ -2,129 +2,56 @@ import sys
 from typing import List
 
 import click
-from llama_cpp import ChatCompletionMessage, EmbeddingData
+from llama_cpp import ChatCompletionMessage
 from prompt_toolkit import prompt as input
 
-from pygptprompt import (
-    GGML_FILENAME,
-    GGML_LOW_VRAM,
-    GGML_MAX_TOKENS,
-    GGML_N_BATCH,
-    GGML_N_CTX,
-    GGML_N_GPU_LAYERS,
-    GGML_REPO_ID,
-    GGML_TEMPERATURE,
-    GGML_TOP_P,
-    logging,
-)
-from pygptprompt.api.llama import LlamaAPI
+from pygptprompt import logging
+from pygptprompt.api.llama_cpp import LlamaCppAPI
+from pygptprompt.setting.config import GlobalConfiguration
 
 
 @click.command()
-@click.option(
-    "--repo_id",
-    type=click.STRING,
-    default=GGML_REPO_ID,
-    help="The repository to download the model from. Default is TheBloke/orca_mini_7B-GGML.",
-)
-@click.option(
-    "--filename",
-    type=click.STRING,
-    default=GGML_FILENAME,
-    help="The filename of the model from the given repository. Default is orca-mini-7b.ggmlv3.q5_1.bin.",
+@click.argument(
+    "config_path",
+    type=click.Path(exists=True),
+    default="config.json",
 )
 @click.option(
     "--prompt",
     type=click.STRING,
     default=str(),
-    help="Prompt the model with a string. Default: str",
+    help="Prompt the model with a string.",
 )
 @click.option(
     "--chat",
-    type=click.BOOL,
-    help="Enter a chat loop with the model. Default: False",
+    is_flag=True,
+    help="Enter a chat loop with the model.",
 )
-@click.option(
-    "--n_ctx",
-    type=click.INT,
-    default=GGML_N_CTX,
-    help="Maximum context size. Default is 512.",
-)
-@click.option(
-    "--n_batch",
-    type=click.INT,
-    default=GGML_N_BATCH,
-    help="Number of batches to use. Default is 512.",
-)
-@click.option(
-    "--n_gpu_layers",
-    type=click.INT,
-    default=GGML_N_GPU_LAYERS,
-    help="Number of GPU layers to use. Default is 0.",
-)
-@click.option(
-    "--low_vram",
-    type=click.BOOL,
-    default=GGML_LOW_VRAM,
-    help="Set to True if GPU device has low VRAM. Default is False.",
-)
-@click.option(
-    "--max_tokens",
-    type=click.INT,
-    default=GGML_MAX_TOKENS,
-    help="The maximum number of tokens to generate. Default is 512.",
-)
-@click.option(
-    "--temperature",
-    type=click.FLOAT,
-    default=GGML_TEMPERATURE,
-    help="The temperature to use for sampling. Default is 0.8.",
-)
-@click.option(
-    "--top_p",
-    type=click.FLOAT,
-    default=GGML_TOP_P,
-    help="The top-p value to use for sampling. Default is 0.95.",
-)
-def main(
-    repo_id,
-    filename,
-    n_ctx,
-    n_batch,
-    n_gpu_layers,
-    low_vram,
-    max_tokens,
-    temperature,
-    top_p,
-    prompt,
-    chat,
-):
-    llama = LlamaAPI(
-        repo_id=repo_id,
-        filename=filename,
-        n_ctx=n_ctx,
-        n_gpu_layers=n_gpu_layers,
-        n_batch=n_batch,
-        low_vram=low_vram,
+def main(config_path, prompt, chat):
+    if not (bool(prompt) ^ chat):
+        print(
+            "Use either --prompt or --chat, but not both.",
+            "See --help for more information.",
+        )
+        sys.exit(1)
+
+    config = GlobalConfiguration(config_path)
+
+    llama = LlamaCppAPI(
+        repo_id=config.get_value("llama_cpp.model.repo_id"),
+        filename=config.get_value("llama_cpp.model.filename"),
+        n_ctx=config.get_value("llama_cpp.model.n_ctx"),
+        n_batch=config.get_value("llama_cpp.model.n_batch"),
+        n_gpu_layers=config.get_value("llama_cpp.model.n_gpu_layers"),
+        low_vram=config.get_value("llama_cpp.model.low_vram"),
     )
 
     system_prompt = ChatCompletionMessage(
-        role="system",
-        content="My name is Orca. I am a helpful AI assistant.",
+        role=config.get_value("llama_cpp.system_prompt.role"),
+        content=config.get_value("llama_cpp.system_prompt.content"),
     )
 
     messages: List[ChatCompletionMessage] = [system_prompt]
-
-    if not prompt and not chat:
-        raise ValueError(
-            "Neither prompt nor chat were provided. "
-            "Did you forget to set the options value?"
-        )
-
-    if prompt and chat:
-        raise ValueError(
-            "Use either --prompt or --chat, but not both."
-        )  # NOTE: Only one option at a time!
 
     try:
         print(system_prompt.get("role"))
@@ -132,50 +59,44 @@ def main(
         print()
 
         if prompt:
-            # Add a single message to the list and generate a response
-            user_prompt = ChatCompletionMessage(
-                role="user",
-                content=prompt,
-            )
+            user_prompt = ChatCompletionMessage(role="user", content=prompt)
             messages.append(user_prompt)
             print("assistant")
             message: ChatCompletionMessage = llama.get_chat_completions(
                 messages=messages,
-                max_tokens=max_tokens,
-                temperature=temperature,
-                top_p=top_p,
+                max_tokens=config.get_value("llama_cpp.chat_completions.max_tokens"),
+                temperature=config.get_value("llama_cpp.chat_completions.temperature"),
+                top_p=config.get_value("llama_cpp.chat_completions.top_p"),
             )
             messages.append(message)
 
         elif chat:
-            # Enter a chat loop
             while True:
                 try:
                     print("user")
                     text_input = input(
-                        "> ",
-                        multiline=True,
-                        wrap_lines=True,
-                        prompt_continuation=". ",
+                        "> ", multiline=True, wrap_lines=True, prompt_continuation=". "
                     )
                 except (EOFError, KeyboardInterrupt):
                     break
-                user_message = ChatCompletionMessage(
-                    role="user",
-                    content=text_input,
-                )
+                user_message = ChatCompletionMessage(role="user", content=text_input)
                 messages.append(user_message)
 
                 print()
                 print("assistant")
                 message: ChatCompletionMessage = llama.get_chat_completions(
                     messages=messages,
-                    max_tokens=max_tokens,
-                    temperature=temperature,
-                    top_p=top_p,
+                    max_tokens=config.get_value(
+                        "llama_cpp.chat_completions.max_tokens"
+                    ),
+                    temperature=config.get_value(
+                        "llama_cpp.chat_completions.temperature"
+                    ),
+                    top_p=config.get_value("llama_cpp.chat_completions.top_p"),
                 )
                 print()
                 messages.append(message)
+
         else:
             print("Nothing to do.")
     except Exception as e:
