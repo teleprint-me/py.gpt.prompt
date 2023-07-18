@@ -46,6 +46,6 @@ class Singleton(object, metaclass=MetaSingleton):
         Initializes a new instance of the Singleton class.
 
         Note:
-            This method is empty, as all initialization should be performed in the __new__ method.
+            This method is where initialization should be performed.
         """
         super(Singleton, self).__init__()
