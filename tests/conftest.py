@@ -3,11 +3,11 @@ import os
 
 import pytest
 
-from pygptprompt.openai import OpenAI
-from pygptprompt.session.model import SessionModel
-from pygptprompt.session.policy import SessionPolicy
-from pygptprompt.session.token import SessionToken
-from pygptprompt.setting import GlobalConfiguration
+# from pygptprompt.api.openai import OpenAIAPI
+# from pygptprompt.session.model import SessionModel
+# from pygptprompt.session.policy import SessionPolicy
+# from pygptprompt.session.token import SessionToken
+from pygptprompt.setting.config import GlobalConfiguration
 
 
 def pytest_addoption(parser):
@@ -65,7 +65,7 @@ def chat_completion() -> list[dict[str, str]]:
 
 
 @pytest.fixture(scope="module")
-def config_filepath() -> str:
+def config_file_path() -> str:
     if os.path.exists("config.json"):
         filepath = "config.json"
     else:
@@ -74,25 +74,25 @@ def config_filepath() -> str:
 
 
 @pytest.fixture(scope="module")
-def config(config_filepath: str) -> GlobalConfiguration:
-    return GlobalConfiguration(config_filepath)
+def config(config_file_path: str) -> GlobalConfiguration:
+    return GlobalConfiguration(config_file_path)
 
 
-@pytest.fixture(scope="module")
-def openai(config: GlobalConfiguration) -> OpenAI:
-    return OpenAI(config.get_api_key())
+# @pytest.fixture(scope="module")
+# def openai(config: GlobalConfiguration) -> OpenAIAPI:
+#     return OpenAIAPI(config.get_api_key())
 
 
-@pytest.fixture(scope="module")
-def session_token(config: GlobalConfiguration) -> SessionToken:
-    return SessionToken(config)
+# @pytest.fixture(scope="module")
+# def session_token(config: GlobalConfiguration) -> SessionToken:
+#     return SessionToken(config)
 
 
-@pytest.fixture(scope="module")
-def session_model(config: GlobalConfiguration) -> SessionModel:
-    return SessionModel(config)
+# @pytest.fixture(scope="module")
+# def session_model(config: GlobalConfiguration) -> SessionModel:
+#     return SessionModel(config)
 
 
-@pytest.fixture(scope="module")
-def session_policy(config):
-    return SessionPolicy(config)
+# @pytest.fixture(scope="module")
+# def session_policy(config):
+#     return SessionPolicy(config)

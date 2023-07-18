@@ -1,10 +1,10 @@
 {
-  "application": {
+  "app": {
     "path": {
       "local": "${HOME}/.local/share/pygptprompt",
       "cache": "${HOME}/.cache/pygptprompt",
       "config": "${HOME}/.config/pygptprompt",
-      "chroma": "${HOME}/.cache/pygptprompt/chromadb"
+      "env": "${PWD}/.env"
     },
     "access": {
       "confirm": true,
@@ -26,15 +26,8 @@
         "disallowed_chars": ["&", ";", "*", ">", ">>", "|"]
       },
       "file": {
-        "allowed_paths": [
-          "${HOME}/.local/share/pygptprompt",
-          "${HOME}/.cache/pygptprompt"
-        ],
-        "disallowed_paths": [
-          ".env",
-          "${HOME}/.local/config/pygptprompt/env",
-          "${HOME}/.local/config/pygptprompt/config"
-        ]
+        "allowed_paths": ["${PWD}", "${HOME}/.cache/pygptprompt"],
+        "disallowed_paths": [".env", "${HOME}/.config/pygptprompt"]
       }
     },
     "style": {

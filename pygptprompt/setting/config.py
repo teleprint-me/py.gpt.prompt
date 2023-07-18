@@ -9,8 +9,10 @@ from typing import Any, Optional
 
 import dotenv
 
-from pygptprompt.pattern import MappingTemplate, Singleton
+from pygptprompt.pattern.mapping import MappingTemplate
+from pygptprompt.pattern.singleton import Singleton
 from pygptprompt.setting.json import read_json, write_json
+from pygptprompt.setting.path import evaluate_path
 
 
 class GlobalConfiguration(Singleton, MappingTemplate):
@@ -94,7 +96,7 @@ class GlobalConfiguration(Singleton, MappingTemplate):
         Raises:
             ValueError: If the `.env` file cannot be loaded or the `OPENAI_API_KEY` environment variable is not set.
         """
-        env = self.get_value("path.environment", ".env")
+        env = evaluate_path(self.get_value("app.path.env", ".env"))
 
         if not dotenv.load_dotenv(env):
             raise ValueError("EnvironmentError: Failed to load `.env`")
