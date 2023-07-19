@@ -12,6 +12,14 @@ interaction.
 
 ![GPT-3.5 Turbo Demo](docs/assets/gpt-3.5-turbo.gif)
 
+Please note that the application is currently in a broken and incomplete state.
+The developer is actively working on separating concerns for handling the APIs and
+related models. There are ongoing efforts to implement freezing and unfreezing
+portions of the sequences, and to fit the APIs so they are congruent and
+interchangeable, supporting hot-swapping between the OpenAI API and Llama.Cpp
+API. The core aspects of the library have been restructured and reorganized for
+better organization, efficiency, and performance.
+
 ## Prerequisites
 
 - [python](https://www.python.org/) 3.10 or later
@@ -76,45 +84,69 @@ While PyGPTPrompt is still in its prototype phase, there are several features
 currently being worked on, and plans for future development. Here are some of
 the features currently being worked on:
 
-- Cleaning up read commands to prevent context flooding and accidental flushing
-  of successful floods, and instead returning a string indicating that the
-  contents are too large.
-- Adding commands for handling the context window, such as freezing and
-  unfreezing select messages within the queue.
-- Implementing a vector database to prevent the model from "forgetting" as
-  easily. This will depend on the accuracy of the query and what's fed back into
-  the model.
+- **Context Management:** Improvements are being made to the handling of read
+  commands to prevent context flooding and accidental flushing of successful
+  floods. Instead of overwhelming the user with large amounts of data, the
+  system will return a string indicating that the contents are too large.
+
+- **Context Window Control:** Commands are being developed for handling the
+  context window, such as freezing and unfreezing select messages within the
+  queue. This will give users more control over the information they are
+  interacting with.
+
+- **Vector Database Integration:** Work is being done to implement a vector
+  database to prevent the model from "forgetting" as easily. This feature will
+  depend on the accuracy of the query and what's fed back into the model.
 
 Here are some of the planned features for future development:
 
-- Enhanced security features for reading and writing files.
-- Integration with more third-party APIs and services.
+- **Enhanced Security Features:** Future updates will include enhanced security
+  features for reading and writing files, ensuring that user data is handled
+  safely and securely.
+
+- **Third-Party API Integration:** Plans are in place to integrate with more
+  third-party APIs and services, expanding the capabilities and usefulness of
+  PyGPTPrompt.
 
 If you have any feedback, ideas, or suggestions for these planned features, or
 any new ones, please feel free to share them!
 
 ## Updates
 
-As of June 4, 2023, several major changes and updates have been made:
+As of July 19, 2023, several major changes and updates have been made:
 
-1. **Bump Revision Number:** The revision number has been bumped from 0.0.6 to
-   0.0.7 to prepare for the upcoming release.
+1. **Revision Number Update:** The revision number has been updated to prepare
+   for the upcoming release.
 
-2. **Fix OpenAI API Key Registration:** The OpenAI API key registration process
+2. **OpenAI API Key Registration Fix:** The OpenAI API key registration process
    has been fixed, ensuring smoother integration.
 
-3. **Improved Installation Instructions:** The installation instructions have
+3. **Installation Instructions Improvement:** The installation instructions have
    been enhanced for easier setup.
 
-4. **Add Shebang to main.py:** The `main.py` file now includes a shebang to make
-   it an executable module.
-
-5. **Fix Directory Path for Configuration Files:** The directory path for
+4. **Configuration Files Directory Path Fix:** The directory path for
    configuration files has been updated to ensure consistency.
 
-6. **Introduce Helper Script for Running GPT Chat Sessions:** A new helper
+5. **Introduction of Helper Script for Running GPT Chat Sessions:** A new helper
    script, `gptprompt.sh`, has been added to facilitate running GPT chat
    sessions.
+
+6. **API Interface Refactoring:** The API interface has been refactored to match
+   the Llama API, facilitating a smoother integration between the two.
+
+7. **Deprecation of Chat Module:** The chat module has been deprecated and
+   replaced with model-specific tools for better performance and efficiency.
+
+8. **Addition of Model Functions Skeleton:** A skeleton for model functions has
+   been added, laying the groundwork for future development.
+
+9. **Fixes and Improvements in Configuration Management:** Several fixes and
+   improvements have been made in the configuration management, including the
+   addition of config for PyTorch, fixing the Llama.cpp provider, and adding
+   tests for path evaluation.
+
+10. **Refactoring of Settings:** The settings have been restructured and
+    reorganized by group for better management and ease of use.
 
 For more detailed information, you can refer to the individual commits in the
 [GitHub Commits](https://github.com/teleprint-me/py.gpt.prompt/commits/main)
