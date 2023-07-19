@@ -4,9 +4,9 @@ GPT-3.5 and GPT-4.
 # PyGPTPrompt
 
 PyGPTPrompt is a powerful CLI tool designed to streamline interactions with
-advanced AI models. It specializes in managing context windows, optimizing the
-long-term memory performance of models like OpenAI's GPT-3.5, GPT-4, and those
-supported by the llama.cpp Python API.
+advanced AI models. It specializes in managing context windows, optimizing both
+short and long-term memory performance of models like OpenAI's GPT-3.5, GPT-4,
+and those supported by the llama.cpp Python API.
 
 ![GPT-3.5 Turbo Demo](docs/assets/gpt-3.5-turbo.gif)
 
@@ -86,9 +86,9 @@ section.
 
 ## Contributing
 
-If you're interested in contributing to PyGPTPrompt, please check out our
-contributing guidelines. We welcome any form of contribution, from bug reports
-to feature requests to pull requests.
+If you're interested in contributing to PyGPTPrompt, please check out the
+developers contributing guidelines. The developer welcomes any form of
+contribution, from bug reports to feature requests to pull requests.
 
 ## License
 
