@@ -1,5 +1,5 @@
 """
-pygptprompt/setting/json.py
+pygptprompt/config/json.py
 """
 import json
 from json import JSONDecodeError

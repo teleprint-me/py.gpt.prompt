@@ -1,5 +1,5 @@
 """
-pygptprompt/setting/config.py
+pygptprompt/config/manager.py
 """
 import datetime
 import os
@@ -9,13 +9,13 @@ from typing import Any, Optional
 
 import dotenv
 
+from pygptprompt.config.json import read_json, write_json
+from pygptprompt.config.path import evaluate_path
 from pygptprompt.pattern.mapping import MappingTemplate
 from pygptprompt.pattern.singleton import Singleton
-from pygptprompt.setting.json import read_json, write_json
-from pygptprompt.setting.path import evaluate_path
 
 
-class GlobalConfiguration(Singleton, MappingTemplate):
+class ConfigurationManager(Singleton, MappingTemplate):
     """
     Singleton class for managing global configuration settings.
 

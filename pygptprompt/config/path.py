@@ -1,3 +1,6 @@
+"""
+pygptprompt/config/path.py
+"""
 import os
 
 
