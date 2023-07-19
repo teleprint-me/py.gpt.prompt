@@ -10,13 +10,11 @@ and those supported by the llama.cpp Python API.
 
 ![GPT-3.5 Turbo Demo](docs/assets/gpt-3.5-turbo.gif)
 
-Please note that the application is currently in a broken and incomplete state.
-The developer is actively working on separating concerns for handling the APIs
-and related models. There are ongoing efforts to implement freezing and
-unfreezing portions of the sequences, and to fit the APIs so they are congruent
-and interchangeable, supporting hot-swapping between the OpenAI API and
-Llama.Cpp API. The core aspects of the library have been restructured and
-reorganized for better organization, efficiency, and performance.
+Please note that the application is currently under active development. The
+developer is working on separating concerns for handling the APIs and related
+models, implementing context window management features, and restructuring the
+core aspects of the library for better organization, efficiency, and
+performance.
 
 ## Table of Contents
 
@@ -69,12 +67,19 @@ development and not yet production-ready.
 
 ## Roadmap
 
-- **Context Management:** Improvements to prevent context flooding and
-  accidental flushing of successful floods.
-- **Context Window Control:** Commands for handling the context window, such as
-  freezing and unfreezing select messages within the queue.
-- **Vector Database Integration:** Implement a vector database to prevent the
-  model from "forgetting" as easily.
+- **Context Management:** Restructuring the core APIs for congruency and
+  alignment to simplify hot-swapping between models and improve context
+  management.
+- **Context Window Control:** Implementing IRC-like commands for handling the
+  context window, such as freezing and unfreezing select messages within the
+  queue.
+- **GPT Function Execution:** Incorporating OpenAI's new Function API features
+  for more reliable retrieval of structured data.
+- **Vector Database Integration:** Implementing a vector database to enhance the
+  model's memory capabilities.
+- **Fine-Tuning LLama-2 Models:** Creating fine-tuned Llama-2 models for
+  utilizing the Functions API and improving Mathematical and Programmatic
+  reasoning for chat-like interactions.
 
 ## Updates
 
