@@ -2,7 +2,7 @@
 pygptprompt/api/openai.py
 """
 import sys
-from typing import Iterator
+from typing import Any, Iterator
 
 import openai
 from llama_cpp import ChatCompletionChunk, ChatCompletionMessage, EmbeddingData
@@ -55,7 +55,7 @@ class OpenAIAPI(BaseAPI):
 
         return ChatCompletionMessage(role="assistant", content=content)
 
-    def get_completions(self, **kwargs):
+    def get_completions(self, **kwargs: Any):
         """
         Get completions from the OpenAI language models.
 
@@ -66,7 +66,7 @@ class OpenAIAPI(BaseAPI):
 
     def get_chat_completions(
         self,
-        **kwargs,
+        **kwargs: Any,
     ) -> ChatCompletionMessage:
         """
         Generate chat completions using the OpenAI language models.
@@ -99,7 +99,7 @@ class OpenAIAPI(BaseAPI):
             logging.error(f"Error generating chat completions: {e}")
             return ChatCompletionMessage(role="error", content=str(e))
 
-    def get_embeddings(self, **kwargs) -> EmbeddingData:
+    def get_embeddings(self, **kwargs: Any) -> EmbeddingData:
         """
         Generate embeddings using the OpenAI language models.
 
