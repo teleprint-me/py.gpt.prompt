@@ -4,10 +4,14 @@ tests/unit/test_api_llama_cpp.py
 import pytest
 from llama_cpp import ChatCompletionMessage, EmbeddingData
 
+from pygptprompt.api.base import BaseAPI
 from pygptprompt.api.llama_cpp import LlamaCppAPI
 
 
 class TestLlamaCppAPI:
+    def test_api_type(self, llama_cpp_api: LlamaCppAPI):
+        assert isinstance(llama_cpp_api, BaseAPI)
+
     @pytest.mark.slow
     def test_get_chat_completions(
         self,
