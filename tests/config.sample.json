@@ -34,8 +34,14 @@
       "bold": "bold"
     }
   },
+  "torch": {
+    "provider": "meta",
+    "triton": false,
+    "device": "cpu",
+    "device_types": ["cpu", "cuda", "hip", "mps", "opencl", "vulkan", "lazy"]
+  },
   "embedding": {
-    "provider": "chromadb",
+    "provider": "chroma",
     "device": "cpu",
     "model": {
       "repo_id": "hkunlp/instructor-large",
@@ -44,7 +50,7 @@
     }
   },
   "llama_cpp": {
-    "provider": "llama_cpp",
+    "provider": "ggml",
     "model": {
       "repo_id": "TheBloke/Llama-2-7B-Chat-GGML",
       "filename": "llama-2-7b-chat.ggmlv3.q5_1.bin",
