@@ -7,7 +7,7 @@ from prompt_toolkit import prompt as input
 
 from pygptprompt import logging
 from pygptprompt.api.llama_cpp import LlamaCppAPI
-from pygptprompt.setting.config import GlobalConfiguration
+from pygptprompt.config.manager import ConfigurationManager
 
 
 @click.command()
@@ -35,7 +35,7 @@ def main(config_path, prompt, chat):
         )
         sys.exit(1)
 
-    config = GlobalConfiguration(config_path)
+    config = ConfigurationManager(config_path)
 
     llama = LlamaCppAPI(
         repo_id=config.get_value("llama_cpp.model.repo_id"),
@@ -44,6 +44,7 @@ def main(config_path, prompt, chat):
         n_batch=config.get_value("llama_cpp.model.n_batch"),
         n_gpu_layers=config.get_value("llama_cpp.model.n_gpu_layers"),
         low_vram=config.get_value("llama_cpp.model.low_vram"),
+        verbose=config.get_value("llama_cpp.model.verbose"),
     )
 
     system_prompt = ChatCompletionMessage(

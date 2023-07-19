@@ -1,10 +1,10 @@
 """
-pygptprompt/api/llama.py
+pygptprompt/api/llama_cpp.py
 """
 import os
 import sys
 from pathlib import Path
-from typing import Iterator
+from typing import Any, Iterator
 
 from huggingface_hub import hf_hub_download
 from llama_cpp import ChatCompletionChunk, ChatCompletionMessage, EmbeddingData, Llama
@@ -30,23 +30,13 @@ class LlamaCppAPI(BaseAPI):
         llama_model (Llama): The Llama language model instance.
     """
 
-    def __init__(self, repo_id: str, filename: str, **kwargs):
-        self._repo_id = repo_id
-        self._filename = filename
-
-        if "cache_dir" in kwargs and kwargs["cache_dir"]:
-            self.cache_dir = kwargs["cache_dir"]
-        else:
-            self.cache_dir = os.path.join(Path.home(), ".cache", "huggingface", "hub")
-
-        if "model_path" in kwargs and kwargs["model_path"]:
-            self.model_path = kwargs["model_path"]
-        else:
-            self.model_path = self._download_model()
-
-        if "verbose" not in kwargs:
-            kwargs["verbose"] = False  # NOTE: Assume silent output
-
+    def __init__(self, repo_id: str, filename: str, **kwargs: Any):
+        self.repo_id = repo_id
+        self.filename = filename
+        self.cache_dir = kwargs.get(
+            "cache_dir", os.path.join(Path.home(), ".cache", "huggingface", "hub")
+        )
+        self.model_path = kwargs.get("model_path", self._download_model())
         self.llama_model = Llama(model_path=self.model_path, **kwargs)
 
     def _download_model(self) -> str:
@@ -56,12 +46,12 @@ class LlamaCppAPI(BaseAPI):
         Returns:
             str: The path to the downloaded model file.
         """
-        logging.info(f"Using {self._repo_id} to load {self._filename}")
+        logging.info(f"Using {self.repo_id} to load {self.filename}")
 
         try:
             model_path = hf_hub_download(
-                repo_id=self._repo_id,
-                filename=self._filename,
+                repo_id=self.repo_id,
+                filename=self.filename,
                 cache_dir=self.cache_dir,
                 resume_download=True,
             )
@@ -69,7 +59,7 @@ class LlamaCppAPI(BaseAPI):
             logging.error(f"Error downloading model: {e}")
             sys.exit(1)
 
-        logging.info(f"Using {model_path} to load {self._filename} into memory")
+        logging.info(f"Using {model_path} to load {self.filename} into memory")
 
         return model_path
 
@@ -102,16 +92,33 @@ class LlamaCppAPI(BaseAPI):
 
         return ChatCompletionMessage(role="assistant", content=content)
 
-    def get_completions(self, **kwargs):
+    def load(self, repo_id: str, filename: str, **kwargs: Any):
+        """
+        Load a new Llama language model.
+
+        Args:
+            repo_id (str): The ID of the model repository.
+            filename (str): The name of the model file.
+            **kwargs: Additional keyword arguments.
+        """
+        self.repo_id = repo_id
+        self.filename = filename
+        self.cache_dir = kwargs.get(
+            "cache_dir", os.path.join(Path.home(), ".cache", "huggingface", "hub")
+        )
+        self.model_path = kwargs.get("model_path", self._download_model())
+        self.llama_model = Llama(model_path=self.model_path, **kwargs)
+
+    def get_completions(self, **kwargs: Any):
         """
         Get completions from the Llama language model.
 
         Raises:
-            NotImplementedError: This method is not implemented in the LlamaAPI class.
+            NotImplementedError: This method is not implemented in the LlamaCppAPI class.
         """
         raise NotImplementedError
 
-    def get_chat_completions(self, **kwargs) -> ChatCompletionMessage:
+    def get_chat_completions(self, **kwargs: Any) -> ChatCompletionMessage:
         """
         Generate chat completions using the Llama language model.
 
@@ -139,7 +146,7 @@ class LlamaCppAPI(BaseAPI):
             logging.error(f"Error generating chat completions: {e}")
             return ChatCompletionMessage(role="assistant", content=str(e))
 
-    def get_embeddings(self, **kwargs) -> EmbeddingData:
+    def get_embeddings(self, **kwargs: Any) -> EmbeddingData:
         """
         Generate embeddings using the Llama language model.
 
@@ -147,12 +154,11 @@ class LlamaCppAPI(BaseAPI):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            EmbeddingData: The generated embedding vector.
+            EmbeddingData: The generated embedding data.
 
         Raises:
             ValueError: If the 'input' argument is empty or None.
         """
-        # NOTE: `input` is required and is type `Union[str, List[str]]`.
         if "input" not in kwargs or not kwargs["input"]:
             raise ValueError("Input cannot be empty or None.")
 
