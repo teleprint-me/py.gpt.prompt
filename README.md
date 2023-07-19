@@ -28,7 +28,6 @@ reorganized for better organization, efficiency, and performance.
 - [Updates](#updates)
 - [Contributing](#contributing)
 - [License](#license)
-- [Contact](#contact)
 
 ## Prerequisites
 
