@@ -131,7 +131,7 @@ spacy==3.6.0
 spacy-legacy==3.0.12
 spacy-loggers==1.0.4
 srsly==2.4.7
-starlette==0.20.4
+starlette==0.27.0
 sympy==1.12
 tenacity==8.2.2
 thinc==8.1.10
