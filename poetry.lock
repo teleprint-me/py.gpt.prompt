@@ -1360,13 +1360,13 @@ pyreadline3 = {version = "*", markers = "sys_platform == \"win32\" and python_ve
 
 [[package]]
 name = "identify"
-version = "2.5.24"
+version = "2.5.25"
 description = "File identification library for Python"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "identify-2.5.24-py2.py3-none-any.whl", hash = "sha256:986dbfb38b1140e763e413e6feb44cd731faf72d1909543178aa79b0e258265d"},
-    {file = "identify-2.5.24.tar.gz", hash = "sha256:0aac67d5b4812498056d28a9a512a483f5085cc28640b02b258a59dac34301d4"},
+    {file = "identify-2.5.25-py2.py3-none-any.whl", hash = "sha256:9df2489842707d431b38ce3410ef8df40da5b10a3e28a3fcac1a42523e956409"},
+    {file = "identify-2.5.25.tar.gz", hash = "sha256:db4de0e758c0db8f81996816cd2f3f2f8c5c8d49a7fd02f3b4109aac6fd80e29"},
 ]
 
 [package.extras]
@@ -3945,13 +3945,13 @@ files = [
 
 [[package]]
 name = "urllib3"
-version = "2.0.3"
+version = "2.0.4"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "urllib3-2.0.3-py3-none-any.whl", hash = "sha256:48e7fafa40319d358848e1bc6809b208340fafe2096f1725d05d67443d0483d1"},
-    {file = "urllib3-2.0.3.tar.gz", hash = "sha256:bee28b5e56addb8226c96f7f13ac28cb4c301dd5ea8a6ca179c0b9835e032825"},
+    {file = "urllib3-2.0.4-py3-none-any.whl", hash = "sha256:de7df1803967d2c2a98e4b11bb7d6bd9210474c46e8a0401514e3a42a75ebde4"},
+    {file = "urllib3-2.0.4.tar.gz", hash = "sha256:8d22f86aae8ef5e410d4f539fde9ce6b2113a001bb4d189e0aed70642d602b11"},
 ]
 
 [package.dependencies]
