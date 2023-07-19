@@ -35,12 +35,16 @@
     }
   },
   "embedding": {
+    "provider": "chromadb",
     "device": "cpu",
-    "model": "hkunlp/instructor-large",
-    "function": "InstructorEmbeddingFunction"
+    "model": {
+      "repo_id": "hkunlp/instructor-large",
+      "class_id": "InstructorEmbeddingFunction",
+      "max_tokens": 256
+    }
   },
   "llama_cpp": {
-    "provider": "huggingface",
+    "provider": "llama_cpp",
     "model": {
       "repo_id": "TheBloke/Llama-2-7B-Chat-GGML",
       "filename": "llama-2-7b-chat.ggmlv3.q5_1.bin",
@@ -97,7 +101,7 @@
       "frequency_penalty": 0,
       "logit_bias": null
     },
-    "embeddings": {
+    "embedding": {
       "model": "text-embedding-ada-002"
     },
     "context": {
