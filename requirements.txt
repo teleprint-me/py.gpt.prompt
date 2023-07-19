@@ -119,7 +119,7 @@ pyyaml_env_tag==0.1
 regex==2023.6.3
 requests==2.31.0
 scikit-learn==1.3.0
-scipy==1.9.3
+scipy==1.10.0
 selenium==4.10.0
 sgmllib3k==1.0.0
 six==1.16.0
