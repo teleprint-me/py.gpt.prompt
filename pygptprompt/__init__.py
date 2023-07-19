@@ -30,7 +30,7 @@ import os
 from pathlib import Path
 from typing import List, Union
 
-__version__ = "0.0.10"
+__version__ = "0.0.11"
 
 # Set logging configuration
 # NOTE: Can be overridden on a script-by-script basis
