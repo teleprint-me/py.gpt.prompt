@@ -17,23 +17,24 @@ interaction.
 - [poetry](https://python-poetry.org/docs/)
 
 - Minimum Hardware
-    - Quad-Core Processor 
-    - 8 GB CPU RAM
-    - 6 GB GPU VRAM
+
+  - Quad-Core Processor
+  - 8 GB CPU RAM
+  - 6 GB GPU VRAM
 
 - Recommended Hardware
-    - Octa-Core Processor
-    - 64 GB CPU RAM
-    - 24 GB GPU VRAM
+  - Octa-Core Processor
+  - 64 GB CPU RAM
+  - 24 GB GPU VRAM
 
 ## Features
 
 - **Context Window Management:** PyGPTPrompt's core functionality lies in its
-  efficient management of context windows, enhancing the long-term memory
+  efficient management of context windows, enhancing the short-term memory
   performance of AI models.
 
 - **Data Ingestion:** It simplifies the process of feeding data into AI models,
-  further enhancing their long-term memory performance.
+  enhancing their long-term memory performance.
 
 - **Task Automation:** PyGPTPrompt enables effective task automation with AI
   models, saving time and improving productivity.
