@@ -1,13 +1,19 @@
-# tests/conftest.py
+"""
+tests/conftest.py
+"""
 import os
+from typing import Union
 
 import pytest
+from llama_cpp import ChatCompletionMessage
 
-# from pygptprompt.api.openai import OpenAIAPI
+from pygptprompt.api.llama_cpp import LlamaCppAPI
+from pygptprompt.api.openai import OpenAIAPI
+
 # from pygptprompt.session.model import SessionModel
 # from pygptprompt.session.policy import SessionPolicy
 # from pygptprompt.session.token import SessionToken
-from pygptprompt.setting.config import GlobalConfiguration
+from pygptprompt.config.manager import ConfigurationManager
 
 
 def pytest_addoption(parser):
@@ -16,6 +22,12 @@ def pytest_addoption(parser):
         action="store_true",
         default=False,
         help="test private endpoints",
+    )
+    parser.addoption(
+        "--slow",
+        action="store_true",
+        default=False,
+        help="run slow tests",
     )
 
 
@@ -34,34 +46,39 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.fixture(scope="module")
-def message() -> dict[str, str]:
-    return {
-        "role": "user",
-        "content": "What commands have we executed so far?\n\nWhat commands do we have left to execute?",
-    }
+def message() -> ChatCompletionMessage:
+    return ChatCompletionMessage(
+        role="user",
+        content="How many cards are there in a single deck of cards?",
+    )
 
 
 @pytest.fixture(scope="module")
-def messages() -> list[dict[str, str]]:
+def messages() -> list[ChatCompletionMessage]:
     return [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Who won the world series in 2020?"},
-        {
-            "role": "assistant",
-            "content": "The Los Angeles Dodgers won the World Series in 2020.",
-        },
+        ChatCompletionMessage(role="system", content="You are a helpful assistant."),
+        ChatCompletionMessage(role="user", content="Who won the world series in 2020?"),
+        ChatCompletionMessage(
+            role="assistant",
+            content="The Los Angeles Dodgers won the World Series in 2020.",
+        ),
     ]
 
 
 @pytest.fixture(scope="module")
-def chat_completion() -> list[dict[str, str]]:
+def chat_completion() -> list[ChatCompletionMessage]:
     return [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {
-            "role": "user",
-            "content": "Translate the following English text to French: 'The quick brown fox jumped over the lazy dog.'",
-        },
+        ChatCompletionMessage(role="system", content="You are a helpful assistant."),
+        ChatCompletionMessage(
+            role="user",
+            content="Translate the following English text to French: 'The quick brown fox jumped over the lazy dog.'",
+        ),
     ]
+
+
+@pytest.fixture
+def embedding_input() -> Union[str, list[str]]:
+    return "This is a test sentence."
 
 
 @pytest.fixture(scope="module")
@@ -74,22 +91,34 @@ def config_file_path() -> str:
 
 
 @pytest.fixture(scope="module")
-def config(config_file_path: str) -> GlobalConfiguration:
-    return GlobalConfiguration(config_file_path)
+def config(config_file_path: str) -> ConfigurationManager:
+    return ConfigurationManager(file_path=config_file_path)
+
+
+@pytest.fixture(scope="module")
+def openai_api(config: ConfigurationManager) -> OpenAIAPI:
+    return OpenAIAPI(api_key=config.get_api_key())
+
+
+@pytest.fixture(scope="module")
+def llama_cpp_api(config: ConfigurationManager) -> LlamaCppAPI:
+    return LlamaCppAPI(
+        repo_id=config.get_value("llama_cpp.model.repo_id"),
+        filename=config.get_value("llama_cpp.model.filename"),
+        n_ctx=config.get_value("llama_cpp.model.n_ctx"),
+        n_batch=config.get_value("llama_cpp.model.n_batch"),
+        n_gpu_layers=config.get_value("llama_cpp.model.n_gpu_layers"),
+        low_vram=config.get_value("llama_cpp.model.low_vram"),
+    )
 
 
 # @pytest.fixture(scope="module")
-# def openai(config: GlobalConfiguration) -> OpenAIAPI:
-#     return OpenAIAPI(config.get_api_key())
-
-
-# @pytest.fixture(scope="module")
-# def session_token(config: GlobalConfiguration) -> SessionToken:
+# def session_token(config: ConfigurationManager) -> SessionToken:
 #     return SessionToken(config)
 
 
 # @pytest.fixture(scope="module")
-# def session_model(config: GlobalConfiguration) -> SessionModel:
+# def session_model(config: ConfigurationManager) -> SessionModel:
 #     return SessionModel(config)
 
 

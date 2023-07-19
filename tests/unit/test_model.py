@@ -1,4 +1,6 @@
-# tests/unit/test_model.py
+"""
+tests/unit/test_model.py
+"""
 from pygptprompt.session.model import DEFAULT_SYSTEM_MESSAGE, SessionModel
 from pygptprompt.setting.config import GlobalConfiguration
 

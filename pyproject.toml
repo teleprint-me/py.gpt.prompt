@@ -43,6 +43,12 @@ mkdocs = "^1.4.3"
 mkdocstrings = {version = "^0.22.0", extras = ["python"]}
 mkdocs-material = "^9.1.18"
 
+[tool.pytest.ini_options]
+markers = [
+    "slow: run slow tests",
+    "private: test private endpoints",
+]
+
 [tool.build]
 packages = [
   { include = "pygptprompt" }
