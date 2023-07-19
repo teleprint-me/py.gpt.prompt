@@ -9,6 +9,7 @@ from llama_cpp import ChatCompletionMessage
 
 from pygptprompt.api.llama_cpp import LlamaCppAPI
 from pygptprompt.api.openai import OpenAIAPI
+from pygptprompt.config.json import read_json
 
 # from pygptprompt.session.model import SessionModel
 # from pygptprompt.session.policy import SessionPolicy
@@ -79,6 +80,16 @@ def chat_completion() -> list[ChatCompletionMessage]:
 @pytest.fixture
 def embedding_input() -> Union[str, list[str]]:
     return "This is a test sentence."
+
+
+@pytest.fixture(scope="module")
+def json_config() -> dict:
+    return read_json("tests/config.sample.json")
+
+
+@pytest.fixture(scope="module")
+def json_filepath(tmpdir_factory) -> str:
+    return str(tmpdir_factory.mktemp("data").join("test.json"))
 
 
 @pytest.fixture(scope="module")
