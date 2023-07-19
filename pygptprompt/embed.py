@@ -12,14 +12,7 @@ from chromadb import API, Client, Settings
 from chromadb.api.models.Collection import Collection
 from chromadb.api.types import Documents, QueryResult
 
-from pygptprompt import (
-    EMBEDDINGS_MODEL,
-    PATH_DATABASE,
-    PATH_SOURCE,
-    TORCH_DEVICE_TYPE,
-    TORCH_DEVICE_TYPES,
-    TORCH_TRITON_TYPE,
-)
+from pygptprompt import PATH_DATABASE, PATH_SOURCE
 
 
 @click.command()
@@ -34,24 +27,6 @@ from pygptprompt import (
     default=PATH_DATABASE,
     type=click.STRING,
     help=f"The path the embeddings are written to (default: {PATH_DATABASE})",
-)
-@click.option(
-    "--embeddings_model",
-    default=EMBEDDINGS_MODEL,
-    type=click.STRING,
-    help=f"Instruct model to generate embeddings (default: {EMBEDDINGS_MODEL})",
-)
-@click.option(
-    "--torch_device_type",
-    default=TORCH_DEVICE_TYPE,
-    type=click.Choice(TORCH_DEVICE_TYPES),
-    help=f"Device to run on (default: {TORCH_DEVICE_TYPE})",
-)
-@click.option(
-    "--torch_triton_type",
-    default=TORCH_TRITON_TYPE,
-    type=click.BOOL,
-    help=f"Device to run on (default: {TORCH_TRITON_TYPE})",
 )
 def main(
     path_source,
