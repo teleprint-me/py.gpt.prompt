@@ -40,7 +40,7 @@ isort = "^5.12.0"
 flake8 = "^6.0.0"
 build = "^0.10.0"
 mkdocs = "^1.4.3"
-mkdocstrings = "^0.22.0"
+mkdocstrings = {version = "^0.22.0", extras = ["python"]}
 mkdocs-material = "^9.1.18"
 
 [tool.build]
