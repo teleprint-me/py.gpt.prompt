@@ -1,5 +1,6 @@
 {
   "app": {
+    "provider": "app",
     "path": {
       "local": "${HOME}/.local/share/pygptprompt",
       "cache": "${HOME}/.cache/pygptprompt",
@@ -35,13 +36,13 @@
     }
   },
   "torch": {
-    "provider": "meta",
+    "provider": "torch",
     "triton": false,
     "device": "cpu",
     "device_types": ["cpu", "cuda", "hip", "mps", "opencl", "vulkan", "lazy"]
   },
-  "embedding": {
-    "provider": "chroma",
+  "chromadb": {
+    "provider": "chromadb",
     "device": "cpu",
     "model": {
       "repo_id": "hkunlp/instructor-large",
@@ -50,7 +51,7 @@
     }
   },
   "llama_cpp": {
-    "provider": "ggml",
+    "provider": "llama_cpp",
     "model": {
       "repo_id": "TheBloke/Llama-2-7B-Chat-GGML",
       "filename": "llama-2-7b-chat.ggmlv3.q5_1.bin",
