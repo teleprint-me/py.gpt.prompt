@@ -13,6 +13,7 @@ class ChatModelFactory:
 
     Attributes:
         config (ConfigurationManager): The configuration manager instance.
+        provider_map (dict): A dictionary mapping provider keys to their corresponding classes.
     """
 
     def __init__(self, config: ConfigurationManager):
@@ -23,6 +24,10 @@ class ChatModelFactory:
             config (ConfigurationManager): The configuration manager instance.
         """
         self.config = config
+        self.provider_map = {
+            "openai": OpenAIAPI,
+            "llama_cpp": LlamaCppAPI,
+        }
 
     def create_model(self, provider) -> BaseAPI:
         """
@@ -39,12 +44,12 @@ class ChatModelFactory:
         """
         provider_config = self.config.get_value(provider)
 
-        if provider_config is None:
+        if provider_config is None or "provider" not in provider_config:
             raise ValueError(f"Unknown provider: {provider}")
 
         provider_key = provider_config["provider"]
 
-        if provider_key == "openai":
-            return OpenAIAPI(self.config)
-        elif provider_key == "llama_cpp":
-            return LlamaCppAPI(self.config)
+        if provider_key not in self.provider_map:
+            raise ValueError(f"Unknown provider: {provider}")
+
+        return self.provider_map[provider_key](self.config)
