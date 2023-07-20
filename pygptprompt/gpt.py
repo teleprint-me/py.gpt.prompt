@@ -37,7 +37,7 @@ def main(config_path, prompt, chat):
 
     config = ConfigurationManager(config_path)
 
-    openai = OpenAIAPI(api_key=config.get_api_key())
+    openai = OpenAIAPI(config=config)
 
     system_prompt = ChatCompletionMessage(
         role=config.get_value("openai.system_prompt.role"),
@@ -56,11 +56,7 @@ def main(config_path, prompt, chat):
             messages.append(user_prompt)
             print("assistant")
             message: ChatCompletionMessage = openai.get_chat_completions(
-                model=config.get_value("openai.chat_completions.model"),
                 messages=messages,
-                max_tokens=config.get_value("openai.chat_completions.max_tokens"),
-                temperature=config.get_value("openai.chat_completions.temperature"),
-                top_p=config.get_value("openai.chat_completions.top_p"),
             )
             messages.append(message)
 
@@ -79,11 +75,7 @@ def main(config_path, prompt, chat):
                 print()
                 print("assistant")
                 message: ChatCompletionMessage = openai.get_chat_completions(
-                    model=config.get_value("openai.chat_completions.model"),
                     messages=messages,
-                    max_tokens=config.get_value("openai.chat_completions.max_tokens"),
-                    temperature=config.get_value("openai.chat_completions.temperature"),
-                    top_p=config.get_value("openai.chat_completions.top_p"),
                 )
                 print()
                 messages.append(message)

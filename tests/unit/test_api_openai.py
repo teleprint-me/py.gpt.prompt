@@ -18,19 +18,14 @@ class TestOpenAI:
         openai_api: OpenAIAPI,
         chat_completion: list[ChatCompletionMessage],
     ):
-        model = "gpt-3.5-turbo"
-        temperature = 0
-        max_tokens = 128
-
         message: ChatCompletionMessage = openai_api.get_chat_completions(
             messages=chat_completion,
-            model=model,
-            max_tokens=max_tokens,
-            temperature=temperature,
         )
 
         print()
 
+        assert bool(message)
+        print(message)
         assert (
             message["content"]
             == "Le renard brun rapide a sauté par-dessus le chien paresseux."
@@ -42,10 +37,7 @@ class TestOpenAI:
         openai_api: OpenAIAPI,
         embedding_input: str,
     ):
-        model = "text-embedding-ada-002"
-
         data: EmbeddingData = openai_api.get_embeddings(
-            model=model,
             input=embedding_input,
         )
 

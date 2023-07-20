@@ -80,7 +80,6 @@
       "temperature": 0.8,
       "top_p": 0.95,
       "top_k": 40,
-      "stream": true,
       "stop": [],
       "repeat_penalty": 1.1
     },
@@ -101,11 +100,10 @@
       "max_tokens": 1024,
       "top_p": 0.95,
       "n": 1,
-      "stream": false,
-      "stop": null,
+      "stop": [],
       "presence_penalty": 0,
       "frequency_penalty": 0,
-      "logit_bias": null
+      "logit_bias": {}
     },
     "embedding": {
       "model": "text-embedding-ada-002"

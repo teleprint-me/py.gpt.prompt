@@ -108,7 +108,7 @@ def config(config_file_path: str) -> ConfigurationManager:
 
 @pytest.fixture(scope="module")
 def openai_api(config: ConfigurationManager) -> OpenAIAPI:
-    return OpenAIAPI(api_key=config.get_api_key())
+    return OpenAIAPI(config=config)
 
 
 @pytest.fixture(scope="module")
