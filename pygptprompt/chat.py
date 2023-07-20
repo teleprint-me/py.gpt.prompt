@@ -32,6 +32,7 @@ from pygptprompt.config.manager import ConfigurationManager
     "--provider",
     type=click.STRING,
     default="llama_cpp",
+    help="Specify the model provider to use. Options are 'openai' for GPT models and 'llama_cpp' for Llama models.",
 )
 def main(config_path, prompt, chat, provider):
     if not (bool(prompt) ^ chat):
@@ -43,13 +44,18 @@ def main(config_path, prompt, chat, provider):
 
     config = ConfigurationManager(config_path)
 
-    if provider == config.get_value(provider, "openai"):
-        model = OpenAIAPI(config)
-    elif provider == config.get_value(provider, "llama_cpp"):
-        model = LlamaCppAPI(config)
-    else:
+    provider_config = config.get_value(provider)
+
+    if provider_config is None:
         print(f"Unknown provider: {provider}")
         sys.exit(1)
+
+    provider_key = provider_config["provider"]
+
+    if provider_key == "openai":
+        model = OpenAIAPI(config)
+    elif provider_key == "llama_cpp":
+        model = LlamaCppAPI(config)
 
     system_prompt = ChatCompletionMessage(
         role=config.get_value("openai.system_prompt.role"),
