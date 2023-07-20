@@ -1,10 +1,14 @@
 """
 pygptprompt/api/factory.py
 """
+from typing import Union
+
 from pygptprompt.api.base import BaseAPI
 from pygptprompt.api.llama_cpp import LlamaCppAPI
 from pygptprompt.api.openai import OpenAIAPI
 from pygptprompt.config.manager import ConfigurationManager
+
+ChatModel = Union[OpenAIAPI, LlamaCppAPI]
 
 
 class ChatModelFactory:
@@ -29,7 +33,7 @@ class ChatModelFactory:
             "llama_cpp": LlamaCppAPI,
         }
 
-    def create_model(self, provider) -> BaseAPI:
+    def create_model(self, provider) -> ChatModel:
         """
         Creates and returns a chat model instance based on the provider.
 
@@ -37,7 +41,7 @@ class ChatModelFactory:
             provider (str): The provider key.
 
         Returns:
-            BaseAPI: The chat model instance.
+            ChatModel: The chat model instance.
 
         Raises:
             ValueError: If the provider is unknown.

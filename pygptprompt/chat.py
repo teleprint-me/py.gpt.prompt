@@ -1,3 +1,6 @@
+"""
+pygptprompt/chat.py
+"""
 import sys
 from typing import List
 
@@ -6,8 +9,7 @@ from llama_cpp import ChatCompletionMessage
 from prompt_toolkit import prompt as input
 
 from pygptprompt import logging
-from pygptprompt.api.llama_cpp import LlamaCppAPI
-from pygptprompt.api.openai import OpenAIAPI
+from pygptprompt.api.factory import ChatModel, ChatModelFactory
 from pygptprompt.config.manager import ConfigurationManager
 
 
@@ -42,20 +44,10 @@ def main(config_path, prompt, chat, provider):
         )
         sys.exit(1)
 
-    config = ConfigurationManager(config_path)
+    config: ConfigurationManager = ConfigurationManager(config_path)
 
-    provider_config = config.get_value(provider)
-
-    if provider_config is None:
-        print(f"Unknown provider: {provider}")
-        sys.exit(1)
-
-    provider_key = provider_config["provider"]
-
-    if provider_key == "openai":
-        model = OpenAIAPI(config)
-    elif provider_key == "llama_cpp":
-        model = LlamaCppAPI(config)
+    factory: ChatModelFactory = ChatModelFactory(config)
+    model: ChatModel = factory.create_model(provider)
 
     system_prompt = ChatCompletionMessage(
         role=config.get_value("openai.system_prompt.role"),
