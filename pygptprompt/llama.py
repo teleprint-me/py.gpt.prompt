@@ -37,15 +37,7 @@ def main(config_path, prompt, chat):
 
     config = ConfigurationManager(config_path)
 
-    llama = LlamaCppAPI(
-        repo_id=config.get_value("llama_cpp.model.repo_id"),
-        filename=config.get_value("llama_cpp.model.filename"),
-        n_ctx=config.get_value("llama_cpp.model.n_ctx"),
-        n_batch=config.get_value("llama_cpp.model.n_batch"),
-        n_gpu_layers=config.get_value("llama_cpp.model.n_gpu_layers"),
-        low_vram=config.get_value("llama_cpp.model.low_vram"),
-        verbose=config.get_value("llama_cpp.model.verbose"),
-    )
+    llama = LlamaCppAPI(config=config)
 
     system_prompt = ChatCompletionMessage(
         role=config.get_value("llama_cpp.system_prompt.role"),
@@ -65,9 +57,6 @@ def main(config_path, prompt, chat):
             print("assistant")
             message: ChatCompletionMessage = llama.get_chat_completions(
                 messages=messages,
-                max_tokens=config.get_value("llama_cpp.chat_completions.max_tokens"),
-                temperature=config.get_value("llama_cpp.chat_completions.temperature"),
-                top_p=config.get_value("llama_cpp.chat_completions.top_p"),
             )
             messages.append(message)
 
@@ -87,13 +76,6 @@ def main(config_path, prompt, chat):
                 print("assistant")
                 message: ChatCompletionMessage = llama.get_chat_completions(
                     messages=messages,
-                    max_tokens=config.get_value(
-                        "llama_cpp.chat_completions.max_tokens"
-                    ),
-                    temperature=config.get_value(
-                        "llama_cpp.chat_completions.temperature"
-                    ),
-                    top_p=config.get_value("llama_cpp.chat_completions.top_p"),
                 )
                 print()
                 messages.append(message)

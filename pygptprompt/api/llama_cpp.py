@@ -1,16 +1,22 @@
 """
 pygptprompt/api/llama_cpp.py
 """
-import os
 import sys
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Iterator, List, Union
 
 from huggingface_hub import hf_hub_download
+from huggingface_hub.hf_api import HfApi, HfFolder
+from huggingface_hub.utils import (
+    EntryNotFoundError,
+    LocalEntryNotFoundError,
+    RepositoryNotFoundError,
+)
 from llama_cpp import ChatCompletionChunk, ChatCompletionMessage, EmbeddingData, Llama
 
 from pygptprompt import logging
 from pygptprompt.api.base import BaseAPI
+from pygptprompt.config.manager import ConfigurationManager
 
 
 class LlamaCppAPI(BaseAPI):
@@ -18,26 +24,51 @@ class LlamaCppAPI(BaseAPI):
     API class for interacting with the Llama language model.
 
     Args:
-        repo_id (str): The ID of the model repository.
-        filename (str): The name of the model file.
-        **kwargs: Additional keyword arguments.
+        config (ConfigurationManager): The configuration manager instance.
 
     Attributes:
         repo_id (str): The ID of the model repository.
         filename (str): The name of the model file.
         cache_dir (str): The directory to cache the downloaded model.
         model_path (str): The path to the downloaded model file.
-        llama_model (Llama): The Llama language model instance.
+        model (Llama): The Llama language model instance.
     """
 
-    def __init__(self, repo_id: str, filename: str, **kwargs: Any):
-        self.repo_id = repo_id
-        self.filename = filename
-        self.cache_dir = kwargs.get(
-            "cache_dir", os.path.join(Path.home(), ".cache", "huggingface", "hub")
+    def __init__(self, config: ConfigurationManager):
+        self.config = config
+        self.repo_id = config.get_value(
+            "llama_cpp.model.repo_id", "TheBloke/Llama-2-7B-Chat-GGML"
         )
-        self.model_path = kwargs.get("model_path", self._download_model())
-        self.llama_model = Llama(model_path=self.model_path, **kwargs)
+        self.filename = config.get_value(
+            "llama_cpp.model.filename", "llama-2-7b-chat.ggmlv3.q5_1.bin"
+        )
+        self.cache_dir = Path(Path.home(), ".cache", "huggingface", "hub")
+        self.model_path = self._download_model()
+        self.model = Llama(
+            model_path=self.model_path,
+            n_ctx=config.get_value("llama_cpp.model.n_ctx", 4096),
+            n_batch=config.get_value("llama_cpp.model.n_batch", 512),
+            n_gpu_layers=config.get_value("llama_cpp.model.n_gpu_layers", 0),
+            low_vram=config.get_value("llama_cpp.model.low_vram", False),
+            verbose=config.get_value("llama_cpp.model.verbose", False),
+            n_parts=config.get_value("llama_cpp.model.n_parts", -1),
+            seed=config.get_value("llama_cpp.model.seed", 1337),
+            f16_kv=config.get_value("llama_cpp.model.f16_kv", True),
+            logits_all=config.get_value("llama_cpp.model.logits_all", False),
+            vocab_only=config.get_value("llama_cpp.model.vocab_only", False),
+            use_mmap=config.get_value("llama_cpp.model.use_mmap", True),
+            use_mlock=config.get_value("llama_cpp.model.use_mlock", False),
+            embedding=config.get_value("llama_cpp.model.embedding", True),
+            n_threads=config.get_value("llama_cpp.model.n_threads", None),
+            last_n_tokens_size=config.get_value(
+                "llama_cpp.model.last_n_tokens_size", 64
+            ),
+            lora_base=config.get_value("llama_cpp.model.lora_base", None),
+            lora_path=config.get_value("llama_cpp.model.lora_path", None),
+            tensor_split=config.get_value("llama_cpp.model.tensor_split", None),
+            rope_freq_base=config.get_value("llama_cpp.model.rope_freq_base", 10000.0),
+            rope_freq_scale=config.get_value("llama_cpp.model.rope_freq_scale", 1.0),
+        )
 
     def _download_model(self) -> str:
         """
@@ -47,21 +78,36 @@ class LlamaCppAPI(BaseAPI):
             str: The path to the downloaded model file.
         """
         logging.info(f"Using {self.repo_id} to load {self.filename}")
+        max_retries = 3
+        retries = 0
 
-        try:
-            model_path = hf_hub_download(
-                repo_id=self.repo_id,
-                filename=self.filename,
-                cache_dir=self.cache_dir,
-                resume_download=True,
-            )
-        except Exception as e:
-            logging.error(f"Error downloading model: {e}")
-            sys.exit(1)
+        while retries < max_retries:
+            try:
+                model_path = hf_hub_download(
+                    repo_id=self.repo_id,
+                    filename=self.filename,
+                    cache_dir=self.cache_dir,
+                    resume_download=True,
+                )
+                logging.info(f"Using {model_path} to load {self.filename} into memory")
+                return model_path
+            except (EntryNotFoundError, RepositoryNotFoundError) as e:
+                logging.error(f"Error downloading model: {e}")
+                sys.exit(1)
+            except LocalEntryNotFoundError as e:
+                logging.error(f"Error accessing model: {e}")
+                if HfApi().is_online():
+                    logging.info("Retrying download...")
+                    retries += 1
+                else:
+                    logging.error("Network is not available. Cannot retry download.")
+                    sys.exit(1)
+            except Exception as e:
+                logging.error(f"Error downloading model: {e}")
+                sys.exit(1)
 
-        logging.info(f"Using {model_path} to load {self.filename} into memory")
-
-        return model_path
+        logging.error("Max retries exceeded. Failed to download the model.")
+        sys.exit(1)
 
     def _stream_chat_completion(
         self, response_generator: Iterator[ChatCompletionChunk]
@@ -92,24 +138,7 @@ class LlamaCppAPI(BaseAPI):
 
         return ChatCompletionMessage(role="assistant", content=content)
 
-    def load(self, repo_id: str, filename: str, **kwargs: Any):
-        """
-        Load a new Llama language model.
-
-        Args:
-            repo_id (str): The ID of the model repository.
-            filename (str): The name of the model file.
-            **kwargs: Additional keyword arguments.
-        """
-        self.repo_id = repo_id
-        self.filename = filename
-        self.cache_dir = kwargs.get(
-            "cache_dir", os.path.join(Path.home(), ".cache", "huggingface", "hub")
-        )
-        self.model_path = kwargs.get("model_path", self._download_model())
-        self.llama_model = Llama(model_path=self.model_path, **kwargs)
-
-    def get_completions(self, **kwargs: Any):
+    def get_completions(self, prompt: str):
         """
         Get completions from the Llama language model.
 
@@ -118,40 +147,52 @@ class LlamaCppAPI(BaseAPI):
         """
         raise NotImplementedError
 
-    def get_chat_completions(self, **kwargs: Any) -> ChatCompletionMessage:
+    def get_chat_completions(
+        self, messages: List[ChatCompletionMessage]
+    ) -> ChatCompletionMessage:
         """
         Generate chat completions using the Llama language model.
 
         Args:
-            **kwargs: Additional keyword arguments.
+            messages (List[ChatCompletionMessage]): List of chat completion messages.
 
         Returns:
             ChatCompletionMessage: The generated chat completion message.
 
         Raises:
             ValueError: If the 'messages' argument is empty or None.
-
-        Note:
-            This method always coerces streaming by setting 'stream' to True.
         """
-        if "messages" not in kwargs or not kwargs["messages"]:
-            raise ValueError("Messages cannot be empty or None.")
-
-        kwargs["stream"] = True  # NOTE: Always coerce streaming
+        if not messages:
+            raise ValueError("'messages' argument cannot be empty or None")
 
         try:
-            response = self.llama_model.create_chat_completion(**kwargs)
+            response = self.model.create_chat_completion(
+                messages=messages,
+                max_tokens=self.config.get_value(
+                    "llama_cpp.chat_completions.max_tokens", 1024
+                ),
+                temperature=self.config.get_value(
+                    "llama_cpp.chat_completions.temperature", 0.8
+                ),
+                top_p=self.config.get_value("llama_cpp.chat_completions.top_p", 0.95),
+                top_k=self.config.get_value("llama_cpp.chat_completions.top_k", 40),
+                stream=True,
+                stop=self.config.get_value("llama_cpp.chat_completions.stop", []),
+                repeat_penalty=self.config.get_value(
+                    "llama_cpp.chat_completions.repeat_penalty", 1.1
+                ),
+            )
             return self._stream_chat_completion(response)
         except Exception as e:
             logging.error(f"Error generating chat completions: {e}")
             return ChatCompletionMessage(role="assistant", content=str(e))
 
-    def get_embeddings(self, **kwargs: Any) -> EmbeddingData:
+    def get_embeddings(self, input: Union[str, List[str]]) -> EmbeddingData:
         """
         Generate embeddings using the Llama language model.
 
         Args:
-            **kwargs: Additional keyword arguments.
+            input (Union[str, List[str]]): The input string or list of strings.
 
         Returns:
             EmbeddingData: The generated embedding data.
@@ -159,11 +200,11 @@ class LlamaCppAPI(BaseAPI):
         Raises:
             ValueError: If the 'input' argument is empty or None.
         """
-        if "input" not in kwargs or not kwargs["input"]:
-            raise ValueError("Input cannot be empty or None.")
+        if not input:
+            raise ValueError("'input' argument cannot be empty or None")
 
         try:
-            response = self.llama_model.create_embedding(kwargs["input"])
+            response = self.model.create_embedding(input=input)
             return response["data"][0]
         except Exception as e:
             logging.error(f"Error generating embeddings: {e}")

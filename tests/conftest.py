@@ -113,14 +113,7 @@ def openai_api(config: ConfigurationManager) -> OpenAIAPI:
 
 @pytest.fixture(scope="module")
 def llama_cpp_api(config: ConfigurationManager) -> LlamaCppAPI:
-    return LlamaCppAPI(
-        repo_id=config.get_value("llama_cpp.model.repo_id"),
-        filename=config.get_value("llama_cpp.model.filename"),
-        n_ctx=config.get_value("llama_cpp.model.n_ctx"),
-        n_batch=config.get_value("llama_cpp.model.n_batch"),
-        n_gpu_layers=config.get_value("llama_cpp.model.n_gpu_layers"),
-        low_vram=config.get_value("llama_cpp.model.low_vram"),
-    )
+    return LlamaCppAPI(config=config)
 
 
 # @pytest.fixture(scope="module")
