@@ -3,8 +3,10 @@ from typing import Iterator, List
 
 import openai
 from llama_cpp import ChatCompletionChunk, ChatCompletionMessage
+from prompt_toolkit import prompt as input
 
 from pygptprompt import logging
+from pygptprompt.api.types import ExtendedChatCompletionMessage
 from pygptprompt.config.manager import ConfigurationManager
 
 config = ConfigurationManager("tests/config.sample.json")
@@ -30,8 +32,8 @@ def get_current_weather(location: str, unit: str = "celsius"):
 
 
 def stream_chat_completion(
-    self, response_generator: Iterator[ChatCompletionChunk]
-) -> ChatCompletionMessage:
+    response_generator: Iterator[ChatCompletionChunk],
+) -> ExtendedChatCompletionMessage:
     """
     Process the stream of chat completion chunks and return the generated message.
 
@@ -56,13 +58,12 @@ def stream_chat_completion(
     print()  # Add newline to model output
     sys.stdout.flush()
 
-    return ChatCompletionMessage(role="assistant", content=content)
+    return ExtendedChatCompletionMessage(role="assistant", content=content)
 
 
 def get_chat_completions(
-    self,
-    messages: List[ChatCompletionMessage],
-) -> ChatCompletionMessage:
+    messages: List[ExtendedChatCompletionMessage],
+) -> ExtendedChatCompletionMessage:
     """
     Generate chat completions using the OpenAI language models.
 
@@ -100,3 +101,14 @@ def get_chat_completions(
     except Exception as e:
         logging.error(f"Error generating chat completions: {e}")
         return ChatCompletionMessage(role="error", content=str(e))
+
+
+if __name__ == "__main__":
+    messages: List[ExtendedChatCompletionMessage] = [
+        ExtendedChatCompletionMessage(
+            role="system", content="My name is ChatGPT. I am a helpful assistant."
+        )
+    ]
+
+    while True:
+        pass

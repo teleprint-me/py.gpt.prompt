@@ -1,5 +1,5 @@
 """
-pygptprompt/session/message.py
+pygptprompt/api/types.py
 """
 
 from typing import Literal, NotRequired
