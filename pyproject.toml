@@ -27,7 +27,7 @@ spacy = "^3.6.0"
 python-poppler = "^0.4.1"
 huggingface_hub = "^0.16.4"
 chromadb = "^0.4.2"
-llama-cpp-python = "0.1.73"
+llama-cpp-python = "0.1.74"
 tiktoken = "^0.4.0"
 openai = {extras = ["embeddings"], version = "^0.27.8"}
 
