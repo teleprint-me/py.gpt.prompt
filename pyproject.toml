@@ -24,6 +24,7 @@ opencv-python = "^4.8.0.74"
 pytesseract = "^0.3.10"
 nltk = "^3.8.1"
 spacy = "^3.6.0"
+python-poppler = "^0.4.1"
 huggingface_hub = "^0.16.4"
 chromadb = "^0.4.2"
 llama-cpp-python = "0.1.73"
@@ -42,8 +43,8 @@ build = "^0.10.0"
 mkdocs = "^1.4.3"
 mkdocstrings = {version = "^0.22.0", extras = ["python"]}
 mkdocs-material = "^9.1.18"
-ipykernel = "^6.24.0"
-jupyter = "^1.0.0"
+ipykernel = "^6.24.0"  # VSCode requires the kernel
+# jupyter = "^1.0.0"  # Only install if you need it
 
 [tool.pytest.ini_options]
 markers = [
