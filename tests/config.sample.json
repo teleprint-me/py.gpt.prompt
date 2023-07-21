@@ -52,6 +52,9 @@
       "max_tokens": 256
     }
   },
+  "llama": {
+    "provider": "llama"
+  },
   "llama_cpp": {
     "provider": "llama_cpp",
     "model": {
