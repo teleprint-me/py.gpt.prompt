@@ -42,6 +42,8 @@ build = "^0.10.0"
 mkdocs = "^1.4.3"
 mkdocstrings = {version = "^0.22.0", extras = ["python"]}
 mkdocs-material = "^9.1.18"
+ipykernel = "^6.24.0"
+jupyter = "^1.0.0"
 
 [tool.pytest.ini_options]
 markers = [
