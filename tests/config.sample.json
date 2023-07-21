@@ -37,9 +37,11 @@
   },
   "torch": {
     "provider": "torch",
-    "triton": false,
-    "device": "cpu",
-    "device_types": ["cpu", "cuda", "hip", "mps", "opencl", "vulkan", "lazy"]
+    "device": {
+      "triton": false,
+      "type": "cpu",
+      "options": ["cpu", "cuda", "hip", "mps", "opencl", "vulkan", "lazy"]
+    }
   },
   "chroma": {
     "provider": "chroma",
