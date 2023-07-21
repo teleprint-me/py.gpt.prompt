@@ -1,8 +1,9 @@
 import sys
+from pprint import pprint
 from typing import Iterator, List
 
 import openai
-from llama_cpp import ChatCompletionChunk, ChatCompletionMessage
+from llama_cpp import ChatCompletionChunk
 from prompt_toolkit import prompt as input
 
 from pygptprompt import logging
@@ -41,24 +42,41 @@ def stream_chat_completion(
         response_generator (Iterator[ChatCompletionChunk]): The chat completion chunk stream.
 
     Returns:
-        ChatCompletionMessage: The generated message.
+        ExtendedChatCompletionMessage: The generated message.
     """
+    function_call_name = None
+    function_call_args = ""
     content = ""
 
-    for stream in response_generator:
-        try:
-            token = stream["choices"][0]["delta"]["content"]
-            if token:
-                print(token, end="")
+    for chunk in response_generator:
+        delta = chunk["choices"][0]["delta"]
+
+        if "content" in delta and delta["content"]:
+            token = delta["content"]
+            print(token, end="")
+            sys.stdout.flush()
+            content += token
+
+        if "function_call" in delta and delta["function_call"]:
+            function_call = delta["function_call"]
+            function_call_name = function_call.get("name", "")
+            function_call_args += function_call.get("arguments", "")
+
+        finish_reason = chunk["choices"][0]["finish_reason"]
+        if finish_reason:
+            if finish_reason == "function_call":
+                return ExtendedChatCompletionMessage(
+                    role="function",
+                    function_call=function_call_name,
+                    function_args=function_call_args,
+                )
+            elif finish_reason == "stop":
+                print()  # Add newline to model output
                 sys.stdout.flush()
-                content += token
-        except KeyError:
-            continue
-
-    print()  # Add newline to model output
-    sys.stdout.flush()
-
-    return ExtendedChatCompletionMessage(role="assistant", content=content)
+                return ExtendedChatCompletionMessage(role="assistant", content=content)
+            else:
+                # Handle unexpected finish_reason
+                raise ValueError(f"Warning: Unexpected finish_reason '{finish_reason}'")
 
 
 def get_chat_completions(
@@ -100,7 +118,7 @@ def get_chat_completions(
         return stream_chat_completion(response)
     except Exception as e:
         logging.error(f"Error generating chat completions: {e}")
-        return ChatCompletionMessage(role="error", content=str(e))
+        return ExtendedChatCompletionMessage(role="error", content=str(e))
 
 
 if __name__ == "__main__":
@@ -111,4 +129,26 @@ if __name__ == "__main__":
     ]
 
     while True:
-        pass
+        try:
+            print("user")
+            user_input = input(
+                "> ",
+                multiline=True,
+                wrap_lines=True,
+                prompt_continuation=". ",
+            )
+            print()
+            messages.append(
+                ExtendedChatCompletionMessage(
+                    role="user",
+                    content=user_input,
+                )
+            )
+        except (EOFError, KeyboardInterrupt):
+            exit()
+
+        print("assistant")
+        assistant_message = get_chat_completions(messages)
+        print()
+        logging.info(f"ChatGPT: {assistant_message['content']}")
+        messages.append(assistant_message)

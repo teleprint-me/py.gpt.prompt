@@ -2,7 +2,7 @@
 pygptprompt/api/types.py
 """
 
-from typing import Literal, NotRequired
+from typing import Literal, NotRequired, Optional
 
 from llama_cpp import ChatCompletionMessage
 
@@ -21,4 +21,7 @@ class ExtendedChatCompletionMessage(ChatCompletionMessage):
     """
 
     role: Literal["assistant", "user", "system", "function"]
+    content: NotRequired[str]
+    function_call: NotRequired[str]
+    function_args: NotRequired[str]
     user: NotRequired[str]
