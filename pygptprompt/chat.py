@@ -12,7 +12,7 @@ from prompt_toolkit import prompt as input
 from pygptprompt import logging
 from pygptprompt.api.factory import ChatModel, ChatModelFactory
 from pygptprompt.config.manager import ConfigurationManager
-from pygptprompt.function.factory import FUNCTION_REGISTRY
+from pygptprompt.function.factory import FunctionFactory
 
 
 @click.command()
@@ -50,6 +50,7 @@ def main(config_path, prompt, chat, provider):
 
     factory: ChatModelFactory = ChatModelFactory(config)
     model: ChatModel = factory.create_model(provider)
+    function_factory = FunctionFactory(config)
 
     system_prompt = ChatCompletionMessage(
         role=config.get_value(f"{provider}.system_prompt.role"),
@@ -95,14 +96,13 @@ def main(config_path, prompt, chat, provider):
                     function_name = message["function_call"]
                     function_args = json.loads(message["function_args"])
 
-                    # Get the function from the registry
-                    function = FUNCTION_REGISTRY.get(function_name)
+                    # Get the function from the factory
+                    function = function_factory.get_function(function_name)
                     if function is None:
-                        print(f"Function {function_name} not found.")
+                        logging.error(f"Function {function_name} not found.")
                     else:
                         # Call the function
                         result = function(**function_args)
-
                         # Print the result
                         print(result)
 
