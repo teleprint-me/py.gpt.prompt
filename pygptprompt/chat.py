@@ -105,9 +105,7 @@ def main(config_path, prompt, chat, provider):
 
                         # Print the result
                         print(result)
-                else:
-                    # Print the message as usual
-                    print(message["content"])
+
                 print()
                 messages.append(message)
 
