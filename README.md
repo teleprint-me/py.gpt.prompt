@@ -88,11 +88,27 @@ detailed information, refer to the individual commits in the
 [GitHub Commits](https://github.com/teleprint-me/py.gpt.prompt/commits/main)
 section.
 
-## Contributing
+## Support PyGPTPrompt
 
-If you're interested in contributing to PyGPTPrompt, please check out the
-developers contributing guidelines. The developer welcomes any form of
-contribution, from bug reports to feature requests to pull requests.
+PyGPTPrompt is an open-source project, and it's made possible by the support of
+the community. If you find this project useful and want to show your
+appreciation, you can support it in the following ways:
+
+### Make a Donation
+
+If you have the means and find PyGPTPrompt useful, consider making a donation.
+Your contribution will go directly towards the development and maintenance of
+the project. You can donate using Bitcoin:
+
+[![Bitcoin](https://img.shields.io/badge/Bitcoin-3Q4qSNxpiEcaK3aJDdagzqU9XNyqs8zNrJ-orange)](https://blockstream.info/address/3Q4qSNxpiEcaK3aJDdagzqU9XNyqs8zNrJ)
+
+### Contribute
+
+Contributions to the project are always welcome. Whether it's reporting bugs,
+suggesting new features, improving documentation, or writing code, your
+contributions are greatly appreciated. Check out the
+[contributing guidelines](CONTRIBUTING.md) for more
+information.
 
 ## License
 
