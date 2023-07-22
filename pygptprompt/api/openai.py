@@ -165,7 +165,7 @@ class OpenAIAPI(BaseAPI):
             ChatCompletionMessage: The generated chat completion message.
         """
         if not messages:
-            raise ValueError("Messages is a required argument.")
+            raise ValueError("'messages' argument cannot be empty or None")
 
         try:
             # Call the OpenAI API's /v1/chat/completions endpoint
@@ -212,7 +212,7 @@ class OpenAIAPI(BaseAPI):
             EmbeddingData: The generated embedding vector.
         """
         if not input:
-            raise KeyError("Input is a required argument.")
+            raise ValueError("'input' argument cannot be empty or None")
 
         try:
             # Call the OpenAI API's /v1/embeddings endpoint

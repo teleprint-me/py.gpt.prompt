@@ -1,14 +1,16 @@
 """
 tests/conftest.py
 """
+import json
 import os
-from typing import Union
+from typing import List, Union
 
 import pytest
 from llama_cpp import ChatCompletionMessage
 
 from pygptprompt.api.llama_cpp import LlamaCppAPI
 from pygptprompt.api.openai import OpenAIAPI
+from pygptprompt.api.types import ExtendedChatCompletionMessage
 from pygptprompt.config.json import read_json
 
 # from pygptprompt.session.model import SessionModel
@@ -55,7 +57,7 @@ def message() -> ChatCompletionMessage:
 
 
 @pytest.fixture(scope="module")
-def messages() -> list[ChatCompletionMessage]:
+def messages() -> List[ChatCompletionMessage]:
     return [
         ChatCompletionMessage(role="system", content="You are a helpful assistant."),
         ChatCompletionMessage(role="user", content="Who won the world series in 2020?"),
@@ -67,7 +69,7 @@ def messages() -> list[ChatCompletionMessage]:
 
 
 @pytest.fixture(scope="module")
-def chat_completion() -> list[ChatCompletionMessage]:
+def chat_completion() -> List[ChatCompletionMessage]:
     return [
         ChatCompletionMessage(role="system", content="You are a helpful assistant."),
         ChatCompletionMessage(
@@ -77,8 +79,45 @@ def chat_completion() -> list[ChatCompletionMessage]:
     ]
 
 
+@pytest.fixture(scope="module")
+def function_completion() -> List[ExtendedChatCompletionMessage]:
+    return [
+        ExtendedChatCompletionMessage(
+            role="system", content="You are a helpful assistant."
+        ),
+        ExtendedChatCompletionMessage(
+            role="user", content="What's the weather like in San Francisco, CA?"
+        ),
+    ]
+
+
 @pytest.fixture
-def embedding_input() -> Union[str, list[str]]:
+def mock_weather_callback() -> object:
+    """
+    A mock function for getting the current weather.
+    """
+
+    def get_current_weather(location: str, unit: str = "celsius") -> str:
+        """
+        Get the current weather in a given location.
+
+        Parameters:
+        location (str): The city and state, e.g. San Francisco, CA
+        unit (str): The unit of temperature, can be either 'celsius' or 'fahrenheit'. Default is 'celsius'.
+
+        Returns:
+        str: A string that describes the current weather.
+        """
+
+        # This is a mock function, so let's return a mock weather report.
+        weather_report = f"The current weather in {location} is 20 degrees {unit}."
+        return weather_report
+
+    return get_current_weather
+
+
+@pytest.fixture
+def embedding_input() -> Union[str, List[str]]:
     return "This is a test sentence."
 
 
