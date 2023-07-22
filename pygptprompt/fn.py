@@ -1,5 +1,5 @@
+import json
 import sys
-from pprint import pprint
 from typing import Iterator, List
 
 import openai
@@ -15,7 +15,7 @@ config = ConfigurationManager("tests/config.sample.json")
 openai.api_key = config.get_api_key()
 
 
-def get_current_weather(location: str, unit: str = "celsius"):
+def get_current_weather(location: str, unit: str = "celsius") -> str:
     """
     Get the current weather in a given location.
 
@@ -50,14 +50,13 @@ def stream_chat_completion(
 
     for chunk in response_generator:
         delta = chunk["choices"][0]["delta"]
-
-        if "content" in delta and delta["content"]:
+        if delta and "content" in delta and delta["content"]:
             token = delta["content"]
             print(token, end="")
             sys.stdout.flush()
             content += token
 
-        if "function_call" in delta and delta["function_call"]:
+        if delta and "function_call" in delta and delta["function_call"]:
             function_call = delta["function_call"]
             function_call_name = function_call.get("name", "")
             function_call_args += function_call.get("arguments", "")
@@ -150,5 +149,23 @@ if __name__ == "__main__":
         print("assistant")
         assistant_message = get_chat_completions(messages)
         print()
-        logging.info(f"ChatGPT: {assistant_message['content']}")
-        messages.append(assistant_message)
+        if assistant_message["role"] == "function":
+            function_name = assistant_message["function_call"]
+            function_args = json.loads(assistant_message["function_args"])
+            logging.info(
+                f"{config.get_value('openai.chat_completion.model')}: using {function_name}"
+            )
+            if function_name == "get_current_weather":
+                response = get_current_weather(**function_args)
+                messages.append(
+                    ExtendedChatCompletionMessage(
+                        role="assistant",
+                        content=response,
+                    )
+                )
+                print(response)
+            else:
+                logging.error(f"Unknown function: {function_name}")
+        else:
+            logging.info(f"ChatGPT: {assistant_message['content']}")
+            messages.append(assistant_message)
