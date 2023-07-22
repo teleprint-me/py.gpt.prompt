@@ -165,12 +165,14 @@ class OpenAIAPI(BaseAPI):
             ChatCompletionMessage: The generated chat completion message.
         """
         if not messages:
-            raise KeyError("Messages is a required argument.")
+            raise ValueError("Messages is a required argument.")
 
         try:
             # Call the OpenAI API's /v1/chat/completions endpoint
             response = openai.ChatCompletion.create(
                 messages=messages,
+                functions=self.config.get_value("function.definitions", []),
+                function_call=self.config.get_value("function.call", "auto"),
                 model=self.config.get_value(
                     "openai.chat_completions.model", "gpt-3.5-turbo"
                 ),
