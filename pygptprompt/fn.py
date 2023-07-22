@@ -1,6 +1,6 @@
 import json
 import sys
-from typing import Iterator, List
+from typing import Iterator, List, Tuple
 
 import openai
 from llama_cpp import ChatCompletionChunk
@@ -32,52 +32,65 @@ def get_current_weather(location: str, unit: str = "celsius") -> str:
     return weather_report
 
 
+def extract_content(delta: dict, content: str) -> str:
+    if delta and "content" in delta and delta["content"]:
+        token = delta["content"]
+        print(token, end="")
+        sys.stdout.flush()
+        content += token
+    return content
+
+
+def extract_function_call(
+    delta: dict, function_call_name: str, function_call_args: str
+) -> Tuple[str, str]:
+    if delta and "function_call" in delta and delta["function_call"]:
+        function_call = delta["function_call"]
+        if not function_call_name:
+            function_call_name = function_call.get("name", "")
+        function_call_args += str(function_call.get("arguments", ""))
+    return function_call_name, function_call_args
+
+
+def handle_finish_reason(
+    finish_reason: str, function_call_name: str, function_call_args: str, content: str
+) -> ExtendedChatCompletionMessage:
+    if finish_reason:
+        if finish_reason == "function_call":
+            return ExtendedChatCompletionMessage(
+                role="function",
+                function_call=function_call_name,
+                function_args=function_call_args,
+            )
+        elif finish_reason == "stop":
+            print()  # Add newline to model output
+            sys.stdout.flush()
+            return ExtendedChatCompletionMessage(role="assistant", content=content)
+        else:
+            # Handle unexpected finish_reason
+            raise ValueError(f"Warning: Unexpected finish_reason '{finish_reason}'")
+
+
 def stream_chat_completion(
     response_generator: Iterator[ChatCompletionChunk],
 ) -> ExtendedChatCompletionMessage:
-    """
-    Process the stream of chat completion chunks and return the generated message.
-
-    Args:
-        response_generator (Iterator[ChatCompletionChunk]): The chat completion chunk stream.
-
-    Returns:
-        ExtendedChatCompletionMessage: The generated message.
-    """
     function_call_name = None
     function_call_args = ""
     content = ""
 
     for chunk in response_generator:
         delta = chunk["choices"][0]["delta"]
-        if delta and "content" in delta and delta["content"]:
-            token = delta["content"]
-            print(token, end="")
-            sys.stdout.flush()
-            content += token
-
-        if delta and "function_call" in delta and delta["function_call"]:
-            function_call = delta["function_call"]
-            # logging.info(f"Function call: {function_call}")
-            if not function_call_name:
-                function_call_name = function_call.get("name", "")
-            function_call_args += str(function_call.get("arguments", ""))
-
+        content = extract_content(delta, content)
+        function_call_name, function_call_args = extract_function_call(
+            delta, function_call_name, function_call_args
+        )
         finish_reason = chunk["choices"][0]["finish_reason"]
-        if finish_reason:
-            if finish_reason == "function_call":
-                return ExtendedChatCompletionMessage(
-                    role="function",
-                    function_call=function_call_name,
-                    function_args=function_call_args,
-                )
-            elif finish_reason == "stop":
-                print()  # Add newline to model output
-                sys.stdout.flush()
-                return ExtendedChatCompletionMessage(role="assistant", content=content)
-            else:
-                # Handle unexpected finish_reason
-                raise ValueError(f"Warning: Unexpected finish_reason '{finish_reason}'")
+        message = handle_finish_reason(
+            finish_reason, function_call_name, function_call_args, content
+        )
+
+        if message:
+            return message
 
 
 def get_chat_completions(
