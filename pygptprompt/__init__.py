@@ -30,7 +30,10 @@ import os
 from pathlib import Path
 from typing import List, Union
 
-__version__ = "0.0.11"
+from pygptprompt.processor.image import ImageProcessor
+from pygptprompt.processor.pdf import PDFProcessor
+
+__version__ = "0.0.12"
 
 # Set logging configuration
 # NOTE: Can be overridden on a script-by-script basis
@@ -91,3 +94,12 @@ TORCH_DEVICE_TYPES: List[str] = [
     "hpu",
     "mtia",
 ]
+
+# A mapping of MIME types to langchain loader classes
+MAP_MIME_TYPES: tuple[tuple[str, type[object]], ...] = (
+    # ("text/plain", TextProcessor),
+    # ("text/csv", CSVProcessor),
+    ("application/pdf", PDFProcessor),
+    ("image/png", ImageProcessor),
+    ("image/jpeg", ImageProcessor),
+)
