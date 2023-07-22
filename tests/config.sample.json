@@ -1,4 +1,12 @@
 {
+  "provider": {
+    "model": ["openai", "meta", "llama_cpp"],
+    "map": {
+      "openai": "OpenAIAPI",
+      "meta": "MetaLlamaAPI",
+      "llama_cpp": "LlamaCppAPI"
+    }
+  },
   "app": {
     "provider": "app",
     "path": {
@@ -52,8 +60,8 @@
       "max_tokens": 256
     }
   },
-  "llama": {
-    "provider": "llama"
+  "meta": {
+    "provider": "meta"
   },
   "llama_cpp": {
     "provider": "llama_cpp",
