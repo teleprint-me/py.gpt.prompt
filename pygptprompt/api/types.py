@@ -2,7 +2,7 @@
 pygptprompt/api/types.py
 """
 
-from typing import Literal, NotRequired, Optional
+from typing import Literal, NotRequired
 
 from llama_cpp import ChatCompletionMessage
 

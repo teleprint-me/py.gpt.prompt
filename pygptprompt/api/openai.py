@@ -2,13 +2,14 @@
 pygptprompt/api/openai.py
 """
 import sys
-from typing import Iterator, List, Union
+from typing import Iterator, List, Tuple, Union
 
 import openai
 from llama_cpp import ChatCompletionChunk, ChatCompletionMessage, EmbeddingData
 
 from pygptprompt import logging
 from pygptprompt.api.base import BaseAPI
+from pygptprompt.api.types import ExtendedChatCompletionMessage
 from pygptprompt.config.manager import ConfigurationManager
 
 
@@ -24,37 +25,122 @@ class OpenAIAPI(BaseAPI):
     """
 
     def __init__(self, config: ConfigurationManager):
+        """
+        Initialize the OpenAIAPI class.
+
+        Args:
+            config (ConfigurationManager): The configuration manager instance.
+        """
         self.config = config
         openai.api_key = config.get_api_key()
 
-    def _stream_chat_completion(
-        self, response_generator: Iterator[ChatCompletionChunk]
-    ) -> ChatCompletionMessage:
+    def _extract_content(self, delta: dict, content: str) -> str:
         """
-        Process the stream of chat completion chunks and return the generated message.
+        Extracts content from the given delta and appends it to the existing content.
 
         Args:
-            response_generator (Iterator[ChatCompletionChunk]): The chat completion chunk stream.
+            delta (dict): The delta object containing new content.
+            content (str): The existing content.
 
         Returns:
-            ChatCompletionMessage: The generated message.
+            str: The updated content after appending the new token.
         """
+        if delta and "content" in delta and delta["content"]:
+            token = delta["content"]
+            print(token, end="")
+            sys.stdout.flush()
+            content += token
+        return content
+
+    def _extract_function_call(
+        self,
+        delta: dict,
+        function_call_name: str,
+        function_call_args: str,
+    ) -> Tuple[str, str]:
+        """
+        Extracts function call information from the given delta and updates the function call name and arguments.
+
+        Args:
+            delta (dict): The delta object containing function call information.
+            function_call_name (str): The existing function call name.
+            function_call_args (str): The existing function call arguments.
+
+        Returns:
+            Tuple[str, str]: A tuple containing the updated function call name and arguments.
+        """
+        if delta and "function_call" in delta and delta["function_call"]:
+            function_call = delta["function_call"]
+            if not function_call_name:
+                function_call_name = function_call.get("name", "")
+            function_call_args += str(function_call.get("arguments", ""))
+        return function_call_name, function_call_args
+
+    def _handle_finish_reason(
+        self,
+        finish_reason: str,
+        function_call_name: str,
+        function_call_args: str,
+        content: str,
+    ) -> ExtendedChatCompletionMessage:
+        """
+        Handles the finish reason and returns an ExtendedChatCompletionMessage.
+
+        Args:
+            finish_reason (str): The finish reason from the response.
+            function_call_name (str): The function call name.
+            function_call_args (str): The function call arguments.
+            content (str): The generated content.
+
+        Returns:
+            ExtendedChatCompletionMessage: An ExtendedChatCompletionMessage object with relevant information.
+        """
+        if finish_reason:
+            if finish_reason == "function_call":
+                return ExtendedChatCompletionMessage(
+                    role="function",
+                    function_call=function_call_name,
+                    function_args=function_call_args,
+                )
+            elif finish_reason == "stop":
+                print()  # Add newline to model output
+                sys.stdout.flush()
+                return ExtendedChatCompletionMessage(role="assistant", content=content)
+            else:
+                # Handle unexpected finish_reason
+                raise ValueError(f"Warning: Unexpected finish_reason '{finish_reason}'")
+
+    def _stream_chat_completion(
+        self, response_generator: Iterator[ChatCompletionChunk]
+    ) -> ExtendedChatCompletionMessage:
+        """
+        Streams the chat completion response and handles the content and function call information.
+
+        Args:
+            response_generator (Iterator[ChatCompletionChunk]): An iterator of ChatCompletionChunk objects.
+
+        Returns:
+            ExtendedChatCompletionMessage: An ExtendedChatCompletionMessage object with relevant information.
+        """
+        function_call_name = None
+        function_call_args = ""
         content = ""
 
-        for stream in response_generator:
-            try:
-                token = stream.choices[0].delta["content"]
-                if token:
-                    print(token, end="")
-                    sys.stdout.flush()
-                    content += token
-            except KeyError:
-                continue
+        for chunk in response_generator:
+            delta = chunk["choices"][0]["delta"]
 
-        print()  # Add newline to model output
-        sys.stdout.flush()
+            content = self._extract_content(delta, content)
+            function_call_name, function_call_args = self._extract_function_call(
+                delta, function_call_name, function_call_args
+            )
 
-        return ChatCompletionMessage(role="assistant", content=content)
+            finish_reason = chunk["choices"][0]["finish_reason"]
+            message = self._handle_finish_reason(
+                finish_reason, function_call_name, function_call_args, content
+            )
+
+            if message:
+                return message
 
     def get_completions(self, prompt: str):
         """
