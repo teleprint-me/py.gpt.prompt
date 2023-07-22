@@ -58,8 +58,10 @@ def stream_chat_completion(
 
         if delta and "function_call" in delta and delta["function_call"]:
             function_call = delta["function_call"]
-            function_call_name = function_call.get("name", "")
-            function_call_args += function_call.get("arguments", "")
+            # logging.info(f"Function call: {function_call}")
+            if not function_call_name:
+                function_call_name = function_call.get("name", "")
+            function_call_args += str(function_call.get("arguments", ""))
 
         finish_reason = chunk["choices"][0]["finish_reason"]
         if finish_reason:
@@ -153,7 +155,7 @@ if __name__ == "__main__":
             function_name = assistant_message["function_call"]
             function_args = json.loads(assistant_message["function_args"])
             logging.info(
-                f"{config.get_value('openai.chat_completion.model')}: using {function_name}"
+                f"{config.get_value('openai.chat_completions.model')}: using {function_name}"
             )
             if function_name == "get_current_weather":
                 response = get_current_weather(**function_args)
@@ -164,6 +166,7 @@ if __name__ == "__main__":
                     )
                 )
                 print(response)
+                print()
             else:
                 logging.error(f"Unknown function: {function_name}")
         else:
