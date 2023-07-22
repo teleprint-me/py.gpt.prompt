@@ -92,15 +92,13 @@ def main(config_path, prompt, chat, provider):
                 )
 
                 if message["role"] == "function":
-                    # Extract the function name and arguments
-                    function_name = message["function_call"]
-                    function_args = json.loads(message["function_args"])
-
                     # Get the function from the factory
-                    function = function_factory.get_function(function_name)
+                    function = function_factory.get_function(message)
                     if function is None:
-                        logging.error(f"Function {function_name} not found.")
+                        logging.error(f"Function {message['function_call']} not found.")
                     else:
+                        # Extract the function arguments
+                        function_args = function_factory.get_function_args(message)
                         # Call the function
                         result = function(**function_args)
                         # Print the result
