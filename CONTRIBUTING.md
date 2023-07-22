@@ -14,7 +14,7 @@ positive and inclusive environment for everyone.
 There are several ways you can contribute to PyGPTPrompt:
 
 - Report issues or suggest new features by
-  [submitting an issue](https://github.com/teleprint-me/pygptprompt/issues/new).
+  [submitting an issue](https://github.com/teleprint-me/py.gpt.prompt/issues/new).
 - Improve documentation or fix typos.
 - Submit bug fixes or new features by creating a pull request.
 
