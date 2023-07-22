@@ -1,6 +1,7 @@
 """
 pygptprompt/chat.py
 """
+import json
 import sys
 from typing import List
 
@@ -50,8 +51,8 @@ def main(config_path, prompt, chat, provider):
     model: ChatModel = factory.create_model(provider)
 
     system_prompt = ChatCompletionMessage(
-        role=config.get_value("openai.system_prompt.role"),
-        content=config.get_value("openai.system_prompt.content"),
+        role=config.get_value(f"{provider}.system_prompt.role"),
+        content=config.get_value(f"{provider}.system_prompt.content"),
     )
 
     messages: List[ChatCompletionMessage] = [system_prompt]
@@ -87,6 +88,20 @@ def main(config_path, prompt, chat, provider):
                 message: ChatCompletionMessage = model.get_chat_completions(
                     messages=messages,
                 )
+
+                if message["role"] == "function":
+                    # Extract the function name and arguments
+                    function_name = message["function_call"]
+                    function_args = json.loads(message["function_args"])
+
+                    # Call the function
+                    result = getattr(model, function_name)(**function_args)
+
+                    # Print the result
+                    print(result)
+                else:
+                    # Print the message as usual
+                    print(message["content"])
                 print()
                 messages.append(message)
 
