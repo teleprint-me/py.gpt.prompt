@@ -34,12 +34,17 @@ from pygptprompt.function.factory import FunctionFactory
     help="Enter a chat loop with the model.",
 )
 @click.option(
+    "--embed",
+    is_flag=True,
+    help="Employ the chroma vector database while prompting or chatting.",
+)
+@click.option(
     "--provider",
     type=click.STRING,
     default="llama_cpp",
     help="Specify the model provider to use. Options are 'openai' for GPT models and 'llama_cpp' for Llama models.",
 )
-def main(config_path, prompt, chat, provider):
+def main(config_path, prompt, chat, embed, provider):
     if not (bool(prompt) ^ chat):
         print(
             "Use either --prompt or --chat, but not both.",
@@ -116,6 +121,9 @@ def main(config_path, prompt, chat, provider):
 
                 print()
                 messages.append(message)
+
+        elif embed:
+            raise NotImplementedError
 
         else:
             print("Nothing to do.")
