@@ -8,7 +8,8 @@ from typing import Any, List, Optional
 from llama_cpp import ChatCompletionMessage
 
 from pygptprompt import logging
-from pygptprompt.api.types import ChatModel, ExtendedChatCompletionMessage
+from pygptprompt.api.factory import ChatModel
+from pygptprompt.api.types import ExtendedChatCompletionMessage
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.weather import get_current_weather
 

@@ -1,7 +1,6 @@
 """
 pygptprompt/chat.py
 """
-import copy
 import sys
 from typing import List
 
@@ -10,8 +9,7 @@ from llama_cpp import ChatCompletionMessage
 from prompt_toolkit import prompt as input
 
 from pygptprompt import logging
-from pygptprompt.api.factory import ChatModelFactory
-from pygptprompt.api.types import ChatModel
+from pygptprompt.api.factory import ChatModel, ChatModelFactory
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.factory import FunctionFactory
 

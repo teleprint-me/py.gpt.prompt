@@ -1,15 +1,9 @@
 """
 pygptprompt/api/types.py
 """
-
-from typing import Literal, NotRequired, Union
+from typing import Literal, NotRequired
 
 from llama_cpp import ChatCompletionMessage
-
-from pygptprompt.api.llama_cpp import LlamaCppAPI
-from pygptprompt.api.openai import OpenAIAPI
-
-ChatModel = Union[OpenAIAPI, LlamaCppAPI]
 
 
 class ExtendedChatCompletionMessage(ChatCompletionMessage):
