@@ -25,9 +25,9 @@ class FunctionFactory:
             "get_current_weather": get_current_weather,
             # Add more functions here as needed
         }
-        self.function_name: str = str()
-        self.functions_args: dict[str, Any] = dict()
-        self.function: object = None
+        self.function_name: str = ""
+        self.function_args: dict[str, Any] = {}
+        self.function: Optional[object] = None
 
     def get_function_args(
         self, message: ExtendedChatCompletionMessage
@@ -41,7 +41,11 @@ class FunctionFactory:
         Returns:
             dict[str, Any]: A dictionary containing the function arguments. If the function arguments in the message are not valid JSON, prints an error message and returns an empty dictionary.
         """
-        function_args = message["function_args"]
+        function_args = message.get("function_args")
+        if function_args is None:
+            logging.error(f"Function arguments is None: {self.function_name}")
+            return {}
+
         try:
             self.function_args = json.loads(function_args)
             return self.function_args
@@ -59,7 +63,7 @@ class FunctionFactory:
         Returns:
             Optional[object]: The function specified in the message or None if it doesn't exist.
         """
-        self.function_name = message["function_call"]
+        self.function_name = message.get("function_call")
         self.function = self.functions.get(self.function_name)
         return self.function
 
@@ -76,6 +80,15 @@ class FunctionFactory:
     def query_function(
         self, message: ExtendedChatCompletionMessage
     ) -> Optional[ChatCompletionMessage]:
+        """
+        Execute the specified function based on the given message.
+
+        Args:
+            message (ExtendedChatCompletionMessage): The chat completion message.
+
+        Returns:
+            Optional[ChatCompletionMessage]: The result of the function execution as a ChatCompletionMessage, or None if an error occurs.
+        """
         if message["role"] == "function":
             # Get the function from the factory
             function = self.get_function(message)
@@ -85,7 +98,7 @@ class FunctionFactory:
 
             # Extract the function arguments
             function_args = self.get_function_args(message)
-            if function_args is None:
+            if not function_args:
                 logging.error(
                     f"Invalid function arguments for {message['function_call']}."
                 )
