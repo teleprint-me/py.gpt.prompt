@@ -103,9 +103,17 @@ def main(config_path, prompt, chat, provider):
                         result = function(**function_args)
                         # Print the result
                         print(result)
+                        api_message = ChatCompletionMessage(
+                            role="assistant", content=result
+                        )
+                else:
+                    # Create a new message object that includes only the properties expected by the OpenAI API
+                    api_message = ChatCompletionMessage(
+                        role=message["role"], content=message["content"]
+                    )
 
                 print()
-                messages.append(message)
+                messages.append(api_message)
 
         else:
             print("Nothing to do.")
