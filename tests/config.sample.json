@@ -136,6 +136,7 @@
   },
   "function": {
     "provider": "function",
+    "policy": false,
     "call": "auto",
     "templates": [
       {
