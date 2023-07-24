@@ -112,6 +112,7 @@ def main(config_path, prompt, chat, provider):
                         messages.append(message)
                     else:
                         logging.error("Failed to generate a response message.")
+                        continue
 
                 print()
                 messages.append(message)

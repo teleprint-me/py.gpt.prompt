@@ -1,7 +1,6 @@
 """
 pygptprompt/function/factory.py
 """
-
 import copy
 import json
 from typing import Any, List, Optional
@@ -138,6 +137,7 @@ class FunctionFactory:
         prompt_templates: list[dict[str, str]] = self.config.get_value(
             "function.templates", []
         )
+
         prompt_template: str = ""
 
         for template in prompt_templates:
@@ -152,7 +152,5 @@ class FunctionFactory:
 
         prompt_message = ChatCompletionMessage(role="user", content=prompt_template)
         shadow_messages.append(prompt_message)
-        message = model.get_chat_completions(
-            messages=shadow_messages,
-        )
+        message = model.get_chat_completions(messages=shadow_messages)
         return message
