@@ -1,11 +1,9 @@
 """
 pygptprompt/api/factory.py
 """
-from typing import Union
-
-from pygptprompt.api.base import BaseAPI
 from pygptprompt.api.llama_cpp import LlamaCppAPI
 from pygptprompt.api.openai import OpenAIAPI
+from pygptprompt.api.types import ChatModel
 from pygptprompt.config.manager import ConfigurationManager
 
 
