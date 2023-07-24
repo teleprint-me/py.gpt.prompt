@@ -137,6 +137,13 @@
   "function": {
     "provider": "function",
     "call": "auto",
+    "templates": [
+      {
+        "name": "get_current_weather",
+        "description": "Get the current weather in a given location",
+        "prompt": "How should I dress for this kind of weather?"
+      }
+    ],
     "definitions": [
       {
         "name": "get_current_weather",

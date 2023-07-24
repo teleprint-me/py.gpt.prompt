@@ -1,7 +1,7 @@
 """
 pygptprompt/chat.py
 """
-import json
+import copy
 import sys
 from typing import List
 
@@ -93,9 +93,47 @@ def main(config_path, prompt, chat, provider):
 
                 if message["role"] == "function":
                     # Query the function from the factory and execute it
-                    message = function_factory.query_function(message)
-                    if message is None:
+                    result: ChatCompletionMessage = function_factory.query_function(
+                        message
+                    )
+                    # Skip to user prompt if result is None
+                    if result is None:
+                        logging.error(
+                            f"Function {function_factory.function_name} did not return a result."
+                        )
                         continue
+
+                    prompt_template: str = ""
+
+                    # Make a copy of the current message list
+                    shadow_messages = copy.deepcopy(messages)
+                    # Append the function response message to the shadow context
+                    shadow_messages.append(result)
+                    # Get the prompt template from the configuration file
+                    prompt_templates: list[dict[str, str]] = config.get_value(
+                        "function.templates", []
+                    )
+
+                    for template in prompt_templates:
+                        if template.get("name", "") == function_factory.function_name:
+                            prompt_template = template.get("prompt", "")
+
+                    if not prompt_template:
+                        logging.error(
+                            f"Failed to retrieve prompt template for {function_factory.function_name}"
+                        )
+                        continue
+
+                    # Create a new ChatCompletionMessage with the prompt template
+                    prompt_message = ChatCompletionMessage(
+                        role="user", content=prompt_template
+                    )
+                    # Add the prompt message to the shadow context
+                    shadow_messages.append(prompt_message)
+                    # Get the assistant's response to the prompt
+                    message = model.get_chat_completions(
+                        messages=shadow_messages,
+                    )
 
                 print()
                 messages.append(message)
