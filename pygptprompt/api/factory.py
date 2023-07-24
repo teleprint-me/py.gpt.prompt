@@ -8,8 +8,6 @@ from pygptprompt.api.llama_cpp import LlamaCppAPI
 from pygptprompt.api.openai import OpenAIAPI
 from pygptprompt.config.manager import ConfigurationManager
 
-ChatModel = Union[OpenAIAPI, LlamaCppAPI]
-
 
 class ChatModelFactory:
     """

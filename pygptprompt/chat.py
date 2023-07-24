@@ -10,7 +10,8 @@ from llama_cpp import ChatCompletionMessage
 from prompt_toolkit import prompt as input
 
 from pygptprompt import logging
-from pygptprompt.api.factory import ChatModel, ChatModelFactory
+from pygptprompt.api.factory import ChatModelFactory
+from pygptprompt.api.types import ChatModel
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.factory import FunctionFactory
 
@@ -93,7 +94,7 @@ def main(config_path, prompt, chat, provider):
 
                 if message["role"] == "function":
                     # Query the function from the factory and execute it
-                    result: ChatCompletionMessage = function_factory.query_function(
+                    result: ChatCompletionMessage = function_factory.execute_function(
                         message
                     )
                     # Skip to user prompt if result is None
@@ -103,37 +104,14 @@ def main(config_path, prompt, chat, provider):
                         )
                         continue
 
-                    prompt_template: str = ""
-
-                    # Make a copy of the current message list
-                    shadow_messages = copy.deepcopy(messages)
-                    # Append the function response message to the shadow context
-                    shadow_messages.append(result)
-                    # Get the prompt template from the configuration file
-                    prompt_templates: list[dict[str, str]] = config.get_value(
-                        "function.templates", []
+                    message: ChatCompletionMessage = function_factory.query_function(
+                        model=model, result=result, messages=messages
                     )
 
-                    for template in prompt_templates:
-                        if template.get("name", "") == function_factory.function_name:
-                            prompt_template = template.get("prompt", "")
-
-                    if not prompt_template:
-                        logging.error(
-                            f"Failed to retrieve prompt template for {function_factory.function_name}"
-                        )
-                        continue
-
-                    # Create a new ChatCompletionMessage with the prompt template
-                    prompt_message = ChatCompletionMessage(
-                        role="user", content=prompt_template
-                    )
-                    # Add the prompt message to the shadow context
-                    shadow_messages.append(prompt_message)
-                    # Get the assistant's response to the prompt
-                    message = model.get_chat_completions(
-                        messages=shadow_messages,
-                    )
+                    if message is not None:
+                        messages.append(message)
+                    else:
+                        logging.error("Failed to generate a response message.")
 
                 print()
                 messages.append(message)
