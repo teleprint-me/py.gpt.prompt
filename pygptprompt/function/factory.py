@@ -5,6 +5,8 @@ pygptprompt/function/factory.py
 import json
 from typing import Any, Optional
 
+from llama_cpp import ChatCompletionMessage
+
 from pygptprompt import logging
 from pygptprompt.api.types import ExtendedChatCompletionMessage
 from pygptprompt.config.manager import ConfigurationManager
@@ -19,10 +21,13 @@ class FunctionFactory:
         Args:
             config (ConfigurationManager): The configuration manager instance.
         """
-        self.functions = {
+        self.functions: dict[str, object] = {
             "get_current_weather": get_current_weather,
             # Add more functions here as needed
         }
+        self.function_name: str = str()
+        self.functions_args: dict[str, Any] = dict()
+        self.function: object = None
 
     def get_function_args(
         self, message: ExtendedChatCompletionMessage
@@ -38,7 +43,8 @@ class FunctionFactory:
         """
         function_args = message["function_args"]
         try:
-            return json.loads(function_args)
+            self.function_args = json.loads(function_args)
+            return self.function_args
         except json.JSONDecodeError:
             logging.error(f"Invalid function arguments: {function_args}")
             return {}
@@ -53,8 +59,9 @@ class FunctionFactory:
         Returns:
             Optional[object]: The function specified in the message or None if it doesn't exist.
         """
-        function_name = message["function_call"]
-        return self.functions.get(function_name)
+        self.function_name = message["function_call"]
+        self.function = self.functions.get(self.function_name)
+        return self.function
 
     def register_function(self, function_name: str, function: object) -> None:
         """
@@ -65,3 +72,35 @@ class FunctionFactory:
             function (object): The function object to register.
         """
         self.functions[function_name] = function
+
+    def query_function(
+        self, message: ExtendedChatCompletionMessage
+    ) -> Optional[ChatCompletionMessage]:
+        if message["role"] == "function":
+            # Get the function from the factory
+            function = self.get_function(message)
+            if function is None:
+                logging.error(f"Function {message['function_call']} not found.")
+                return None
+
+            # Extract the function arguments
+            function_args = self.get_function_args(message)
+            if function_args is None:
+                logging.error(
+                    f"Invalid function arguments for {message['function_call']}."
+                )
+                return None
+
+            try:
+                # Call the function
+                result = function(**function_args)
+            except Exception as e:
+                logging.error(
+                    f"Error executing function {message['function_call']}: {e}"
+                )
+                return None
+
+            # Return a new ChatCompletionMessage with the result
+            return ChatCompletionMessage(role="assistant", content=result)
+
+        return None

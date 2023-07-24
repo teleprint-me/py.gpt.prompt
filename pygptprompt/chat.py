@@ -92,20 +92,10 @@ def main(config_path, prompt, chat, provider):
                 )
 
                 if message["role"] == "function":
-                    # Get the function from the factory
-                    function = function_factory.get_function(message)
-                    if function is None:
-                        logging.error(f"Function {message['function_call']} not found.")
-                    else:
-                        # Extract the function arguments
-                        function_args = function_factory.get_function_args(message)
-                        # Call the function
-                        result = function(**function_args)
-                        # Print the result
-                        print(result)
-                        message = ChatCompletionMessage(
-                            role="assistant", content=result
-                        )
+                    # Query the function from the factory and execute it
+                    message = function_factory.query_function(message)
+                    if message is None:
+                        continue
 
                 print()
                 messages.append(message)
