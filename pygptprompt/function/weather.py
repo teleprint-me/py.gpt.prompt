@@ -19,9 +19,13 @@ def get_current_weather(location: str, unit: str = "metric") -> str:
 
     # Determine the unit query parameter
     unit_query = "m" if unit == "metric" else "u"
+    # Set the API response formatting
+    res_format = "%l+%T+%S+%s+%C+%w+%t"
 
     # Make a request to the wttr.in service
-    response = requests.get(f"http://wttr.in/{location}?{unit_query}&format=%C+%t+%w")
+    response = requests.get(
+        f"http://wttr.in/{location}?{unit_query}&format={res_format}"
+    )
 
     # Check if the request was successful
     if response.status_code == 200:
