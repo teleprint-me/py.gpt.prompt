@@ -89,31 +89,24 @@ class FunctionFactory:
         Returns:
             Optional[ChatCompletionMessage]: The result of the function execution as a ChatCompletionMessage, or None if an error occurs.
         """
-        if message["role"] == "function":
-            # Get the function from the factory
-            function = self.get_function(message)
-            if function is None:
-                logging.error(f"Function {message['function_call']} not found.")
-                return None
+        # Get the function from the factory
+        function = self.get_function(message)
+        if function is None:
+            logging.error(f"Function {message['function_call']} not found.")
+            return None
 
-            # Extract the function arguments
-            function_args = self.get_function_args(message)
-            if not function_args:
-                logging.error(
-                    f"Invalid function arguments for {message['function_call']}."
-                )
-                return None
+        # Extract the function arguments
+        function_args = self.get_function_args(message)
+        if not function_args:
+            logging.error(f"Invalid function arguments for {message['function_call']}.")
+            return None
 
-            try:
-                # Call the function
-                result = function(**function_args)
-            except Exception as e:
-                logging.error(
-                    f"Error executing function {message['function_call']}: {e}"
-                )
-                return None
+        try:
+            # Call the function
+            result = function(**function_args)
+        except Exception as e:
+            logging.error(f"Error executing function {message['function_call']}: {e}")
+            return None
 
-            # Return a new ChatCompletionMessage with the result
-            return ChatCompletionMessage(role="assistant", content=result)
-
-        return None
+        # Return a new ChatCompletionMessage with the result
+        return ChatCompletionMessage(role="assistant", content=result)
