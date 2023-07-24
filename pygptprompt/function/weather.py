@@ -1,18 +1,31 @@
 """
 pygptprompt/function/weather.py
 """
+import requests
 
 
-def get_current_weather(location: str, unit: str = "celsius") -> str:
+def get_current_weather(location: str, unit: str = "metric") -> str:
     """
     Get the current weather in a given location.
     Parameters:
     location (str): The city and state, e.g. San Francisco, CA
-    unit (str): The unit of temperature, can be either 'celsius' or 'fahrenheit'. Default is 'celsius'.
+    unit (str): The unit system, can be either 'metric' or 'uscs'. Default is 'metric'.
     Returns:
     str: A string that describes the current weather.
     """
 
-    # This is a mock function, so let's return a mock weather report.
-    weather_report = f"The current weather in {location} is 20 degrees {unit}."
-    return weather_report
+    # Replace spaces with hyphens and commas with underscores for the wttr.in URL
+    location = location.replace(" ", "-").replace(",", "_")
+
+    # Determine the unit query parameter
+    unit_query = "m" if unit == "metric" else "u"
+
+    # Make a request to the wttr.in service
+    response = requests.get(f"http://wttr.in/{location}?{unit_query}&format=%C+%t+%w")
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        # Return the weather report
+        return response.text
+    else:
+        return f"Could not get the weather for {location}."
