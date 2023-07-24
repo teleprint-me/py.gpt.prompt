@@ -63,6 +63,9 @@
   "meta": {
     "provider": "meta"
   },
+  "llama2.c": {
+    "provider": "llama2.c"
+  },
   "llama_cpp": {
     "provider": "llama_cpp",
     "model": {
