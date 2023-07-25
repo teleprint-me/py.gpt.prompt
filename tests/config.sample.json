@@ -1,12 +1,4 @@
 {
-  "provider": {
-    "model": ["openai", "meta", "llama_cpp"],
-    "map": {
-      "openai": "OpenAIAPI",
-      "meta": "MetaLlamaAPI",
-      "llama_cpp": "LlamaCppAPI"
-    }
-  },
   "app": {
     "provider": "app",
     "path": {
@@ -15,7 +7,7 @@
       "config": "${HOME}/.config/pygptprompt"
     },
     "access": {
-      "confirm": true,
+      "confirm": false,
       "shell": {
         "allowed_commands": [
           "date",
@@ -43,14 +35,6 @@
       "bold": "bold"
     }
   },
-  "torch": {
-    "provider": "torch",
-    "device": {
-      "triton": false,
-      "type": "cpu",
-      "options": ["cpu", "cuda", "hip", "mps", "opencl", "vulkan", "lazy"]
-    }
-  },
   "chroma": {
     "provider": "chroma",
     "device": "cpu",
@@ -60,11 +44,16 @@
       "max_tokens": 256
     }
   },
-  "meta": {
-    "provider": "meta"
+  "torch": {
+    "provider": "torch",
+    "device": {
+      "triton": false,
+      "type": "cpu",
+      "options": ["cpu", "cuda", "hip", "mps", "opencl", "vulkan", "lazy"]
+    }
   },
-  "llama2.c": {
-    "provider": "llama2.c"
+  "huggingface": {
+    "provider": "huggingface"
   },
   "llama_cpp": {
     "provider": "llama_cpp",
@@ -136,7 +125,6 @@
   },
   "function": {
     "provider": "function",
-    "policy": false,
     "call": "auto",
     "templates": [
       {
