@@ -1,0 +1,20 @@
+@startuml SessionQueue
+!theme blueprint
+
+class SessionManager {
+    - dict sessions
+    - SessionQueue current_session
+    + None switch_session()
+    + None create_session()
+}
+
+class SessionQueue {
+ 
+    - ChatModelFactory model_factory
+    - ChatModel model
+
+    + None switch_model()
+}
+
+SessionManager o-- SessionQueue : uses >
+@enduml
