@@ -1,13 +1,13 @@
 @startuml
-!theme spacelab
+!theme blueprint
 
 ' Define classes
 
 class SessionQueue {
   - ConfigurationManager config
-  - SessionModel model
   - SessionToken token
   - SessionPolicy policy
+  - ChatModel model
   - list transcript
   - list messages
   - string name
@@ -30,11 +30,18 @@ class SessionPolicy {
 }
 
 class ChatModelFactory {
-  ..
+  - ConfigurationManager config
+  - dict provider_map
+  + ChatModel create_model()
 }
 
 class ChatModel {
-  ..
+  + str name
+  + int max_tokens
+  + int reserve
+  + dict system_message
+  + ChatCompletionMessage get_chat_completions()
+  + EmbedData get_embeddings()
 }
 
 ' Define relationships
