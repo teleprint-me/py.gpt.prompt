@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant User
+    participant Main
+    participant ConfigurationManager
+    participant ChatModelFactory
+    participant ChatModel
+    participant FunctionFactory
+    User->>Main: Calls main with parameters
+    Main->>ConfigurationManager: Creates ConfigurationManager with config_path
+    Main->>ChatModelFactory: Creates ChatModelFactory with config
+    ChatModelFactory->>ChatModel: Creates ChatModel based on provider
+    Main->>FunctionFactory: Creates FunctionFactory with config
+    Main->>ChatModel: Gets chat completions
+    Main->>FunctionFactory: Executes and queries function if message role is 'function'
