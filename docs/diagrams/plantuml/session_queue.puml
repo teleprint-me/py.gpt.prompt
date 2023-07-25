@@ -1,0 +1,34 @@
+@startuml
+' Define classes
+
+class SessionQueue {
+  +enqueue(message: Message)
+  +dequeue()
+  +stream_completion(prompt: str, max_tokens: int)
+  +save()
+  +load()
+}
+
+class ModelFactory {
+  +create(provider: str, config: dict)
+}
+
+class Model {
+  +generate(prompt: str, max_tokens: int)
+}
+
+class OpenAIModel {
+  +generate(prompt: str, max_tokens: int)
+}
+
+class GGMLModel {
+  +generate(prompt: str, max_tokens: int)
+}
+
+' Define relationships
+
+SessionQueue --> ModelFactory : Uses
+SessionQueue --> Model : Uses
+ModelFactory --> OpenAIModel : Creates
+ModelFactory --> GGMLModel : Creates
+@enduml
