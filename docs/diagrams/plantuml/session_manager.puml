@@ -4,14 +4,22 @@
 class SessionManager {
     - dict sessions
     - SessionQueue current_session
-    + None switch_session()
-    + None create_session()
+    + None switch_session(session_name: str)
+    + None create_session(session_name: str, model_name: str)
+    + None delete_session(session_name: str)
+    + SessionQueue get_session(session_name: str)
+    + SessionQueue get_current_session()
+    + str get_current_session_id()
+    + dict get_all_sessions()
 }
 
 class SessionQueue {
     - ChatModelFactory model_factory
     - ChatModel model
-    + None switch_model()
+    + None switch_model(model_name: str)
+    + ChatModel get_current_model()
+    + None add_message(message: str)
+    + list get_transcript()
 }
 
 SessionManager o-- SessionQueue : uses >
