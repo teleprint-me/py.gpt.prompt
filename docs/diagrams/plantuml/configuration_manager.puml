@@ -4,12 +4,12 @@
 ' docs/diagrams/plantuml/configuration_manager.puml
 
 class MetaSingleton {
-    - dict _instances
-    + object __call__()
+  - dict _instances
+  + object __call__()
 }
 
 class Singleton extends MetaSingleton {
-  +Singleton __init__()
+  + Singleton __init__()
 }
 
 class MappingTemplate {
