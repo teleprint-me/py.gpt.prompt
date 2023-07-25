@@ -11,6 +11,23 @@ class SessionQueue {
   - list transcript
   - list messages
   - string name
+  + str dir_path
+  + ChatCompletionMessage last_message
+  + str last_role
+  + str last_content
+  + str last_function
+  + FileHistory history
+  + None set_session_name()
+  + dict pop_message()
+  + list dequeue()
+  + list extend()
+  + ChatCompletionMessage get_completion()
+  + None clear_messages()
+  + None clear_transcript()
+  + None clear_all()
+  - None make_directory()
+  + None save()
+  + None load()
 }
 
 class ConfigurationManager extends Singleton, MappingTemplate {
