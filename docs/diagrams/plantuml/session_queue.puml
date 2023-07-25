@@ -24,11 +24,21 @@ class ConfigurationManager extends Singleton, MappingTemplate {
 }
 
 class SessionToken {
-  ..
+  - ChatModel model
+  - Encoding encoding
+  + int upper_limit
+  + int lower_limit
+  + int get_message_count()
+  + int get_total_message_count()
+  + bool has_overflow()
 }
 
 class SessionPolicy {
-  ..
+  - ConfigurationManager config
+  {static} is_file_path()
+  {static} is_traversable()
+  + bool is_accessible()
+  + tuple is_command_allowed()
 }
 
 class ChatModelFactory {
