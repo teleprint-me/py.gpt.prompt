@@ -1,34 +1,48 @@
 @startuml
+!theme spacelab
+
 ' Define classes
 
 class SessionQueue {
-  +enqueue(message: Message)
-  +dequeue()
-  +stream_completion(prompt: str, max_tokens: int)
-  +save()
-  +load()
+  - ConfigurationManager config
+  - SessionModel model
+  - SessionToken token
+  - SessionPolicy policy
+  - list transcript
+  - list messages
+  - string name
 }
 
-class ModelFactory {
-  +create(provider: str, config: dict)
+class ConfigurationManager {
+  ..
 }
 
-class Model {
-  +generate(prompt: str, max_tokens: int)
+class SessionModel {
+  ..
 }
 
-class OpenAIModel {
-  +generate(prompt: str, max_tokens: int)
+class SessionToken {
+  ..
 }
 
-class GGMLModel {
-  +generate(prompt: str, max_tokens: int)
+class SessionPolicy {
+  ..
+}
+
+class ChatModelFactory {
+  ..
+}
+
+class ChatModel {
+  ..
 }
 
 ' Define relationships
 
-SessionQueue --> ModelFactory : Uses
-SessionQueue --> Model : Uses
-ModelFactory --> OpenAIModel : Creates
-ModelFactory --> GGMLModel : Creates
+SessionQueue o-- ConfigurationManager : uses >
+SessionQueue o-- SessionModel : uses >
+SessionQueue o-- SessionToken : uses >
+SessionQueue o-- SessionPolicy : uses >
+SessionQueue o-- ChatModelFactory : uses >
+ChatModelFactory o-- ChatModel : creates >
 @enduml
