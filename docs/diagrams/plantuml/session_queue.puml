@@ -1,4 +1,4 @@
-@startuml
+@startuml SessionQueue
 !theme blueprint
 
 ' Define classes
@@ -13,26 +13,14 @@ class SessionQueue {
   - string name
 }
 
-class Singleton {
-  // Singleton class properties and methods go here
-}
-
-class MappingTemplate {
-  // MappingTemplate class properties and methods go here
-}
-
 class ConfigurationManager extends Singleton, MappingTemplate {
   - Path file_path
-  - dict data
+  # dict data
   + dict load()
   + None save()
   + None backup()
   + Any get_value()
   + str get_api_key()
-}
-
-class SessionModel {
-  ..
 }
 
 class SessionToken {
@@ -62,9 +50,9 @@ class ChatModel {
 ' Define relationships
 
 SessionQueue o-- ConfigurationManager : uses >
-SessionQueue o-- SessionModel : uses >
 SessionQueue o-- SessionToken : uses >
 SessionQueue o-- SessionPolicy : uses >
-SessionQueue o-- ChatModelFactory : uses >
+SessionQueue o-- ChatModel : uses >
 ChatModelFactory o-- ChatModel : creates >
+SessionQueue o-- ChatModelFactory : uses >
 @enduml
