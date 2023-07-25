@@ -9,10 +9,8 @@ class SessionManager {
 }
 
 class SessionQueue {
- 
     - ChatModelFactory model_factory
     - ChatModel model
-
     + None switch_model()
 }
 
