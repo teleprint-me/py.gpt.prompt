@@ -1,0 +1,38 @@
+@startuml
+!theme blueprint
+
+' docs/diagrams/plantuml/configuration_manager.puml
+
+class MetaSingleton {
+    - dict _instances
+    + object __call__()
+}
+
+class Singleton extends MetaSingleton {
+  +Singleton __init__()
+}
+
+class MappingTemplate {
+  # dict _data
+  + list keys
+  # dict data
+  + bool create()
+  + bool create_nested()
+  + Any read()
+  + Any read_nested()
+  + bool update()
+  + bool update_nested()
+  + bool delete()
+  + bool delete_nested()
+}
+
+class ConfigurationManager extends Singleton, MappingTemplate {
+  - Path file_path
+  - dict data
+  + dict load()
+  + None save()
+  + None backup()
+  + Any get_value()
+  + str get_api_key()
+}
+@enduml
