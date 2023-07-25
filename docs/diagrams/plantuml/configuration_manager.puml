@@ -1,4 +1,4 @@
-@startuml
+@startuml ConfigurationManager
 !theme blueprint
 
 ' docs/diagrams/plantuml/configuration_manager.puml
