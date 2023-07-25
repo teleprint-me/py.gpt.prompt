@@ -1,4 +1,4 @@
-@startuml SessionQueue
+@startuml SessionManager
 !theme blueprint
 
 class SessionManager {
