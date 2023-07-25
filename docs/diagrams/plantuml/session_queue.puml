@@ -1,16 +1,17 @@
 @startuml SessionQueue
 !theme blueprint
 
-' Define classes
+' docs/diagrams/plantuml/session_queue.puml
 
 class SessionQueue {
   - ConfigurationManager config
   - SessionToken token
   - SessionPolicy policy
+  - ChatModelFactory factory
   - ChatModel model
   - list transcript
   - list messages
-  - string name
+  - string identifier
   + str dir_path
   + ChatCompletionMessage last_message
   + str last_role
@@ -28,6 +29,29 @@ class SessionQueue {
   - None make_directory()
   + None save()
   + None load()
+}
+
+class MetaSingleton {
+    - dict _instances
+    + object __call__()
+}
+
+class Singleton extends MetaSingleton {
+  + Singleton __init__()
+}
+
+class MappingTemplate {
+  # dict _data
+  + list keys
+  # dict data
+  + bool create()
+  + bool create_nested()
+  + Any read()
+  + Any read_nested()
+  + bool update()
+  + bool update_nested()
+  + bool delete()
+  + bool delete_nested()
 }
 
 class ConfigurationManager extends Singleton, MappingTemplate {
@@ -50,7 +74,7 @@ class SessionToken {
   + bool has_overflow()
 }
 
-class SessionPolicy {
+class SessionPolicy extends Singleton {
   - ConfigurationManager config
   {static} is_file_path()
   {static} is_traversable()
