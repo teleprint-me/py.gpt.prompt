@@ -11,7 +11,7 @@ black==23.7.0
 blis==0.7.10
 build==0.10.0
 catalogue==2.0.8
-certifi==2023.5.7
+certifi==2023.7.22
 cfgv==3.3.1
 charset-normalizer==3.2.0
 chroma-hnswlib==0.7.1
