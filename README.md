@@ -107,8 +107,7 @@ the project. You can donate using Bitcoin:
 Contributions to the project are always welcome. Whether it's reporting bugs,
 suggesting new features, improving documentation, or writing code, your
 contributions are greatly appreciated. Check out the
-[contributing guidelines](CONTRIBUTING.md) for more
-information.
+[contributing guidelines](CONTRIBUTING.md) for more information.
 
 ## License
 
