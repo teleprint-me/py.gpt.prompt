@@ -6,13 +6,13 @@ from pathlib import Path
 from typing import Iterator, List, Union
 
 from huggingface_hub import hf_hub_download
-from huggingface_hub.hf_api import HfApi, HfFolder
+from huggingface_hub.hf_api import HfApi
 from huggingface_hub.utils import (
     EntryNotFoundError,
     LocalEntryNotFoundError,
     RepositoryNotFoundError,
 )
-from llama_cpp import ChatCompletionChunk, ChatCompletionMessage, EmbeddingData, Llama
+from llama_cpp import ChatCompletionChunk, ChatCompletionMessage, Embedding, Llama
 
 from pygptprompt import logging
 from pygptprompt.api.base import BaseAPI
@@ -187,15 +187,15 @@ class LlamaCppAPI(BaseAPI):
             logging.error(f"Error generating chat completions: {e}")
             return ChatCompletionMessage(role="assistant", content=str(e))
 
-    def get_embeddings(self, input: Union[str, List[str]]) -> EmbeddingData:
+    def get_embeddings(self, input: Union[str, List[str]]) -> Embedding:
         """
-        Generate embeddings using the Llama language model.
+        Generate embeddings using the Llama language models.
 
         Args:
             input (Union[str, List[str]]): The input string or list of strings.
 
         Returns:
-            EmbeddingData: The generated embedding data.
+            Embedding: The generated embedding data.
 
         Raises:
             ValueError: If the 'input' argument is empty or None.
@@ -204,8 +204,7 @@ class LlamaCppAPI(BaseAPI):
             raise ValueError("'input' argument cannot be empty or None")
 
         try:
-            response = self.model.create_embedding(input=input)
-            return response["data"][0]
+            return self.model.create_embedding(input=input)
         except Exception as e:
             logging.error(f"Error generating embeddings: {e}")
-            return EmbeddingData(index=0, object="list", embedding=[])
+            return {}

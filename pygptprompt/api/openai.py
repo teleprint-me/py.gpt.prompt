@@ -5,7 +5,7 @@ import sys
 from typing import Iterator, List, Tuple, Union
 
 import openai
-from llama_cpp import ChatCompletionChunk, ChatCompletionMessage, EmbeddingData
+from llama_cpp import ChatCompletionChunk, ChatCompletionMessage, Embedding
 
 from pygptprompt import logging
 from pygptprompt.api.base import BaseAPI
@@ -201,7 +201,7 @@ class OpenAIAPI(BaseAPI):
             logging.error(f"Error generating chat completions: {e}")
             return ChatCompletionMessage(role="error", content=str(e))
 
-    def get_embeddings(self, input: Union[str, list[str]]) -> EmbeddingData:
+    def get_embeddings(self, input: Union[str, list[str]]) -> Embedding:
         """
         Generate embeddings using the OpenAI language models.
 
@@ -209,20 +209,19 @@ class OpenAIAPI(BaseAPI):
             input (Union[str, list[str]]): The input text or list of texts to generate embeddings for.
 
         Returns:
-            EmbeddingData: The generated embedding vector.
+            Embedding: The generated embedding vector.
         """
         if not input:
             raise ValueError("'input' argument cannot be empty or None")
 
         try:
             # Call the OpenAI API's /v1/embeddings endpoint
-            response = openai.Embedding.create(
+            return openai.Embedding.create(
                 input=input,
                 model=self.config.get_value(
                     "openai.embedding.model", "text-embedding-ada-002"
                 ),
             )
-            return EmbeddingData(**response["data"][0])
         except Exception as e:
             logging.error(f"Error generating embeddings: {e}")
-            return EmbeddingData(index=0, object="list", embedding=[])
+            return {}
