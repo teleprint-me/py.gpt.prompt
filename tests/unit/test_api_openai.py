@@ -5,7 +5,7 @@ import json
 from typing import List
 
 import pytest
-from llama_cpp import ChatCompletionMessage, EmbeddingData
+from llama_cpp import ChatCompletionMessage, Embedding, EmbeddingData
 
 from pygptprompt.api.base import BaseAPI
 from pygptprompt.api.openai import OpenAIAPI
@@ -69,9 +69,14 @@ class TestOpenAI:
         openai_api: OpenAIAPI,
         embedding_input: str,
     ):
-        data: EmbeddingData = openai_api.get_embeddings(
+        embedding: Embedding = openai_api.get_embeddings(
             input=embedding_input,
         )
+
+        assert embedding["object"] == "list"
+        assert isinstance(embedding["data"], list)
+
+        data: EmbeddingData = embedding["data"][0]
 
         assert isinstance(data["index"], int)
         assert data["object"] == "embedding"

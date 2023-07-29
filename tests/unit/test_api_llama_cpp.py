@@ -2,7 +2,7 @@
 tests/unit/test_api_llama_cpp.py
 """
 import pytest
-from llama_cpp import ChatCompletionMessage, EmbeddingData
+from llama_cpp import ChatCompletionMessage, Embedding, EmbeddingData
 
 from pygptprompt.api.base import BaseAPI
 from pygptprompt.api.llama_cpp import LlamaCppAPI
@@ -32,11 +32,17 @@ class TestLlamaCppAPI:
         llama_cpp_api: LlamaCppAPI,
         embedding_input: str,
     ):
-        data: EmbeddingData = llama_cpp_api.get_embeddings(input=embedding_input)
+        embedding: Embedding = llama_cpp_api.get_embeddings(input=embedding_input)
+
+        assert embedding["object"] == "list"
+        assert isinstance(embedding["data"], list)
+
+        data: EmbeddingData = embedding["data"][0]
 
         assert isinstance(data["index"], int)
         assert data["object"] == "embedding"
         assert isinstance(data["embedding"], list)
+        assert len(data["embedding"]) > 0  # Ensure the List is not empty
 
     @pytest.mark.slow
     def test_get_chat_completions_with_empty_messages(
