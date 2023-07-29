@@ -21,6 +21,7 @@ class SessionQueue {
   + None set_session_name()
   + dict pop_message()
   + list dequeue()
+  + None enqueue()
   + list extend()
   + ChatCompletionMessage get_completion()
   + None clear_messages()

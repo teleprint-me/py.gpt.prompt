@@ -9,13 +9,13 @@ class SessionManager {
     + None delete_session(session_name: str)
     + SessionQueue get_session(session_name: str)
     + SessionQueue get_current_session()
-    + str get_current_session_id()
     + dict get_all_sessions()
 }
 
 class SessionQueue {
     - ChatModelFactory model_factory
     - ChatModel model
+    + str id
     + None switch_model(model_name: str)
     + ChatModel get_current_model()
     + None add_message(message: str)
