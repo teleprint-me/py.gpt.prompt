@@ -53,7 +53,12 @@
     }
   },
   "huggingface": {
-    "provider": "huggingface"
+    "provider": "huggingface",
+    "device": {
+      "triton": false,
+      "type": "cpu",
+      "options": ["cpu", "cuda", "hip", "mps", "opencl", "vulkan", "lazy"]
+    }
   },
   "llama_cpp": {
     "provider": "llama_cpp",
