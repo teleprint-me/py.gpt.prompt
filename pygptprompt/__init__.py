@@ -1,4 +1,7 @@
 """
+"There is a stubbornness about me that never can bear to be frightened at the will of others. My courage always rises at every attempt to intimidate me."
+  - Jane Austen, Pride and Prejudice
+
 pygptprompt/__init__.py
 
 Initialization code and configuration settings for the PyGPTPrompt package.
