@@ -1,13 +1,13 @@
 """
 tests/conftest.py
 """
-import json
 import os
 from typing import List, Union
 
 import pytest
 from llama_cpp import ChatCompletionMessage
 
+from pygptprompt.api.factory import ChatModelFactory
 from pygptprompt.api.llama_cpp import LlamaCppAPI
 from pygptprompt.api.openai import OpenAIAPI
 from pygptprompt.api.types import ExtendedChatCompletionMessage
@@ -153,6 +153,11 @@ def openai_api(config: ConfigurationManager) -> OpenAIAPI:
 @pytest.fixture(scope="module")
 def llama_cpp_api(config: ConfigurationManager) -> LlamaCppAPI:
     return LlamaCppAPI(config=config)
+
+
+@pytest.fixture(scope="module")
+def chat_model_factory(config: ConfigurationManager):
+    return ChatModelFactory(config)
 
 
 # @pytest.fixture(scope="module")
