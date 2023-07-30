@@ -60,6 +60,18 @@ def main(
 
     name: str = "my_collection"
 
+    # Load documents and split them into chunks
+    logging.info(f"Loading documents from {path_source}")
+
+    documents: Documents = [
+        "This is the first synthetic document.",
+        "Here is another synthetic document.",
+        "This is the third synthetic document.",
+    ]
+
+    # Each document needs a unique ID
+    ids: list[str] = ["doc1", "doc2", "doc3"]
+
     # Uses PostHog library to collect telemetry
     chroma_client: API = PersistentClient(
         path=path_database,
@@ -71,21 +83,12 @@ def main(
             name=name, embedding_function=embedding_function
         )
 
-        # Load documents and split them into chunks
-        logging.info(f"Loading documents from {path_source}")
-
-        documents: Documents = [
-            "This is the first synthetic document.",
-            "Here is another synthetic document.",
-            "This is the third synthetic document.",
-        ]
-
-        # Each document needs a unique ID
-        ids: list[str] = ["doc1", "doc2", "doc3"]
-
         collection.add(documents=documents, ids=ids)
     except ValueError:
         logging.info(f"Collection with name {name} already exists")
+        collection: Collection = chroma_client.get_collection(
+            name=name, embedding_function=embedding_function
+        )
 
     query = "synthetic document"
     results: QueryResult = collection.query(query_texts=[query], n_results=2)
