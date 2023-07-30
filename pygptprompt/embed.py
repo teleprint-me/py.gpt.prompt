@@ -38,6 +38,7 @@ from pygptprompt.database.function import ChatModelEmbeddingFunction
 @click.option(
     "--provider",
     type=click.STRING,
+    default="llama_cpp",
     help="The provider to generate embeddings with.",
 )
 def main(
