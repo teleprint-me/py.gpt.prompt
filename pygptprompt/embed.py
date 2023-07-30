@@ -8,68 +8,84 @@ generating embeddings, and persisting them to the Chroma database.
 import logging
 
 import click
-from chromadb import API, Client, Settings
+from chromadb import API, PersistentClient, Settings
 from chromadb.api.models.Collection import Collection
 from chromadb.api.types import Documents, QueryResult
+from chromadb.utils import embedding_functions
 
-from pygptprompt import PATH_DATABASE, PATH_SOURCE
+from pygptprompt.api.factory import ChatModel, ChatModelFactory
+from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.database.function import ChatModelEmbeddingFunction
 
 
 @click.command()
+@click.argument(
+    "config_path",
+    type=click.Path(exists=True),
+    default="config.json",
+)
 @click.option(
     "--path_source",
-    default=PATH_SOURCE,
     type=click.STRING,
-    help=f"The path the documents are read from (default: {PATH_SOURCE})",
+    help="The path the documents are read from.",
 )
 @click.option(
     "--path_database",
-    default=PATH_DATABASE,
     type=click.STRING,
-    help=f"The path the embeddings are written to (default: {PATH_DATABASE})",
+    default="database",
+    help="The path the embeddings are written to.",
+)
+@click.option(
+    "--provider",
+    type=click.STRING,
+    help="The provider to generate embeddings with.",
 )
 def main(
+    config_path,
     path_source,
     path_database,
-    embeddings_model,
-    torch_device_type,
-    torch_triton_type,
+    provider,
 ):
+    config: ConfigurationManager = ConfigurationManager(config_path)
+
+    factory: ChatModelFactory = ChatModelFactory(config)
+    chat_model: ChatModel = factory.create_model(provider)
+    embedding_function: ChatModelEmbeddingFunction = ChatModelEmbeddingFunction(
+        chat_model=chat_model
+    )
     # Using model and types
-    logging.info(f"Using Embedding Model: {embeddings_model}")
-    logging.info(f"Using Device Type: {torch_device_type}")
-    logging.info(f"Device Type is Triton: {torch_triton_type}")
+    # logging.info(f"Using Embedding Model: {embeddings_model}")
+    # logging.info(f"Using Device Type: {torch_device_type}")
+    # logging.info(f"Device Type is Triton: {torch_triton_type}")
 
     name: str = "my_collection"
 
     # Uses PostHog library to collect telemetry
-    settings: Settings = Settings(
-        chroma_db_impl="duckdb+parquet",
-        persist_directory=str(path_database),
-        anonymized_telemetry=False,
+    chroma_client: API = PersistentClient(
+        path=path_database,
+        settings=Settings(anonymized_telemetry=False),
     )
 
-    chroma_client: API = Client(settings=settings)
-
     try:
-        collection: Collection = chroma_client.create_collection(name=name)
+        collection: Collection = chroma_client.create_collection(
+            name=name, embedding_function=embedding_function
+        )
+
+        # Load documents and split them into chunks
+        logging.info(f"Loading documents from {path_source}")
+
+        documents: Documents = [
+            "This is the first synthetic document.",
+            "Here is another synthetic document.",
+            "This is the third synthetic document.",
+        ]
+
+        # Each document needs a unique ID
+        ids: list[str] = ["doc1", "doc2", "doc3"]
+
+        collection.add(documents=documents, ids=ids)
     except ValueError:
         logging.info(f"Collection with name {name} already exists")
-        exit(1)
-
-    # Load documents and split them into chunks
-    logging.info(f"Loading documents from {path_source}")
-
-    documents: Documents = [
-        "This is the first synthetic document.",
-        "Here is another synthetic document.",
-        "This is the third synthetic document.",
-    ]
-
-    # Each document needs a unique ID
-    ids: list[str] = ["doc1", "doc2", "doc3"]
-
-    collection.add(documents=documents, ids=ids)
 
     query = "synthetic document"
     results: QueryResult = collection.query(query_texts=[query], n_results=2)
