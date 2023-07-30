@@ -3,6 +3,7 @@
 /cache
 /source
 /models
+/database
 
 /docs/assets/*
 !/docs/assets/*.gif
