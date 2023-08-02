@@ -29,7 +29,7 @@ class ChatModelFactory:
             "llama_cpp": LlamaCppModel,
         }
 
-    def create_model(self, provider) -> ChatModel:
+    def create_model(self, provider: str) -> ChatModel:
         """
         Creates and returns a chat model instance based on the provider.
 

@@ -9,9 +9,10 @@ from llama_cpp import ChatCompletionMessage
 from prompt_toolkit import prompt as input
 
 from pygptprompt import logging
-from pygptprompt.api.factory import ChatModel, ChatModelFactory
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.factory import FunctionFactory
+from pygptprompt.model.factory import ChatModelFactory
+from pygptprompt.pattern.model import ChatModel
 
 
 @click.command()
@@ -72,7 +73,7 @@ def main(config_path, prompt, chat, embed, provider):
             user_prompt = ChatCompletionMessage(role="user", content=prompt)
             messages.append(user_prompt)
             print("assistant")
-            message: ChatCompletionMessage = model.get_chat_completions(
+            message: ChatCompletionMessage = model.get_chat_completion(
                 messages=messages,
             )
             messages.append(message)
@@ -91,7 +92,7 @@ def main(config_path, prompt, chat, embed, provider):
 
                 print()
                 print("assistant")
-                message: ChatCompletionMessage = model.get_chat_completions(
+                message: ChatCompletionMessage = model.get_chat_completion(
                     messages=messages,
                 )
 
