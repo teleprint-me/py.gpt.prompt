@@ -1,5 +1,5 @@
 """
-pygptprompt/api/llama_cpp.py
+pygptprompt/model/llama_cpp.py
 """
 import sys
 from pathlib import Path
@@ -15,13 +15,13 @@ from huggingface_hub.utils import (
 from llama_cpp import ChatCompletionChunk, ChatCompletionMessage, Embedding, Llama
 
 from pygptprompt import logging
-from pygptprompt.api.base import BaseAPI
 from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.pattern.model import ChatModel
 
 
-class LlamaCppAPI(BaseAPI):
+class LlamaCppModel(ChatModel):
     """
-    API class for interacting with the Llama language model.
+    ChatModel class for interacting with the Llama language model.
 
     Args:
         config (ConfigurationManager): The configuration manager instance.
@@ -138,7 +138,7 @@ class LlamaCppAPI(BaseAPI):
 
         return ChatCompletionMessage(role="assistant", content=content)
 
-    def get_completions(self, prompt: str):
+    def get_completion(self, prompt: str) -> str:
         """
         Get completions from the Llama language model.
 
@@ -147,7 +147,7 @@ class LlamaCppAPI(BaseAPI):
         """
         raise NotImplementedError
 
-    def get_chat_completions(
+    def get_chat_completion(
         self, messages: List[ChatCompletionMessage]
     ) -> ChatCompletionMessage:
         """
@@ -187,7 +187,7 @@ class LlamaCppAPI(BaseAPI):
             logging.error(f"Error generating chat completions: {e}")
             return ChatCompletionMessage(role="assistant", content=str(e))
 
-    def get_embeddings(self, input: Union[str, List[str]]) -> Embedding:
+    def get_embedding(self, input: Union[str, List[str]]) -> Embedding:
         """
         Generate embeddings using the Llama language models.
 

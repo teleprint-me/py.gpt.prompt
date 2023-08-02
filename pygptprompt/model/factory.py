@@ -1,13 +1,10 @@
 """
-pygptprompt/api/factory.py
+pygptprompt/model/factory.py
 """
-from typing import Union
-
-from pygptprompt.api.llama_cpp import LlamaCppAPI
-from pygptprompt.api.openai import OpenAIAPI
 from pygptprompt.config.manager import ConfigurationManager
-
-ChatModel = Union[OpenAIAPI, LlamaCppAPI]
+from pygptprompt.model.llama_cpp import LlamaCppModel
+from pygptprompt.model.openai import OpenAIModel
+from pygptprompt.pattern.model import ChatModel
 
 
 class ChatModelFactory:
@@ -28,8 +25,8 @@ class ChatModelFactory:
         """
         self.config = config
         self.provider_map = {
-            "openai": OpenAIAPI,
-            "llama_cpp": LlamaCppAPI,
+            "openai": OpenAIModel,
+            "llama_cpp": LlamaCppModel,
         }
 
     def create_model(self, provider) -> ChatModel:

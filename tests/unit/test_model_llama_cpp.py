@@ -4,21 +4,21 @@ tests/unit/test_api_llama_cpp.py
 import pytest
 from llama_cpp import ChatCompletionMessage, Embedding, EmbeddingData
 
-from pygptprompt.api.base import BaseAPI
-from pygptprompt.api.llama_cpp import LlamaCppAPI
+from pygptprompt.model.llama_cpp import LlamaCppModel
+from pygptprompt.pattern.model import ChatModel
 
 
 class TestLlamaCppAPI:
-    def test_api_type(self, llama_cpp_api: LlamaCppAPI):
-        assert isinstance(llama_cpp_api, BaseAPI)
+    def test_api_type(self, llama_cpp_api: LlamaCppModel):
+        assert isinstance(llama_cpp_api, ChatModel)
 
     @pytest.mark.slow
     def test_get_chat_completions(
         self,
-        llama_cpp_api: LlamaCppAPI,
+        llama_cpp_api: LlamaCppModel,
         messages: list[ChatCompletionMessage],
     ):
-        message: ChatCompletionMessage = llama_cpp_api.get_chat_completions(
+        message: ChatCompletionMessage = llama_cpp_api.get_chat_completion(
             messages=messages
         )
 
@@ -29,10 +29,10 @@ class TestLlamaCppAPI:
     @pytest.mark.slow
     def test_get_embeddings(
         self,
-        llama_cpp_api: LlamaCppAPI,
+        llama_cpp_api: LlamaCppModel,
         embedding_input: str,
     ):
-        embedding: Embedding = llama_cpp_api.get_embeddings(input=embedding_input)
+        embedding: Embedding = llama_cpp_api.get_embedding(input=embedding_input)
 
         assert embedding["object"] == "list"
         assert isinstance(embedding["data"], list)
@@ -47,19 +47,19 @@ class TestLlamaCppAPI:
     @pytest.mark.slow
     def test_get_chat_completions_with_empty_messages(
         self,
-        llama_cpp_api: LlamaCppAPI,
+        llama_cpp_api: LlamaCppModel,
     ):
         with pytest.raises(
             ValueError, match="'messages' argument cannot be empty or None"
         ):
-            llama_cpp_api.get_chat_completions(messages=[])
+            llama_cpp_api.get_chat_completion(messages=[])
 
     @pytest.mark.slow
     def test_get_embeddings_with_empty_input(
         self,
-        llama_cpp_api: LlamaCppAPI,
+        llama_cpp_api: LlamaCppModel,
     ):
         with pytest.raises(
             ValueError, match="'input' argument cannot be empty or None"
         ):
-            llama_cpp_api.get_embeddings(input="")
+            llama_cpp_api.get_embedding(input="")

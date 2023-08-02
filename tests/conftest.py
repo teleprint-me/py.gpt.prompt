@@ -7,16 +7,16 @@ from typing import List, Union
 import pytest
 from llama_cpp import ChatCompletionMessage
 
-from pygptprompt.api.factory import ChatModelFactory
-from pygptprompt.api.llama_cpp import LlamaCppAPI
-from pygptprompt.api.openai import OpenAIAPI
-from pygptprompt.api.types import ExtendedChatCompletionMessage
 from pygptprompt.config.json import read_json
 
 # from pygptprompt.session.model import SessionModel
 # from pygptprompt.session.policy import SessionPolicy
 # from pygptprompt.session.token import SessionToken
 from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.model.factory import ChatModelFactory
+from pygptprompt.model.llama_cpp import LlamaCppModel
+from pygptprompt.model.openai import OpenAIModel
+from pygptprompt.pattern.message import ExtendedChatCompletionMessage
 
 
 def pytest_addoption(parser):
@@ -146,13 +146,13 @@ def config(config_file_path: str) -> ConfigurationManager:
 
 
 @pytest.fixture(scope="module")
-def openai_api(config: ConfigurationManager) -> OpenAIAPI:
-    return OpenAIAPI(config=config)
+def openai_api(config: ConfigurationManager) -> OpenAIModel:
+    return OpenAIModel(config=config)
 
 
 @pytest.fixture(scope="module")
-def llama_cpp_api(config: ConfigurationManager) -> LlamaCppAPI:
-    return LlamaCppAPI(config=config)
+def llama_cpp_api(config: ConfigurationManager) -> LlamaCppModel:
+    return LlamaCppModel(config=config)
 
 
 @pytest.fixture(scope="module")

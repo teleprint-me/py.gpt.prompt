@@ -7,21 +7,21 @@ from typing import List
 import pytest
 from llama_cpp import ChatCompletionMessage, Embedding, EmbeddingData
 
-from pygptprompt.api.base import BaseAPI
-from pygptprompt.api.openai import OpenAIAPI
+from pygptprompt.model.openai import OpenAIModel
+from pygptprompt.pattern.model import ChatModel
 
 
 class TestOpenAI:
-    def test_api_type(self, openai_api: OpenAIAPI):
-        assert isinstance(openai_api, BaseAPI)
+    def test_api_type(self, openai_api: OpenAIModel):
+        assert isinstance(openai_api, ChatModel)
 
     @pytest.mark.private
     def test_streaming_completions(
         self,
-        openai_api: OpenAIAPI,
+        openai_api: OpenAIModel,
         chat_completion: List[ChatCompletionMessage],
     ):
-        message: ChatCompletionMessage = openai_api.get_chat_completions(
+        message: ChatCompletionMessage = openai_api.get_chat_completion(
             messages=chat_completion,
         )
 
@@ -35,12 +35,12 @@ class TestOpenAI:
     @pytest.mark.private
     def test_streaming_functions(
         self,
-        openai_api: OpenAIAPI,
+        openai_api: OpenAIModel,
         function_completion: List[ChatCompletionMessage],
         mock_weather_callback: object,
     ):
         # Call the get_chat_completions method
-        assistant_message: ChatCompletionMessage = openai_api.get_chat_completions(
+        assistant_message: ChatCompletionMessage = openai_api.get_chat_completion(
             messages=function_completion
         )
 
@@ -66,10 +66,10 @@ class TestOpenAI:
     @pytest.mark.private
     def test_get_embeddings(
         self,
-        openai_api: OpenAIAPI,
+        openai_api: OpenAIModel,
         embedding_input: str,
     ):
-        embedding: Embedding = openai_api.get_embeddings(
+        embedding: Embedding = openai_api.get_embedding(
             input=embedding_input,
         )
 
@@ -86,19 +86,19 @@ class TestOpenAI:
     @pytest.mark.private
     def test_get_chat_completions_with_empty_messages(
         self,
-        openai_api: OpenAIAPI,
+        openai_api: OpenAIModel,
     ):
         with pytest.raises(
             ValueError, match="'messages' argument cannot be empty or None"
         ):
-            openai_api.get_chat_completions(messages=[])
+            openai_api.get_chat_completion(messages=[])
 
     @pytest.mark.private
     def test_get_embeddings_with_empty_input(
         self,
-        openai_api: OpenAIAPI,
+        openai_api: OpenAIModel,
     ):
         with pytest.raises(
             ValueError, match="'input' argument cannot be empty or None"
         ):
-            openai_api.get_embeddings(input="")
+            openai_api.get_embedding(input="")

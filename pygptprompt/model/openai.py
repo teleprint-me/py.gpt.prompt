@@ -1,5 +1,5 @@
 """
-pygptprompt/api/openai.py
+pygptprompt/model/openai.py
 """
 import sys
 from typing import Iterator, List, Tuple, Union
@@ -8,14 +8,14 @@ import openai
 from llama_cpp import ChatCompletionChunk, ChatCompletionMessage, Embedding
 
 from pygptprompt import logging
-from pygptprompt.api.base import BaseAPI
-from pygptprompt.api.types import ExtendedChatCompletionMessage
 from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.pattern.message import ExtendedChatCompletionMessage
+from pygptprompt.pattern.model import ChatModel
 
 
-class OpenAIAPI(BaseAPI):
+class OpenAIModel(ChatModel):
     """
-    API class for interacting with the OpenAI language models.
+    ChatModel class for interacting with the OpenAI language models.
 
     Args:
         config (ConfigurationManager): The configuration manager instance.
@@ -142,7 +142,7 @@ class OpenAIAPI(BaseAPI):
             if message:
                 return message
 
-    def get_completions(self, prompt: str):
+    def get_completion(self, prompt: str) -> str:
         """
         Get completions from the OpenAI language models.
 
@@ -151,7 +151,7 @@ class OpenAIAPI(BaseAPI):
         """
         raise NotImplementedError
 
-    def get_chat_completions(
+    def get_chat_completion(
         self,
         messages: List[ChatCompletionMessage],
     ) -> ChatCompletionMessage:
@@ -201,7 +201,7 @@ class OpenAIAPI(BaseAPI):
             logging.error(f"Error generating chat completions: {e}")
             return ChatCompletionMessage(role="error", content=str(e))
 
-    def get_embeddings(self, input: Union[str, list[str]]) -> Embedding:
+    def get_embedding(self, input: Union[str, list[str]]) -> Embedding:
         """
         Generate embeddings using the OpenAI language models.
 

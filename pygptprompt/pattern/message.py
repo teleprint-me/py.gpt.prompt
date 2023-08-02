@@ -1,5 +1,5 @@
 """
-pygptprompt/api/types.py
+pygptprompt/pattern/message.py
 """
 from typing import Literal, NotRequired
 
