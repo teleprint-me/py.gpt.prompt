@@ -1,5 +1,5 @@
 """
-tests/unit/test_api_openai.py
+tests/unit/test_model_openai.py
 """
 import json
 from typing import List

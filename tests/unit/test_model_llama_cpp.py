@@ -1,5 +1,5 @@
 """
-tests/unit/test_api_llama_cpp.py
+tests/unit/test_model_llama_cpp.py
 """
 import pytest
 from llama_cpp import ChatCompletionMessage, Embedding, EmbeddingData

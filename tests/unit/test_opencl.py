@@ -1,3 +1,6 @@
+"""
+tests/unit/test_opencl.py
+"""
 import pyopencl
 import pytest
 
@@ -6,7 +9,7 @@ import pytest
 # PyOpenCL and Installable Client Driver (ICD) must be compiled to specific hardware.
 # Using a virtual environment (e.g. Poetry) masks the system install because it's
 # job is to isolate packages from the system libraries. This creates a conflict
-# that will eventually need to be addressed. This is test is temporarily disabled
+# that will eventually need to be addressed. This test is temporarily disabled
 # as a result of this issue.
 @pytest.mark.skip
 def test_opencl():
