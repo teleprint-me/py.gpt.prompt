@@ -53,9 +53,9 @@ def main(config_path, prompt, chat, embed, provider):
 
     config: ConfigurationManager = ConfigurationManager(config_path)
 
-    factory: ChatModelFactory = ChatModelFactory(config)
-    model: ChatModel = factory.create_model(provider)
     function_factory = FunctionFactory(config)
+    model_factory: ChatModelFactory = ChatModelFactory(config)
+    chat_model: ChatModel = model_factory.create_model(provider)
 
     system_prompt = ChatCompletionMessage(
         role=config.get_value(f"{provider}.system_prompt.role"),
@@ -73,7 +73,7 @@ def main(config_path, prompt, chat, embed, provider):
             user_prompt = ChatCompletionMessage(role="user", content=prompt)
             messages.append(user_prompt)
             print("assistant")
-            message: ChatCompletionMessage = model.get_chat_completion(
+            message: ChatCompletionMessage = chat_model.get_chat_completion(
                 messages=messages,
             )
             messages.append(message)
@@ -92,7 +92,7 @@ def main(config_path, prompt, chat, embed, provider):
 
                 print()
                 print("assistant")
-                message: ChatCompletionMessage = model.get_chat_completion(
+                message: ChatCompletionMessage = chat_model.get_chat_completion(
                     messages=messages,
                 )
 
@@ -109,7 +109,7 @@ def main(config_path, prompt, chat, embed, provider):
                         continue
 
                     message: ChatCompletionMessage = function_factory.query_function(
-                        model=model, result=result, messages=messages
+                        chat_model=chat_model, result=result, messages=messages
                     )
 
                     if message is not None:
@@ -122,7 +122,47 @@ def main(config_path, prompt, chat, embed, provider):
                 messages.append(message)
 
         elif embed:
-            raise NotImplementedError
+            while True:
+                try:
+                    print("user")
+                    text_input = input(
+                        "> ", multiline=True, wrap_lines=True, prompt_continuation=". "
+                    )
+                except (EOFError, KeyboardInterrupt):
+                    break
+                user_message = ChatCompletionMessage(role="user", content=text_input)
+                messages.append(user_message)
+
+                print()
+                print("assistant")
+                message: ChatCompletionMessage = chat_model.get_chat_completion(
+                    messages=messages,
+                )
+
+                if message["role"] == "function":
+                    # Query the function from the factory and execute it
+                    result: ChatCompletionMessage = function_factory.execute_function(
+                        message
+                    )
+                    # Skip to user prompt if result is None
+                    if result is None:
+                        logging.error(
+                            f"Function {function_factory.function_name} did not return a result."
+                        )
+                        continue
+
+                    message: ChatCompletionMessage = function_factory.query_function(
+                        chat_model=chat_model, result=result, messages=messages
+                    )
+
+                    if message is not None:
+                        messages.append(message)
+                    else:
+                        logging.error("Failed to generate a response message.")
+                        continue
+
+                print()
+                messages.append(message)
 
         else:
             print("Nothing to do.")
