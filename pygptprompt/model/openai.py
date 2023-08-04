@@ -2,15 +2,21 @@
 pygptprompt/model/openai.py
 """
 import sys
-from typing import Iterator, List, Tuple, Union
+from typing import Any, Dict, Iterator, List, Tuple, Union
 
 import openai
-from llama_cpp import ChatCompletionChunk, ChatCompletionMessage, Embedding
+from llama_cpp import ChatCompletionChunk
+from tiktoken import Encoding, encoding_for_model
 
 from pygptprompt import logging
 from pygptprompt.config.manager import ConfigurationManager
-from pygptprompt.pattern.message import ExtendedChatCompletionMessage
-from pygptprompt.pattern.model import ChatModel
+from pygptprompt.pattern.model import (
+    ChatModel,
+    ChatModelChatCompletion,
+    ChatModelEmbedding,
+    ChatModelEncoding,
+    ChatModelTextCompletion,
+)
 
 
 class OpenAIModel(ChatModel):
@@ -82,9 +88,9 @@ class OpenAIModel(ChatModel):
         function_call_name: str,
         function_call_args: str,
         content: str,
-    ) -> ExtendedChatCompletionMessage:
+    ) -> ChatModelChatCompletion:
         """
-        Handles the finish reason and returns an ExtendedChatCompletionMessage.
+        Handles the finish reason and returns an ChatModelChatCompletion.
 
         Args:
             finish_reason (str): The finish reason from the response.
@@ -93,11 +99,11 @@ class OpenAIModel(ChatModel):
             content (str): The generated content.
 
         Returns:
-            ExtendedChatCompletionMessage: An ExtendedChatCompletionMessage object with relevant information.
+            ChatModelChatCompletion: An ChatModelChatCompletion object with relevant information.
         """
         if finish_reason:
             if finish_reason == "function_call":
-                return ExtendedChatCompletionMessage(
+                return ChatModelChatCompletion(
                     role="function",
                     function_call=function_call_name,
                     function_args=function_call_args,
@@ -105,14 +111,14 @@ class OpenAIModel(ChatModel):
             elif finish_reason == "stop":
                 print()  # Add newline to model output
                 sys.stdout.flush()
-                return ExtendedChatCompletionMessage(role="assistant", content=content)
+                return ChatModelChatCompletion(role="assistant", content=content)
             else:
                 # Handle unexpected finish_reason
                 raise ValueError(f"Warning: Unexpected finish_reason '{finish_reason}'")
 
     def _stream_chat_completion(
         self, response_generator: Iterator[ChatCompletionChunk]
-    ) -> ExtendedChatCompletionMessage:
+    ) -> ChatModelChatCompletion:
         """
         Streams the chat completion response and handles the content and function call information.
 
@@ -120,7 +126,7 @@ class OpenAIModel(ChatModel):
             response_generator (Iterator[ChatCompletionChunk]): An iterator of ChatCompletionChunk objects.
 
         Returns:
-            ExtendedChatCompletionMessage: An ExtendedChatCompletionMessage object with relevant information.
+            ChatModelChatCompletion: An ChatModelChatCompletion object with relevant information.
         """
         function_call_name = None
         function_call_args = ""
@@ -142,7 +148,7 @@ class OpenAIModel(ChatModel):
             if message:
                 return message
 
-    def get_completion(self, prompt: str) -> str:
+    def get_completion(self, prompt: str) -> ChatModelTextCompletion:
         """
         Get completions from the OpenAI language models.
 
@@ -153,16 +159,16 @@ class OpenAIModel(ChatModel):
 
     def get_chat_completion(
         self,
-        messages: List[ChatCompletionMessage],
-    ) -> ChatCompletionMessage:
+        messages: List[ChatModelChatCompletion],
+    ) -> ChatModelChatCompletion:
         """
         Generate chat completions using the OpenAI language models.
 
         Args:
-            messages (List[ChatCompletionMessage]): The list of chat completion messages.
+            messages (List[ChatModelChatCompletion]): The list of chat completion messages.
 
         Returns:
-            ChatCompletionMessage: The generated chat completion message.
+            ChatModelChatCompletion: The generated chat completion message.
         """
         if not messages:
             raise ValueError("'messages' argument cannot be empty or None")
@@ -199,29 +205,52 @@ class OpenAIModel(ChatModel):
             return self._stream_chat_completion(response)
         except Exception as e:
             logging.error(f"Error generating chat completions: {e}")
-            return ChatCompletionMessage(role="error", content=str(e))
+            return ChatModelChatCompletion(role="system", content=str(e))
 
-    def get_embedding(self, input: Union[str, list[str]]) -> Embedding:
+    def get_embedding(self, input: Union[str, List[str]]) -> ChatModelEmbedding:
         """
         Generate embeddings using the OpenAI language models.
 
         Args:
-            input (Union[str, list[str]]): The input text or list of texts to generate embeddings for.
+            input (Union[str, List[str]]): The input text or list of texts to generate embeddings for.
 
         Returns:
-            Embedding: The generated embedding vector.
+            ChatModelEmbedding (List[float]): The generated embedding vector.
         """
         if not input:
             raise ValueError("'input' argument cannot be empty or None")
 
         try:
             # Call the OpenAI API's /v1/embeddings endpoint
-            return openai.Embedding.create(
+            embedding: Dict[str, Any] = openai.Embedding.create(
                 input=input,
                 model=self.config.get_value(
                     "openai.embedding.model", "text-embedding-ada-002"
                 ),
             )
+            sorted_embeddings: List[Dict[str, Any]] = sorted(
+                embedding["data"],
+                key=lambda e: e["index"],
+            )
+            # Return Embedding Vectors as List[float]
+            return [result["embedding"] for result in sorted_embeddings]
         except Exception as e:
             logging.error(f"Error generating embeddings: {e}")
-            return {}
+            return []
+
+    def get_encoding(self, text: str) -> ChatModelEncoding:
+        """
+        Get the token encoding for a single text using the OpenAI language model.
+
+        Args:
+            text (str): The input text to encode.
+
+        Returns:
+            ChatModelEncoding (List[int]): The token encoding for the given text.
+        """
+        encoding: Encoding = encoding_for_model(
+            model_name=self.config.get_value(
+                "openai.chat_completions.model", "gpt-3.5-turbo"
+            )
+        )
+        return encoding.encode(text=text)
