@@ -1,12 +1,26 @@
 """
 pygptprompt/pattern/embedding.py
 """
+from abc import abstractmethod
+from typing import Protocol
+
 from pygptprompt.pattern.model import ChatModel
-from pygptprompt.pattern.types import (
-    ChatModelDocuments,
-    ChatModelEmbedding,
-    EmbeddingFunction,
-)
+from pygptprompt.pattern.types import ChatModelDocuments, ChatModelEmbedding
+
+
+class EmbeddingFunction(Protocol):
+    @abstractmethod
+    def __call__(self, texts: ChatModelDocuments) -> ChatModelEmbedding:
+        """
+        An abstract method defining the embedding function's call signature.
+
+        Args:
+            texts (List[str]): A list of text documents.
+
+        Returns:
+            List[float]: The resulting embedding for the given text documents.
+        """
+        raise NotImplementedError
 
 
 class ChatModelEmbeddingFunction(EmbeddingFunction):

@@ -2,23 +2,27 @@
 tests/unit/test_model_llama_cpp.py
 """
 import pytest
-from llama_cpp import ChatCompletionMessage, Embedding, EmbeddingData
 
 from pygptprompt.model.llama_cpp import LlamaCppModel
 from pygptprompt.pattern.model import ChatModel
+from pygptprompt.pattern.types import (
+    ChatModelChatCompletion,
+    ChatModelEmbedding,
+    ChatModelEncoding,
+)
 
 
 class TestLlamaCppAPI:
-    def test_api_type(self, llama_cpp_api: LlamaCppModel):
-        assert isinstance(llama_cpp_api, ChatModel)
+    def test_api_type(self, llama_cpp_model: LlamaCppModel):
+        assert isinstance(llama_cpp_model, ChatModel)
 
     @pytest.mark.slow
-    def test_get_chat_completions(
+    def test_get_chat_completion(
         self,
-        llama_cpp_api: LlamaCppModel,
-        messages: list[ChatCompletionMessage],
+        llama_cpp_model: LlamaCppModel,
+        messages: list[ChatModelChatCompletion],
     ):
-        message: ChatCompletionMessage = llama_cpp_api.get_chat_completion(
+        message: ChatModelChatCompletion = llama_cpp_model.get_chat_completion(
             messages=messages
         )
 
@@ -27,39 +31,56 @@ class TestLlamaCppAPI:
         assert message["content"] != ""
 
     @pytest.mark.slow
-    def test_get_embeddings(
+    def test_get_embedding(
         self,
-        llama_cpp_api: LlamaCppModel,
+        llama_cpp_model: LlamaCppModel,
         embedding_input: str,
     ):
-        embedding: Embedding = llama_cpp_api.get_embedding(input=embedding_input)
+        embedding: ChatModelEmbedding = llama_cpp_model.get_embedding(
+            input=embedding_input
+        )
 
-        assert embedding["object"] == "list"
-        assert isinstance(embedding["data"], list)
+        assert isinstance(embedding, list)
+        assert len(embedding) > 0  # Ensure the List is not empty
 
-        data: EmbeddingData = embedding["data"][0]
+        for sub_embedding in embedding:
+            assert isinstance(sub_embedding, list)
 
-        assert isinstance(data["index"], int)
-        assert data["object"] == "embedding"
-        assert isinstance(data["embedding"], list)
-        assert len(data["embedding"]) > 0  # Ensure the List is not empty
+            assert len(sub_embedding) > 0  # Ensure sub-list is not empty
+
+            for value in sub_embedding:
+                assert isinstance(value, float)
 
     @pytest.mark.slow
-    def test_get_chat_completions_with_empty_messages(
+    def test_get_encoding(
         self,
-        llama_cpp_api: LlamaCppModel,
+        llama_cpp_model: LlamaCppModel,
+        encoding_input: str,
+    ):
+        encoding: ChatModelEncoding = llama_cpp_model.get_encoding(text=encoding_input)
+
+        assert isinstance(encoding, list)
+        assert len(encoding) > 0  # Ensure the List is not empty
+
+        for value in encoding:
+            assert isinstance(value, int)
+
+    @pytest.mark.slow
+    def test_get_chat_completion_with_empty_messages(
+        self,
+        llama_cpp_model: LlamaCppModel,
     ):
         with pytest.raises(
             ValueError, match="'messages' argument cannot be empty or None"
         ):
-            llama_cpp_api.get_chat_completion(messages=[])
+            llama_cpp_model.get_chat_completion(messages=[])
 
     @pytest.mark.slow
-    def test_get_embeddings_with_empty_input(
+    def test_get_embedding_with_empty_input(
         self,
-        llama_cpp_api: LlamaCppModel,
+        llama_cpp_model: LlamaCppModel,
     ):
         with pytest.raises(
             ValueError, match="'input' argument cannot be empty or None"
         ):
-            llama_cpp_api.get_embedding(input="")
+            llama_cpp_model.get_embedding(input="")

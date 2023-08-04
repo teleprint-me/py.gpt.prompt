@@ -1,14 +1,14 @@
 """
 pygptprompt/pattern/types.py
 """
-from abc import abstractmethod
-from typing import List, Literal, NotRequired, Protocol, TypedDict
+from typing import List, Literal, NotRequired, TypedDict, Union
 
-ChatModelTextCompletion = str
-ChatModelEncoding = List[int]
-ChatModelEmbedding = List[float]
+ChatModelVector = Union[List[int], List[float]]
+ChatModelEncoding = ChatModelVector
+ChatModelEmbedding = List[ChatModelVector]
 ChatModelDocument = str
 ChatModelDocuments = List[ChatModelDocument]
+ChatModelTextCompletion = str
 
 
 class ChatCompletionMessage(TypedDict):
@@ -46,18 +46,3 @@ class ChatModelChatCompletion(ChatCompletionMessage):
     function_call: NotRequired[str]
     function_args: NotRequired[str]
     user: NotRequired[str]
-
-
-class EmbeddingFunction(Protocol):
-    @abstractmethod
-    def __call__(self, texts: ChatModelDocuments) -> ChatModelEmbedding:
-        """
-        An abstract method defining the embedding function's call signature.
-
-        Args:
-            texts (List[str]): A list of text documents.
-
-        Returns:
-            List[float]: The resulting embedding for the given text documents.
-        """
-        raise NotImplementedError

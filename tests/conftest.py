@@ -16,7 +16,7 @@ from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.model.factory import ChatModelFactory
 from pygptprompt.model.llama_cpp import LlamaCppModel
 from pygptprompt.model.openai import OpenAIModel
-from pygptprompt.pattern.message import ExtendedChatCompletionMessage
+from pygptprompt.pattern.types import ChatModelChatCompletion
 
 
 def pytest_addoption(parser):
@@ -80,12 +80,10 @@ def chat_completion() -> List[ChatCompletionMessage]:
 
 
 @pytest.fixture(scope="module")
-def function_completion() -> List[ExtendedChatCompletionMessage]:
+def function_completion() -> List[ChatModelChatCompletion]:
     return [
-        ExtendedChatCompletionMessage(
-            role="system", content="You are a helpful assistant."
-        ),
-        ExtendedChatCompletionMessage(
+        ChatModelChatCompletion(role="system", content="You are a helpful assistant."),
+        ChatModelChatCompletion(
             role="user", content="What's the weather like in San Francisco, CA?"
         ),
     ]
@@ -121,6 +119,11 @@ def embedding_input() -> Union[str, List[str]]:
     return "This is a test sentence."
 
 
+@pytest.fixture
+def encoding_input() -> Union[str, List[str]]:
+    return "This is a test sentence."
+
+
 @pytest.fixture(scope="module")
 def json_config() -> dict:
     return read_json("tests/config.sample.json")
@@ -146,12 +149,12 @@ def config(config_file_path: str) -> ConfigurationManager:
 
 
 @pytest.fixture(scope="module")
-def openai_api(config: ConfigurationManager) -> OpenAIModel:
+def openai_model(config: ConfigurationManager) -> OpenAIModel:
     return OpenAIModel(config=config)
 
 
 @pytest.fixture(scope="module")
-def llama_cpp_api(config: ConfigurationManager) -> LlamaCppModel:
+def llama_cpp_model(config: ConfigurationManager) -> LlamaCppModel:
     return LlamaCppModel(config=config)
 
 
