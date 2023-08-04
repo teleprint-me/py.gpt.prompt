@@ -34,11 +34,3 @@ class ChatModelEmbeddingFunction(EmbeddingFunction):
 
         # Get embeddings from the chat model API
         return self._model.get_embedding(input=texts)
-
-        # Sort resulting embeddings by index
-        # Note: This sorting step may not be necessary depending on the API response.
-        # The `Embeddings` type should be a list of `EmbeddingData` objects.
-        # sorted_embeddings: ChatModelEmbedding = sorted(embeddings, key=lambda e: e["index"])  # type: ignore
-
-        # # Return just the embeddings
-        # return [result["embedding"] for result in sorted_embeddings]
