@@ -216,6 +216,9 @@ class OpenAIModel(ChatModel):
 
         Returns:
             ChatModelEmbedding (List[float]): The generated embedding vector.
+
+        Raises:
+            ValueError: If the 'input' argument is empty or None.
         """
         if not input:
             raise ValueError("'input' argument cannot be empty or None")

@@ -3,7 +3,7 @@ pygptprompt/model/llama_cpp.py
 """
 import sys
 from pathlib import Path
-from typing import Iterator, List, Union
+from typing import Any, Dict, Iterator, List, Union
 
 from huggingface_hub import hf_hub_download
 from huggingface_hub.hf_api import HfApi
@@ -12,11 +12,17 @@ from huggingface_hub.utils import (
     LocalEntryNotFoundError,
     RepositoryNotFoundError,
 )
-from llama_cpp import ChatCompletionChunk, ChatCompletionMessage, Embedding, Llama
+from llama_cpp import ChatCompletionChunk, Llama
 
 from pygptprompt import logging
 from pygptprompt.config.manager import ConfigurationManager
-from pygptprompt.pattern.model import ChatModel
+from pygptprompt.pattern.model import (
+    ChatModel,
+    ChatModelChatCompletion,
+    ChatModelEmbedding,
+    ChatModelEncoding,
+    ChatModelTextCompletion,
+)
 
 
 class LlamaCppModel(ChatModel):
@@ -111,7 +117,7 @@ class LlamaCppModel(ChatModel):
 
     def _stream_chat_completion(
         self, response_generator: Iterator[ChatCompletionChunk]
-    ) -> ChatCompletionMessage:
+    ) -> ChatModelChatCompletion:
         """
         Process the stream of chat completion chunks and return the generated message.
 
@@ -119,7 +125,7 @@ class LlamaCppModel(ChatModel):
             response_generator (Iterator[ChatCompletionChunk]): The chat completion chunk stream.
 
         Returns:
-            ChatCompletionMessage: The generated message.
+            ChatModelChatCompletion: The generated message.
         """
         content = ""
 
@@ -136,9 +142,9 @@ class LlamaCppModel(ChatModel):
         print()  # Add newline to model output
         sys.stdout.flush()
 
-        return ChatCompletionMessage(role="assistant", content=content)
+        return ChatModelChatCompletion(role="assistant", content=content)
 
-    def get_completion(self, prompt: str) -> str:
+    def get_completion(self, prompt: str) -> ChatModelTextCompletion:
         """
         Get completions from the Llama language model.
 
@@ -148,16 +154,16 @@ class LlamaCppModel(ChatModel):
         raise NotImplementedError
 
     def get_chat_completion(
-        self, messages: List[ChatCompletionMessage]
-    ) -> ChatCompletionMessage:
+        self, messages: List[ChatModelChatCompletion]
+    ) -> ChatModelChatCompletion:
         """
         Generate chat completions using the Llama language model.
 
         Args:
-            messages (List[ChatCompletionMessage]): List of chat completion messages.
+            messages (List[ChatModelChatCompletion]): List of chat completion messages.
 
         Returns:
-            ChatCompletionMessage: The generated chat completion message.
+            ChatModelChatCompletion: The generated chat completion message.
 
         Raises:
             ValueError: If the 'messages' argument is empty or None.
@@ -185,17 +191,17 @@ class LlamaCppModel(ChatModel):
             return self._stream_chat_completion(response)
         except Exception as e:
             logging.error(f"Error generating chat completions: {e}")
-            return ChatCompletionMessage(role="assistant", content=str(e))
+            return ChatModelChatCompletion(role="system", content=str(e))
 
-    def get_embedding(self, input: Union[str, List[str]]) -> Embedding:
+    def get_embedding(self, input: Union[str, List[str]]) -> ChatModelEmbedding:
         """
-        Generate embeddings using the Llama language models.
+        Generate embeddings using the Llama language model.
 
         Args:
             input (Union[str, List[str]]): The input string or list of strings.
 
         Returns:
-            Embedding: The generated embedding data.
+            ChatModelEmbedding: The generated embedding data.
 
         Raises:
             ValueError: If the 'input' argument is empty or None.
@@ -204,7 +210,31 @@ class LlamaCppModel(ChatModel):
             raise ValueError("'input' argument cannot be empty or None")
 
         try:
-            return self.model.create_embedding(input=input)
+            embedding: Dict[str, Any] = self.model.create_embedding(input=input)
+            sorted_embeddings: List[Dict[str, Any]] = sorted(
+                embedding["data"],
+                key=lambda e: e["index"],
+            )
+            # Return Embedding Vectors as List[float]
+            return [result["embedding"] for result in sorted_embeddings]
         except Exception as e:
             logging.error(f"Error generating embeddings: {e}")
-            return {}
+            return []
+
+    def get_encoding(self, text: str) -> ChatModelEncoding:
+        """
+        Get the token encoding for a single text using the Llama language model.
+
+        Args:
+            text (str): The input text to encode.
+
+        Returns:
+            ChatModelEncoding (List[int]): The token encoding for the given text.
+        """
+        # Convert input text from string to bytes using utf-8 encoding
+        text_bytes = text.encode("utf-8")
+
+        # Tokenize the text using the Llama language model
+        encoding_tokens = self.model.tokenize(text_bytes)
+
+        return encoding_tokens
