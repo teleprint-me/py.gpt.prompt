@@ -40,7 +40,7 @@ class ChatModel(ABC):
             prompt (str): The input prompt for generating the completion.
 
         Returns:
-            ChatModelTextCompletion: The text completion.
+            ChatModelTextCompletion (str): The text completion.
 
         NOTE:
             Completions will be deprecated according to the OpenAI API documentation.
@@ -58,7 +58,7 @@ class ChatModel(ABC):
             messages (List[ChatModelChatCompletion]): The list of ChatModelChatCompletion objects representing the conversation.
 
         Returns:
-            ChatModelChatCompletion: The text completion for the conversation.
+            ChatModelChatCompletion (Dict[LiteralString, str]): The text completion for the conversation.
         """
         raise NotImplementedError
 
@@ -71,7 +71,7 @@ class ChatModel(ABC):
             input (Union[str, List[str]]): The input text or list of texts to get embeddings for.
 
         Returns:
-            ChatModelEmbedding: The embedding representation of the input.
+            ChatModelEmbedding (List[List[float]]): The embedding representation of the input.
         """
         raise NotImplementedError
 
@@ -84,6 +84,6 @@ class ChatModel(ABC):
             text (str): The string of text to encode.
 
         Returns:
-            ChatModelEncoding: The encoding for the text.
+            ChatModelEncoding (List[int]): The encoding for the text.
         """
         raise NotImplementedError

@@ -99,7 +99,7 @@ class OpenAIModel(ChatModel):
             content (str): The generated content.
 
         Returns:
-            ChatModelChatCompletion: An ChatModelChatCompletion object with relevant information.
+            ChatModelChatCompletion (Dict[LiteralString, str]): The model's response as a message.
         """
         if finish_reason:
             if finish_reason == "function_call":
@@ -126,7 +126,7 @@ class OpenAIModel(ChatModel):
             response_generator (Iterator[ChatCompletionChunk]): An iterator of ChatCompletionChunk objects.
 
         Returns:
-            ChatModelChatCompletion: An ChatModelChatCompletion object with relevant information.
+            ChatModelChatCompletion (Dict[LiteralString, str]): The model's response as a message.
         """
         function_call_name = None
         function_call_args = ""
@@ -168,7 +168,10 @@ class OpenAIModel(ChatModel):
             messages (List[ChatModelChatCompletion]): The list of chat completion messages.
 
         Returns:
-            ChatModelChatCompletion: The generated chat completion message.
+            ChatModelChatCompletion (Dict[LiteralString, str]): The model's response as a message.
+
+        Raises:
+            ValueError: If `messages` argument is empty or `None`.
         """
         if not messages:
             raise ValueError("'messages' argument cannot be empty or None")
@@ -215,7 +218,7 @@ class OpenAIModel(ChatModel):
             input (Union[str, List[str]]): The input text or list of texts to generate embeddings for.
 
         Returns:
-            ChatModelEmbedding (List[float]): The generated embedding vector.
+            ChatModelEmbedding (List[List[float]]): The generated embedding vector.
 
         Raises:
             ValueError: If the 'input' argument is empty or None.
@@ -250,7 +253,13 @@ class OpenAIModel(ChatModel):
 
         Returns:
             ChatModelEncoding (List[int]): The token encoding for the given text.
+
+        Raises:
+            ValueError: If the 'text' argument is empty or None.
         """
+        if not text:
+            raise ValueError("'text' argument cannot be empty or None")
+
         encoding: Encoding = encoding_for_model(
             model_name=self.config.get_value(
                 "openai.chat_completions.model", "gpt-3.5-turbo"

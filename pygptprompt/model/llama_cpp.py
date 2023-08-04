@@ -125,7 +125,7 @@ class LlamaCppModel(ChatModel):
             response_generator (Iterator[ChatCompletionChunk]): The chat completion chunk stream.
 
         Returns:
-            ChatModelChatCompletion: The generated message.
+            ChatModelChatCompletion (Dict[LiteralString, str]): The model's response as a message.
         """
         content = ""
 
@@ -163,7 +163,7 @@ class LlamaCppModel(ChatModel):
             messages (List[ChatModelChatCompletion]): List of chat completion messages.
 
         Returns:
-            ChatModelChatCompletion: The generated chat completion message.
+            ChatModelChatCompletion (Dict[LiteralString, str]): The model's response as a message.
 
         Raises:
             ValueError: If the 'messages' argument is empty or None.
@@ -201,7 +201,7 @@ class LlamaCppModel(ChatModel):
             input (Union[str, List[str]]): The input string or list of strings.
 
         Returns:
-            ChatModelEmbedding: The generated embedding data.
+            ChatModelEmbedding (List[List[float]]): The generated embedding vector.
 
         Raises:
             ValueError: If the 'input' argument is empty or None.
@@ -230,7 +230,13 @@ class LlamaCppModel(ChatModel):
 
         Returns:
             ChatModelEncoding (List[int]): The token encoding for the given text.
+
+        Raises:
+            ValueError: If the 'text' argument is empty or None.
         """
+        if not text:
+            raise ValueError("'text' argument cannot be empty or None")
+
         # Convert input text from string to bytes using utf-8 encoding
         text_bytes = text.encode("utf-8")
 
