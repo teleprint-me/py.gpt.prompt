@@ -1,5 +1,5 @@
 {
-  "editor.defaultFormatter": "ms-python.black-formatter",
+  "editor.defaultFormatter": null,
   "editor.formatOnPaste": true,
   "editor.formatOnSave": false, // enable per language
   "editor.formatOnType": true,
@@ -30,7 +30,7 @@
   "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
   "python.languageServer": "Jedi",
   "python.analysis.typeCheckingMode": "strict",
-  "python.formatting.provider": "none",
+  "python.formatting.provider": "black",
   "python.linting.flake8Enabled": true,
   "python.linting.flake8Path": "${workspaceFolder}/.venv/bin/flake8",
   "python.formatting.blackPath": "${workspaceFolder}/.venv/bin/black",
