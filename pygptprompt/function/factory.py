@@ -3,15 +3,13 @@ pygptprompt/function/factory.py
 """
 import copy
 import json
-from typing import Any, List, Optional
-
-from llama_cpp import ChatCompletionMessage
+from typing import Any, Callable, List, Optional
 
 from pygptprompt import logging
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.weather import get_current_weather
-from pygptprompt.pattern.message import ExtendedChatCompletionMessage
 from pygptprompt.pattern.model import ChatModel
+from pygptprompt.pattern.types import ChatModelChatCompletion
 
 
 class FunctionFactory:
@@ -29,16 +27,14 @@ class FunctionFactory:
         }
         self.function_name: str = ""
         self.function_args: dict[str, Any] = {}
-        self.function: Optional[object] = None
+        self.function: Optional[Callable] = None
 
-    def get_function_args(
-        self, message: ExtendedChatCompletionMessage
-    ) -> dict[str, Any]:
+    def get_function_args(self, message: ChatModelChatCompletion) -> dict[str, Any]:
         """
         Extract and return the function arguments from the message.
 
         Args:
-            message (ExtendedChatCompletionMessage): The chat completion message.
+            message (ChatModelChatCompletion): The chat completion message.
 
         Returns:
             dict[str, Any]: A dictionary containing the function arguments. If the function arguments in the message are not valid JSON, prints an error message and returns an empty dictionary.
@@ -55,12 +51,12 @@ class FunctionFactory:
             logging.error(f"Invalid function arguments: {function_args}")
             return {}
 
-    def get_function(self, message: ExtendedChatCompletionMessage) -> Optional[object]:
+    def get_function(self, message: ChatModelChatCompletion) -> Optional[object]:
         """
         Get the function specified in the message.
 
         Args:
-            message (ExtendedChatCompletionMessage): The chat completion message.
+            message (ChatModelChatCompletion): The chat completion message.
 
         Returns:
             Optional[object]: The function specified in the message or None if it doesn't exist.
@@ -69,7 +65,7 @@ class FunctionFactory:
         self.function = self.functions.get(self.function_name)
         return self.function
 
-    def register_function(self, function_name: str, function: object) -> None:
+    def register_function(self, function_name: str, function: Callable) -> None:
         """
         Register a new function with the FunctionFactory.
 
@@ -80,16 +76,16 @@ class FunctionFactory:
         self.functions[function_name] = function
 
     def execute_function(
-        self, message: ExtendedChatCompletionMessage
-    ) -> Optional[ChatCompletionMessage]:
+        self, message: ChatModelChatCompletion
+    ) -> Optional[ChatModelChatCompletion]:
         """
         Execute the specified function based on the given message.
 
         Args:
-            message (ExtendedChatCompletionMessage): The chat completion message.
+            message (ChatModelChatCompletion): The chat completion message.
 
         Returns:
-            Optional[ChatCompletionMessage]: The result of the function execution as a ChatCompletionMessage, or None if an error occurs.
+            Optional[ChatModelChatCompletion]: The result of the function execution as a ChatModelChatCompletion, or None if an error occurs.
         """
         # Get the function from the factory
         function = self.get_function(message)
@@ -110,25 +106,25 @@ class FunctionFactory:
             logging.error(f"Error executing function {message['function_call']}: {e}")
             return None
 
-        # Return a new ChatCompletionMessage with the result
-        return ChatCompletionMessage(role="assistant", content=result)
+        # Return a new ChatModelChatCompletion with the result
+        return ChatModelChatCompletion(role="assistant", content=result)
 
     def query_function(
         self,
         model: ChatModel,
-        result: ChatCompletionMessage,
-        messages: List[ChatCompletionMessage],
-    ) -> Optional[ChatCompletionMessage]:
+        result: ChatModelChatCompletion,
+        messages: List[ChatModelChatCompletion],
+    ) -> Optional[ChatModelChatCompletion]:
         """
         Query the language model with the results of the function execution.
 
         Args:
             model (ChatModel): The language model used for chat completions.
-            result (ChatCompletionMessage): The result of the executed function.
-            messages (List[ChatCompletionMessage]): List of chat completion messages.
+            result (ChatModelChatCompletion): The result of the executed function.
+            messages (List[ChatModelChatCompletion]): List of chat completion messages.
 
         Returns:
-            Optional[ChatCompletionMessage]: The generated chat completion message, or None if an error occurs.
+            Optional[ChatModelChatCompletion]: The generated chat completion message, or None if an error occurs.
         """
         if result is None:
             return None
@@ -151,7 +147,7 @@ class FunctionFactory:
             )
             return None
 
-        prompt_message = ChatCompletionMessage(role="user", content=prompt_template)
+        prompt_message = ChatModelChatCompletion(role="user", content=prompt_template)
         shadow_messages.append(prompt_message)
         message = model.get_chat_completions(messages=shadow_messages)
         return message
