@@ -2,14 +2,35 @@
 pygptprompt/pattern/model.py
 """
 from abc import ABC, abstractmethod
-from typing import Dict, List, Union
+from typing import List, Literal, NotRequired, Union
+
+from llama_cpp import ChatCompletionMessage
 
 from pygptprompt.pattern.mapping import MappingTemplate
 
 ChatModelTextCompletion = str
-ChatModelChatCompletion = Dict[str, str]
 ChatModelEmbedding = List[float]
 ChatModelEncoding = List[int]
+
+
+class ChatModelChatCompletion(ChatCompletionMessage):
+    """
+    Extended chat completion message with additional role options.
+
+    Inherits:
+        ChatCompletionMessage: Base chat completion message class.
+
+    Attributes:
+        role (Literal["assistant", "user", "system", "function"]): The role of the message.
+        content (str): The content of the message.
+        user (Optional[str]): The user associated with the message (optional).
+    """
+
+    role: Literal["assistant", "user", "system", "function"]
+    content: NotRequired[str]
+    function_call: NotRequired[str]
+    function_args: NotRequired[str]
+    user: NotRequired[str]
 
 
 class ChatModel(ABC):
@@ -84,8 +105,5 @@ class ChatModel(ABC):
 
         Returns:
             ChatModelEncoding: The encoding for the text.
-
-        NOTE:
-            This is a common interface to modern models and is expected to be a part of the concrete implementation.
         """
         raise NotImplementedError
