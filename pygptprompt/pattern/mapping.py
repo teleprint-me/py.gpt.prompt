@@ -64,8 +64,7 @@ class MappingTemplate:
             keys (str): The keys hierarchy for the nested pair.
 
         Returns:
-            bool: True if the nested key-value pair was created successfully, False if any key in the hierarchy is missing
-                or if the final key already exists.
+            bool: True if the nested key-value pair was created successfully, False if any key in the hierarchy is missing or if the final key already exists.
         """
         data = self._data
         last_key = keys[-1]
@@ -136,8 +135,7 @@ class MappingTemplate:
         """
         Update the value associated with a nested key hierarchy in the mapping.
 
-        If the nested keys hierarchy is already present in the mapping, the value is updated.
-        Otherwise, a new nested key-value pair is created.
+        If the nested keys hierarchy is already present in the mapping, the value is updated. Otherwise, a new nested key-value pair is created.
 
         Args:
             value (Any): The value to associate with the nested keys hierarchy.
