@@ -1,5 +1,5 @@
 """
-tests/unit/test_config_manager.py
+tests/unit/config/test_manager.py
 """
 import json
 import os

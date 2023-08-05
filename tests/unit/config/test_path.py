@@ -1,5 +1,5 @@
 """
-tests/unit/test_config_path.py
+tests/unit/config/test_path.py
 """
 import os
 

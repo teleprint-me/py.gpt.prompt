@@ -1,5 +1,5 @@
 """
-tests/unit/test_chat_model_factory.py
+tests/unit/model/test_factory.py
 """
 import pytest
 

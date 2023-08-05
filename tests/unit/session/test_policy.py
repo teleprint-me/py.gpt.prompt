@@ -1,4 +1,6 @@
-# tests/unit/test_policy.py
+"""
+tests/unit/session/test_policy.py
+"""
 from pygptprompt.session.policy import SessionPolicy
 from pygptprompt.setting.config import GlobalConfiguration
 

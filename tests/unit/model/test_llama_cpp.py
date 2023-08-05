@@ -1,5 +1,5 @@
 """
-tests/unit/test_model_llama_cpp.py
+tests/unit/model/test_llama_cpp.py
 """
 import pytest
 
