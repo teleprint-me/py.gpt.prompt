@@ -27,4 +27,4 @@ class TestChatModelFactory:
 
     def test_missing_provider_key(self, chat_model_factory: ChatModelFactory):
         with pytest.raises(ValueError):
-            model = chat_model_factory.create_model("llama_cpp_missing_key")
+            model = chat_model_factory.create_model("")

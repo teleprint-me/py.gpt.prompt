@@ -1,10 +1,10 @@
 # tests/unit/test_token.py
 from tiktoken import Encoding
 
-from pygptprompt.session.token import SessionToken
+from pygptprompt.session.token_manager import ChatSessionTokenManager
 
 
-class TestSessionToken:
+class TestChatSessionTokenManager:
     def test_attributes(self, session_token: SessionToken):
         assert hasattr(session_token, "model")
         assert hasattr(session_token, "max_tokens")

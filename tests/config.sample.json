@@ -96,7 +96,8 @@
     },
     "context": {
       "reserve": 0.2,
-      "length": 4096
+      "length": 4096,
+      "offset": 512
     },
     "system_prompt": {
       "role": "system",
@@ -121,7 +122,8 @@
     },
     "context": {
       "reserve": 0.2,
-      "length": 16384
+      "length": 16384,
+      "offset": 512
     },
     "system_prompt": {
       "role": "system",
