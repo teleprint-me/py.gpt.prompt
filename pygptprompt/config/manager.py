@@ -83,6 +83,23 @@ class ConfigurationManager(Singleton, MappingTemplate):
         data = self.read_nested(*keys)
         return data if data is not None else default
 
+    def set_value(self, key: str, value: Any) -> bool:
+        """
+        Set or update the value associated with a configuration key.
+
+        The key can be a nested key, with each level separated by a dot ('.').
+        If the key hierarchy exists, the value is updated; otherwise, a new nested key-value pair is created.
+
+        Args:
+            key (str): The configuration key.
+            value (Any): The value to set or update for the given key.
+
+        Returns:
+            bool: True if the value was updated, False if a new nested key-value pair was created.
+        """
+        keys = key.split(".")
+        return self.update_nested(value, *keys)
+
     def get_api_key(self) -> str:
         """
         Get the OpenAI API key from the environment.
