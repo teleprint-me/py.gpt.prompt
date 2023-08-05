@@ -65,14 +65,21 @@ class ConfigurationManager extends Singleton, MappingTemplate {
   + str get_api_key()
 }
 
-class SessionToken {
-  - ChatModel model
-  - Encoding encoding
-  + int upper_limit
-  + int lower_limit
-  + int get_message_count()
-  + int get_total_message_count()
-  + bool has_overflow()
+class ChatMessageHandler {
+  - provider: str
+  - config: ConfigurationManager
+  - model: ChatModel
+  + reserve: float
+  + offset: int
+  + max_length: int
+  + max_tokens: int
+  + upper_limit: int
+  + base_limit: int
+  + __init__()
+  + get_sequence_length(): int
+  + get_message_length(): int
+  + get_total_message_length(): int
+  + is_overflow(): bool
 }
 
 class SessionPolicy extends Singleton {
@@ -102,7 +109,7 @@ class ChatModel {
 ' Define relationships
 
 SessionQueue o-- ConfigurationManager : uses >
-SessionQueue o-- SessionToken : uses >
+SessionQueue o-- ChatMessageHandler : uses >
 SessionQueue o-- SessionPolicy : uses >
 SessionQueue o-- ChatModel : uses >
 ChatModelFactory o-- ChatModel : creates >

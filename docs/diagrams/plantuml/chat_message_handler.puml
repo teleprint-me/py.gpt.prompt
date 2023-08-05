@@ -1,0 +1,23 @@
+@startuml ChatMessageHandler
+!theme blueprint
+
+' docs/diagrams/plantuml/chat_message_handler.puml
+
+class ChatMessageHandler {
+  - provider: str
+  - config: ConfigurationManager
+  - model: ChatModel
+  + reserve: float
+  + offset: int
+  + max_length: int
+  + max_tokens: int
+  + upper_limit: int
+  + base_limit: int
+  + __init__(provider: str, config: ConfigurationManager, model: ChatModel)
+  + get_sequence_length(text: str): int
+  + get_message_length(message: ChatModelChatCompletion): int
+  + get_total_message_length(messages: List[ChatModelChatCompletion]): int
+  + is_overflow(new_message: ChatModelChatCompletion, messages: List[ChatModelChatCompletion]): bool
+}
+
+@enduml
