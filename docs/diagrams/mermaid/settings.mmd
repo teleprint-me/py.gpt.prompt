@@ -1,17 +1,10 @@
 graph TB
   userExec["User Execution"] -- "Uses chat.py" --> chatPy["chat.py"]
   userExec -- "Uses embed.py" --> embedPy["embed.py"]
-  chatPy -- "Loads function.json" --> functionJson["function.json"]
-  chatPy -- "Loads model.json" --> modelJson["model.json"]
-  chatPy -- "Loads prompt.json" --> promptJson["prompt.json"]
-  chatPy -- "Loads setting.json" --> settingJson["setting.json"]
-  embedPy -- "Loads model.json" --> modelJson
-  embedPy -- "Loads setting.json" --> settingJson
-  functionJson -- "Loads Mapping Template" --> mappingTemplate[Mapping Template]
-  modelJson -- "Loads Mapping Template" --> mappingTemplate
-  promptJson -- "Loads Mapping Template" --> mappingTemplate
-  settingJson -- "Loads Mapping Template" --> mappingTemplate
-  mappingTemplate -- "Model, Access, and Context Definition" --> globalConfig[Global Configuration]
-  globalConfig -- "Local or Remote Ingest" --> vectorDb["Vector Database"]
-  globalConfig -- "Local or Remote Model" --> inferenceModel["Model for Inference"]
-  globalConfig -- "Policy Settings" --> modelPermissions["Model Permissions"]
+  embedPy -- "Loads JSON" --> configJson["config.json"]
+  chatPy -- "Loads JSON" --> configJson["config.json"]
+  configJson -- "Loads Mapping Template" --> mappingTemplate
+  mappingTemplate -- "Model, Access, and Context Definition" --> configManager[Configuration Manager]
+  configManager -- "Local or Remote Ingest" --> vectorDb["Vector Database"]
+  configManager -- "Local or Remote Model" --> inferenceModel["Model for Inference"]
+  configManager -- "Policy Settings" --> modelPermissions["Model Permissions"]
