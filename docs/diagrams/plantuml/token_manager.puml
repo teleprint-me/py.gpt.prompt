@@ -1,9 +1,9 @@
-@startuml ChatMessageHandler
+@startuml ChatSessionTokenManager
 !theme blueprint
 
 ' docs/diagrams/plantuml/chat_message_handler.puml
 
-class ChatMessageHandler {
+class ChatSessionTokenManager {
   - provider: str
   - config: ConfigurationManager
   - model: ChatModel

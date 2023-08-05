@@ -5,7 +5,7 @@
 
 class SessionQueue {
   - ConfigurationManager config
-  - SessionToken token
+  - ChatSessionTokenManager token
   - SessionPolicy policy
   - ChatModelFactory factory
   - ChatModel model
@@ -65,7 +65,7 @@ class ConfigurationManager extends Singleton, MappingTemplate {
   + str get_api_key()
 }
 
-class ChatMessageHandler {
+class ChatSessionTokenManager {
   - provider: str
   - config: ConfigurationManager
   - model: ChatModel
@@ -109,9 +109,10 @@ class ChatModel {
 ' Define relationships
 
 SessionQueue o-- ConfigurationManager : uses >
-SessionQueue o-- ChatMessageHandler : uses >
+SessionQueue o-- ChatSessionTokenManager : uses >
 SessionQueue o-- SessionPolicy : uses >
 SessionQueue o-- ChatModel : uses >
+ChatSessionTokenManager o-- ChatModel : uses >
 ChatModelFactory o-- ChatModel : creates >
 SessionQueue o-- ChatModelFactory : uses >
 @enduml
