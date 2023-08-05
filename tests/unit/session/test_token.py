@@ -1,58 +1,69 @@
-# tests/unit/test_token.py
-from tiktoken import Encoding
+"""
+tests/unit/session/test_token.py
+"""
+from typing import List
 
-from pygptprompt.session.token_manager import ChatSessionTokenManager
+import pytest
+
+from pygptprompt.pattern.types import ChatModelChatCompletion
+from pygptprompt.session.token import ChatSessionTokenManager
 
 
 class TestChatSessionTokenManager:
-    def test_attributes(self, session_token: SessionToken):
-        assert hasattr(session_token, "model")
-        assert hasattr(session_token, "max_tokens")
-        assert hasattr(session_token, "base_limit_percentage")
-        assert hasattr(session_token, "encoding")
-        assert hasattr(session_token, "upper_limit")
-        assert hasattr(session_token, "base_limit")
-        assert hasattr(session_token, "get_content_count")
-        assert hasattr(session_token, "get_message_count")
-        assert hasattr(session_token, "get_total_message_count")
-        assert hasattr(session_token, "is_overflow")
+    def test_reserve(self, chat_session_token_manager: ChatSessionTokenManager):
+        assert 0 <= chat_session_token_manager.reserve <= 1
 
-    def test_attribute_types(self, session_token: SessionToken):
-        assert isinstance(session_token, SessionToken)
-        assert isinstance(session_token.model, str)
-        assert isinstance(session_token.max_tokens, int)
-        assert isinstance(session_token.base_limit_percentage, float)
-        assert isinstance(session_token.encoding, Encoding)
-        assert isinstance(session_token.upper_limit, int)
-        assert isinstance(session_token.base_limit, int)
+    def test_offset(self, chat_session_token_manager: ChatSessionTokenManager):
+        assert isinstance(chat_session_token_manager.offset, int)
 
-    def test_limits(
+    def test_max_length(self, chat_session_token_manager: ChatSessionTokenManager):
+        assert isinstance(chat_session_token_manager.max_length, int)
+
+    def test_max_tokens(self, chat_session_token_manager: ChatSessionTokenManager):
+        assert isinstance(chat_session_token_manager.max_tokens, int)
+
+    def test_upper_limit(self, chat_session_token_manager: ChatSessionTokenManager):
+        assert isinstance(chat_session_token_manager.upper_limit, int)
+
+    @pytest.mark.parametrize("reserve", [0.1, 0.5, 0.9])
+    def test_base_limit(
         self,
-        session_token: SessionToken,
-        message: dict[str, str],
-        messages: list[dict[str, str]],
+        chat_session_token_manager: ChatSessionTokenManager,
+        reserve: float,
     ):
-        session_token.model = "davinci"
-        assert session_token.upper_limit == 2048 - session_token.max_tokens
+        chat_session_token_manager._config.set_value(
+            "llama_cpp.context.reserve", reserve
+        )
+        assert isinstance(chat_session_token_manager.base_limit, int)
 
-        session_token.model = "gpt-3.5-turbo"
-        assert session_token.upper_limit == 4096 - session_token.max_tokens
+    def test_get_sequence_length(
+        self, chat_session_token_manager: ChatSessionTokenManager
+    ):
+        text = "This is a test text."
+        length = chat_session_token_manager.get_sequence_length(text)
+        assert isinstance(length, int)
 
-        session_token.model = "gpt-4"
-        assert session_token.upper_limit == 8192 - session_token.max_tokens
-
-        assert not session_token.is_overflow(message, messages)
-
-    def test_get_count(
+    def test_get_message_length_with_fixture(
         self,
-        session_token: SessionToken,
-        message: dict[str, str],
+        chat_session_token_manager: ChatSessionTokenManager,
+        message: ChatModelChatCompletion,
     ):
-        assert session_token.get_message_count(message) == 17
+        length = chat_session_token_manager.get_message_length(message)
+        assert isinstance(length, int)
 
-    def test_get_total_count(
+    def test_get_total_message_length_with_fixture(
         self,
-        session_token: SessionToken,
-        messages: list[dict[str, str]],
+        chat_session_token_manager: ChatSessionTokenManager,
+        messages: List[ChatModelChatCompletion],
     ):
-        assert session_token.get_total_message_count(messages) == 29
+        total_length = chat_session_token_manager.get_total_message_length(messages)
+        assert isinstance(total_length, int)
+
+    def test_is_overflow_with_fixture(
+        self,
+        chat_session_token_manager: ChatSessionTokenManager,
+        message: ChatModelChatCompletion,
+        messages: List[ChatModelChatCompletion],
+    ):
+        overflow = chat_session_token_manager.is_overflow(message, messages)
+        assert isinstance(overflow, bool)

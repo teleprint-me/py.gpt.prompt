@@ -5,18 +5,18 @@ import os
 from typing import List, Union
 
 import pytest
-from llama_cpp import ChatCompletionMessage
 
 from pygptprompt.config.json import read_json
-
-# from pygptprompt.session.model import SessionModel
-# from pygptprompt.session.policy import SessionPolicy
-# from pygptprompt.session.token import SessionToken
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.model.factory import ChatModelFactory
 from pygptprompt.model.llama_cpp import LlamaCppModel
 from pygptprompt.model.openai import OpenAIModel
+from pygptprompt.pattern.model import ChatModel
 from pygptprompt.pattern.types import ChatModelChatCompletion
+
+# from pygptprompt.session.model import SessionModel
+# from pygptprompt.session.policy import SessionPolicy
+from pygptprompt.session.token import ChatSessionTokenManager
 
 
 def pytest_addoption(parser):
@@ -49,19 +49,21 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.fixture(scope="module")
-def message() -> ChatCompletionMessage:
-    return ChatCompletionMessage(
+def message() -> ChatModelChatCompletion:
+    return ChatModelChatCompletion(
         role="user",
         content="How many cards are there in a single deck of cards?",
     )
 
 
 @pytest.fixture(scope="module")
-def messages() -> List[ChatCompletionMessage]:
+def messages() -> List[ChatModelChatCompletion]:
     return [
-        ChatCompletionMessage(role="system", content="You are a helpful assistant."),
-        ChatCompletionMessage(role="user", content="Who won the world series in 2020?"),
-        ChatCompletionMessage(
+        ChatModelChatCompletion(role="system", content="You are a helpful assistant."),
+        ChatModelChatCompletion(
+            role="user", content="Who won the world series in 2020?"
+        ),
+        ChatModelChatCompletion(
             role="assistant",
             content="The Los Angeles Dodgers won the World Series in 2020.",
         ),
@@ -69,10 +71,10 @@ def messages() -> List[ChatCompletionMessage]:
 
 
 @pytest.fixture(scope="module")
-def chat_completion() -> List[ChatCompletionMessage]:
+def chat_completion() -> List[ChatModelChatCompletion]:
     return [
-        ChatCompletionMessage(role="system", content="You are a helpful assistant."),
-        ChatCompletionMessage(
+        ChatModelChatCompletion(role="system", content="You are a helpful assistant."),
+        ChatModelChatCompletion(
             role="user",
             content="Translate the following English text to French: 'The quick brown fox jumped over the lazy dog.'",
         ),
@@ -99,17 +101,12 @@ def mock_weather_callback() -> object:
         """
         Get the current weather in a given location.
 
-        Parameters:
-        location (str): The city and state, e.g. San Francisco, CA
-        unit (str): The unit of temperature, can be either 'celsius' or 'fahrenheit'. Default is 'celsius'.
-
         Returns:
-        str: A string that describes the current weather.
+            str: A string that describes the current weather.
+        NOTE:
+            This is a mock function, so let's return a mock weather report.
         """
-
-        # This is a mock function, so let's return a mock weather report.
-        weather_report = f"The current weather in {location} is 20 degrees {unit}."
-        return weather_report
+        return f"The current weather in {location} is 20 degrees {unit}."
 
     return get_current_weather
 
@@ -160,12 +157,21 @@ def llama_cpp_model(config: ConfigurationManager) -> LlamaCppModel:
 
 @pytest.fixture(scope="module")
 def chat_model_factory(config: ConfigurationManager):
-    return ChatModelFactory(config)
+    return ChatModelFactory(config=config)
 
 
-# @pytest.fixture(scope="module")
-# def session_token(config: ConfigurationManager) -> SessionToken:
-#     return SessionToken(config)
+@pytest.fixture(scope="module")
+def chat_model(chat_model_factory: ChatModelFactory) -> ChatModel:
+    return chat_model_factory.create_model(provider="llama_cpp")
+
+
+@pytest.fixture(scope="module")
+def chat_session_token_manager(
+    config: ConfigurationManager, chat_model: ChatModel
+) -> ChatSessionTokenManager:
+    return ChatSessionTokenManager(
+        provider="llama_cpp", config=config, model=chat_model
+    )
 
 
 # @pytest.fixture(scope="module")
