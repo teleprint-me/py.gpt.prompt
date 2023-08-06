@@ -34,6 +34,6 @@ class ConfigurationManager extends Singleton, MappingTemplate {
   + None backup()
   + Any get_value()
   + bool set_value()
-  + str get_api_key()
+  + str get_env_variable()
 }
 @enduml

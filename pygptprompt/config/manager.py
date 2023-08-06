@@ -19,8 +19,7 @@ class ConfigurationManager(Singleton, MappingTemplate):
     """
     Singleton class for managing global configuration settings.
 
-    This class inherits from `Singleton` and `MappingTemplate` to implement the Singleton pattern
-    and provide key-value mapping functionality for configuration settings.
+    This class inherits from `Singleton` and `MappingTemplate` to implement the Singleton pattern and provide key-value mapping functionality for configuration settings.
 
     Args:
         file_path (str): The path to the configuration file.
@@ -100,27 +99,30 @@ class ConfigurationManager(Singleton, MappingTemplate):
         keys = key.split(".")
         return self.update_nested(value, *keys)
 
-    def get_api_key(self) -> str:
+    def get_env_variable(self, env_var: str = "OPENAI_API_KEY") -> str:
         """
-        Get the OpenAI API key from the environment.
+        Get an environment variable from the .env file.
 
-        The API key is read from the `.env` file specified in the configuration settings.
-        If the API key is not found or empty, an error is raised.
+        The environment variable is read from the `.env` file specified in the configuration settings.
+        If the variable is not found or empty, an error is raised.
+
+        Args:
+            env_var (str): The name of the environment variable to fetch. Defaults to "OPENAI_API_KEY".
 
         Returns:
-            str: The OpenAI API key.
+            str: The value of the requested environment variable.
 
         Raises:
-            ValueError: If the `.env` file cannot be loaded or the `OPENAI_API_KEY` environment variable is not set.
+            ValueError: If the `.env` file cannot be loaded or the specified environment variable is not set.
         """
         env = evaluate_path(self.get_value("app.path.env", ".env"))
 
         if not dotenv.load_dotenv(env):
             raise ValueError("EnvironmentError: Failed to load `.env`")
 
-        api_key = os.getenv("OPENAI_API_KEY") or ""
+        value = os.getenv(env_var) or ""
 
-        if not api_key:
-            raise ValueError("EnvironmentError: Failed to load `OPENAI_API_KEY`")
+        if not value:
+            raise ValueError(f"EnvironmentError: Failed to load `{env_var}`")
 
-        return api_key
+        return value

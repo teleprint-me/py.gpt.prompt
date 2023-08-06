@@ -38,7 +38,7 @@ class OpenAIModel(ChatModel):
             config (ConfigurationManager): The configuration manager instance.
         """
         self.config = config
-        openai.api_key = config.get_api_key()
+        openai.api_key = config.get_env_variable("OPENAI_API_KEY")
 
     def _extract_content(self, delta: dict, content: str) -> str:
         """
