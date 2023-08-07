@@ -1,0 +1,34 @@
+@startuml JSONManager
+!theme blueprint
+
+abstract class JSONManager {
+    - JSONInterface json_interface
+    - MappingInterface map_interface
+    - Path file_path
+    + JSONManager(file_path: str, initial_data: Optional[dict[str, Any]])
+    + Dict[str, Any] load()
+    + None save()
+    + None backup()
+}
+
+class ConfigurationManager extends JSONManager {
+    - JSONInterface json_interface
+    - MappingInterface map_interface
+    - Path file_path
+    + ConfigurationManager(file_path: str, initial_data: Optional[dict[str, Any]])
+  ...  // other specific methods related to ConfigurationManager
+}
+
+class ChatSession extends JSONManager {
+    - JSONInterface json_interface
+    - MappingInterface map_interface
+    - Path file_path
+    - list _transcript
+    - list _messages
+    ...  // other specific attributes and methods related to ChatSession
+}
+
+class OtherClassNeedingJSON extends JSONManager {
+    ...  // attributes and methods specific to this class
+}
+@enduml

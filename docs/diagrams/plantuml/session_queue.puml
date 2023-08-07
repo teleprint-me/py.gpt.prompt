@@ -3,66 +3,31 @@
 
 ' docs/diagrams/plantuml/session_queue.puml
 
-class SessionQueue {
-  - ConfigurationManager config
-  - ChatSessionTokenManager token
-  - SessionPolicy policy
-  - ChatModelFactory factory
-  - ChatModel model
-  - list transcript
-  - list messages
-  - string identifier
-  + str dir_path
-  + ChatCompletionMessage last_message
-  + str last_role
-  + str last_content
-  + str last_function
-  + FileHistory history
-  + None set_session_name()
-  + dict pop_message()
-  + list dequeue()
-  + None enqueue()
-  + list extend()
-  + ChatCompletionMessage get_completion()
-  + None clear_messages()
-  + None clear_transcript()
-  + None clear_all()
-  - None make_directory()
-  + None save()
-  + None load()
-}
-
-class MetaSingleton {
-    - dict _instances
-    + object __call__()
-}
-
-class Singleton extends MetaSingleton {
-  + Singleton __init__()
-}
-
-class MappingTemplate {
-  # dict _data
-  + list keys
-  # dict data
-  + bool create()
-  + bool create_nested()
-  + Any read()
-  + Any read_nested()
-  + bool update()
-  + bool update_nested()
-  + bool delete()
-  + bool delete_nested()
-}
-
 class ConfigurationManager extends Singleton, MappingTemplate {
   - Path file_path
-  # dict data
+  - dict data
   + dict load()
   + None save()
   + None backup()
   + Any get_value()
-  + str get_api_key()
+  + bool set_value()
+  + str get_env_variable()
+}
+
+class ChatModel {
+  + str name
+  + int max_tokens
+  + int reserve
+  + int length
+  + dict system_message
+  + ChatCompletionMessage get_chat_completions()
+  + EmbedData get_embeddings()
+}
+
+class ChatModelFactory {
+  - ConfigurationManager config
+  - dict provider_map
+  + ChatModel create_model()
 }
 
 class ChatSessionTokenManager {
@@ -90,20 +55,33 @@ class SessionPolicy extends Singleton {
   + tuple is_command_allowed()
 }
 
-class ChatModelFactory {
+class SessionQueue {
   - ConfigurationManager config
-  - dict provider_map
-  + ChatModel create_model()
-}
-
-class ChatModel {
-  + str name
-  + int max_tokens
-  + int reserve
-  + int length
-  + dict system_message
-  + ChatCompletionMessage get_chat_completions()
-  + EmbedData get_embeddings()
+  - ChatSessionTokenManager token
+  - SessionPolicy policy
+  - ChatModelFactory factory
+  - ChatModel model
+  - list transcript
+  - list messages
+  - string identifier
+  + str dir_path
+  + ChatCompletionMessage last_message
+  + str last_role
+  + str last_content
+  + str last_function
+  + FileHistory history
+  + None set_session_name()
+  + dict pop_message()
+  + list dequeue()
+  + None enqueue()
+  + list extend()
+  + ChatCompletionMessage get_completion()
+  + None clear_messages()
+  + None clear_transcript()
+  + None clear_all()
+  - None make_directory()
+  + None save()
+  + None load()
 }
 
 ' Define relationships

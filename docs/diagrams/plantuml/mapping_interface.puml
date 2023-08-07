@@ -1,0 +1,39 @@
+@startuml JSONManager
+!theme blueprint
+
+' docs/diagrams/plantuml/mapping_interface.puml
+
+class MappingInterface {
+    - Dict _data
+    + MappingInterface(initial_data: Optional[dict[str, Any]])
+    # List[str] keys
+    # Dict[str, Any] data
+    + bool create(key: str, value: Any)
+    + bool create_nested(value: Any, *keys: str)
+    + Any read(key: str)
+    + Any read_nested(*keys: str)
+    + bool update(key: str, value: Any)
+    + bool update_nested(value: Any, *keys: str)
+    + bool delete(key: str)
+    + bool delete_nested(*keys: str)
+}
+
+class JSONInterface {
+    - Union[str, Path] _file_path
+    + JSONInterface(file_path: str)
+    # Union[str, Path] file_path
+    + Dict[str, Any] load_json()
+    + bool save_json()
+    + bool backup_json()
+    + bool make_directory()
+}
+
+class JSONManager {
+    - JSONInterface json_interface
+    - MappingInterface map_interface
+    + JSONManager(file_path: str, initial_data: Optional[dict[str, Any]])
+}
+
+MappingInterface o--> JSONManager::map : <<mapping instance>>
+JSONInterface o--> JSONManager::json : <<json instance>>
+@enduml

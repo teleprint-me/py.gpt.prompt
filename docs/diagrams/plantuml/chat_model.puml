@@ -1,0 +1,47 @@
+@startuml ChatModel
+!theme blueprint
+
+' docs/diagrams/plantuml/chat_model.puml
+
+class MappingInterface {
+    - Dict _data
+    + MappingInterface(initial_data: Optional[dict[str, Any]])
+    # List[str] keys
+    # Dict[str, Any] data
+    + bool create(key: str, value: Any)
+    + bool create_nested(value: Any, *keys: str)
+    + Any read(key: str)
+    + Any read_nested(*keys: str)
+    + bool update(key: str, value: Any)
+    + bool update_nested(value: Any, *keys: str)
+    + bool delete(key: str)
+    + bool delete_nested(*keys: str)
+}
+
+class ChatCompletionMessage {
+    + role: Literal["assistant", "user", "system"]
+    + content: str
+    + user: NotRequired[str]
+}
+
+class ChatModelChatCompletion extends ChatCompletionMessage {
+    + role: Literal["assistant", "user", "system", "function"]
+    + content: NotRequired[str]
+    + function_call: NotRequired[str]
+    + function_args: NotRequired[str]
+    + user: NotRequired[str]
+}
+
+abstract class ChatModel {
+    - config: MappingTemplate
+    + ChatModel(config: MappingTemplate)
+    + get_completion(prompt: str): str ' ChatModelCompletion
+    + get_chat_completion(messages: List[ChatModelChatCompletion]): ChatModelChatCompletion
+    + get_embedding(input: Union[str, List[str]]): List[List[float]] ' ChatModelEmbedding
+    + get_encoding(text: str): List[int] ' ChatModelEncoding
+}
+
+ChatModel --> MappingInterface : uses
+ChatModel --> ChatModelChatCompletion : uses
+
+@enduml

@@ -4,36 +4,28 @@
 ' docs/diagrams/plantuml/configuration_manager.puml
 
 class MetaSingleton {
-  - dict _instances
-  + object __call__()
+    # Dict[Type[object], object] _instances
+    # Dict[Type[object], object] __call__(cls, *args, **kwargs)
+    # MetaSingleton()
 }
 
 class Singleton extends MetaSingleton {
-  + Singleton __init__()
+    # Singleton()
 }
 
-class MappingTemplate {
-  # dict _data
-  + list keys
-  # dict data
-  + bool create()
-  + bool create_nested()
-  + Any read()
-  + Any read_nested()
-  + bool update()
-  + bool update_nested()
-  + bool delete()
-  + bool delete_nested()
+class ConfigurationManager extends Singleton {
+    - JSONInterface json_interface
+    - MappingInterface map_interface
+    - Path file_path
+    + ConfigurationManager(file_path: str, initial_data: Optional[dict[str, Any]])
+    + Dict[str, Any] load()
+    + None save()
+    + None backup()
+    + Any get_value(key: str, default: Optional[Any])
+    + bool set_value(key: str, value: Any)
+    + str get_env_variable(env_var: str)
 }
 
-class ConfigurationManager extends Singleton, MappingTemplate {
-  - Path file_path
-  - dict data
-  + dict load()
-  + None save()
-  + None backup()
-  + Any get_value()
-  + bool set_value()
-  + str get_env_variable()
-}
+JSONInterface o--> ConfigurationManager::json_interface : <<json instance>>
+MappingInterface o--> ConfigurationManager::map_interface : <<mapping instance>>
 @enduml

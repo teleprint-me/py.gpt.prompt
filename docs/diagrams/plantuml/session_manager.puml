@@ -1,6 +1,16 @@
 @startuml SessionManager
 !theme blueprint
 
+class ChatSession {
+    - ChatModelFactory model_factory
+    - ChatModel model
+    + str identifier
+    + None switch_model(model_name: str)
+    + ChatModel get_current_model()
+    + None add_message(message: str)
+    + list get_transcript()
+}
+
 class SessionManager {
     - dict sessions
     - SessionQueue current_session
@@ -12,15 +22,5 @@ class SessionManager {
     + dict get_all_sessions()
 }
 
-class SessionQueue {
-    - ChatModelFactory model_factory
-    - ChatModel model
-    + str id
-    + None switch_model(model_name: str)
-    + ChatModel get_current_model()
-    + None add_message(message: str)
-    + list get_transcript()
-}
-
-SessionManager o-- SessionQueue : uses >
+SessionManager o--> ChatSession : uses >
 @enduml
