@@ -1,23 +1,44 @@
-@startuml
+@startuml VectorStoreManager
 !theme blueprint
 
-class ContextWindowManager {
-    + pop_oldest_message() : ChatModelChatCompletion
-    + append_message(message: ChatModelChatCompletion)
-    // Other methods
+abstract class JSONManager {
+    - JSONInterface json_interface
+    - MappingInterface map_interface
+    + JSONManager(file_path: str, initial_data: Optional[dict[str, Any]])
 }
 
-class TranscriptManager {
+class ContextWindowManager extends JSONManager {
+    - MAX_SEQ_LENGTH: int
     + append_message(message: ChatModelChatCompletion)
-    // Other methods
+    + pop_oldest_message()
+    + retrieve_current_window(): List[ChatModelChatCompletion]
+    + clear_window()
+}
+
+class TranscriptManager extends JSONManager {
+    + append_message(message: ChatModelChatCompletion)
+    + retrieve_transcript(): List[ChatModelChatCompletion]
+    + remove_specific_entry(index: int)
+    + clear_transcript()
 }
 
 class VectorStoreManager {
-    + store_message(message: ChatModelChatCompletion)
-    + query_messages(query: SomeQueryType) : List[ChatModelChatCompletion]
-    // Other methods
+    - chroma_client: PersistentClient
+    - embedding_function: ChatModelEmbeddingFunction
+    - collection_name: str
+    - collection: Collection
+    - config: ConfigurationManager
+    + __init__(path_database: str, chat_model: ChatModel, config_path: str)
+    + store_message(message: str, message_id: str)
+    + query_messages(query_text: str, n_results: int): QueryResult
 }
 
+VectorStoreManager --> PersistentClient
+VectorStoreManager --> ChatModelEmbeddingFunction
+VectorStoreManager --> Collection
+VectorStoreManager --> ConfigurationManager : uses >
+
+ConfigurationManager <|-- JSONManager
 ContextWindowManager -> TranscriptManager : Sends messages
 ContextWindowManager -> VectorStoreManager : Sends dequeued messages
 TranscriptManager -> VectorStoreManager : Optional: Interacts with dequeued messages
