@@ -1,0 +1,66 @@
+@startuml ChatSession
+!theme blueprint
+
+class JSONManager {
+    - JSONInterface json_interface
+    - MappingInterface map_interface
+    + JSONManager(file_path: str, initial_data: Optional[dict[str, Any]])
+}
+
+class ChatModelChatCompletion {
+    + role: Literal["assistant", "user", "system", "function"]
+    + content: NotRequired[str]
+    + function_call: NotRequired[str]
+    + function_args: NotRequired[str]
+    + user: NotRequired[str]
+}
+
+class ContextWindowManager extends JSONManager {
+    - MAX_SEQ_LENGTH: int
+    + append_message(message: ChatModelChatCompletion)
+    + pop_oldest_message()
+    + retrieve_current_window(): List[ChatModelChatCompletion]
+    + clear_window()
+}
+
+class TranscriptManager extends JSONManager {
+    + append_message(message: ChatModelChatCompletion)
+    + retrieve_transcript(): List[ChatModelChatCompletion]
+    + remove_specific_entry(index: int)
+    + clear_transcript()
+}
+
+class ChatSessionTokenManager {
+    - provider: str
+    - config: ConfigurationManager
+    - model: ChatModel
+    + reserve: float
+    + offset: int
+    + max_length: int
+    + max_tokens: int
+    + upper_limit: int
+    + base_limit: int
+    + get_sequence_length(text: str): int
+    + get_message_length(message: ChatModelChatCompletion): int
+    + get_total_message_length(messages: List[ChatModelChatCompletion]): int
+    + is_overflow(new_message: ChatModelChatCompletion, messages: List[ChatModelChatCompletion]): bool
+}
+
+class ChatSession {
+    - context_window: ContextWindowManager
+    - transcript: TranscriptManager
+    - token_manager: ChatSessionTokenManager
+    - model: ChatModel
+    + ChatSession(provider: str, config: ConfigurationManager, model: ChatModel)
+    + send_message(message: ChatModelChatCompletion): ChatModelChatCompletion
+    + get_transcript(): List[ChatModelChatCompletion]
+    + clear_session()
+}
+
+ChatSession --> ChatModelChatCompletion : uses
+ChatSession --> ChatModel : uses
+ChatSession --> ContextWindowManager : uses
+ChatSession --> TranscriptManager : uses
+ChatSession --> ChatSessionTokenManager : uses
+
+@enduml
