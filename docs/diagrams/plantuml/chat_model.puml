@@ -3,19 +3,10 @@
 
 ' docs/diagrams/plantuml/chat_model.puml
 
-class MappingInterface {
-    - Dict _data
-    + MappingInterface(initial_data: Optional[dict[str, Any]])
-    # List[str] keys
-    # Dict[str, Any] data
-    + bool create(key: str, value: Any)
-    + bool create_nested(value: Any, *keys: str)
-    + Any read(key: str)
-    + Any read_nested(*keys: str)
-    + bool update(key: str, value: Any)
-    + bool update_nested(value: Any, *keys: str)
-    + bool delete(key: str)
-    + bool delete_nested(*keys: str)
+abstract class JSONManager {
+    - JSONInterface json_interface
+    - MappingInterface map_interface
+    + JSONManager(file_path: str, initial_data: Optional[dict[str, Any]])
 }
 
 class ChatCompletionMessage {
@@ -33,7 +24,7 @@ class ChatModelChatCompletion extends ChatCompletionMessage {
 }
 
 abstract class ChatModel {
-    - config: MappingTemplate
+    - config: JSONManager
     + ChatModel(config: MappingTemplate)
     + get_completion(prompt: str): str ' ChatModelCompletion
     + get_chat_completion(messages: List[ChatModelChatCompletion]): ChatModelChatCompletion
@@ -41,7 +32,7 @@ abstract class ChatModel {
     + get_encoding(text: str): List[int] ' ChatModelEncoding
 }
 
-ChatModel --> MappingInterface : uses
+ChatModel::config o--> JSONManager : <<ConfigurationManager>>
 ChatModel --> ChatModelChatCompletion : uses
 
 @enduml
