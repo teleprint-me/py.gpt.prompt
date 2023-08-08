@@ -1,0 +1,36 @@
+@startuml ContextTranscriptManagers
+!theme blueprint
+
+class JSONManager {
+    - JSONInterface json_interface
+    - MappingInterface map_interface
+    + JSONManager(file_path: str, initial_data: Optional[dict[str, Any]])
+}
+
+class ChatModelChatCompletion {
+    + role: Literal["assistant", "user", "system", "function"]
+    + content: NotRequired[str]
+    + function_call: NotRequired[str]
+    + function_args: NotRequired[str]
+    + user: NotRequired[str]
+}
+
+class ContextWindowManager extends JSONManager {
+    - MAX_SEQ_LENGTH: int
+    + append_message(message: ChatModelChatCompletion)
+    + pop_oldest_message()
+    + retrieve_current_window(): List[ChatModelChatCompletion]
+    + clear_window()
+}
+
+class TranscriptManager extends JSONManager {
+    + append_message(message: ChatModelChatCompletion)
+    + retrieve_transcript(): List[ChatModelChatCompletion]
+    + remove_specific_entry(index: int)
+    + clear_transcript()
+}
+
+ContextWindowManager --> ChatModelChatCompletion : uses
+TranscriptManager --> ChatModelChatCompletion : uses
+
+@enduml
