@@ -1,4 +1,4 @@
-@startuml JSONManager
+@startuml MappingInterface
 !theme blueprint
 
 ' docs/diagrams/plantuml/mapping_interface.puml
