@@ -1,7 +1,7 @@
 @startuml ContextTranscriptManagers
 !theme blueprint
 
-class JSONManager {
+abstract class JSONManager {
     - JSONInterface json_interface
     - MappingInterface map_interface
     + JSONManager(file_path: str, initial_data: Optional[dict[str, Any]])

@@ -13,7 +13,7 @@ class Singleton extends MetaSingleton {
     # Singleton()
 }
 
-class ConfigurationManager extends Singleton {
+class ConfigurationManager extends Singleton, JSONManager {
     - JSONInterface json_interface
     - MappingInterface map_interface
     - Path file_path
@@ -26,6 +26,6 @@ class ConfigurationManager extends Singleton {
     + str get_env_variable(env_var: str)
 }
 
-JSONInterface o--> ConfigurationManager::json_interface : <<json instance>>
-MappingInterface o--> ConfigurationManager::map_interface : <<mapping instance>>
+JSONInterface o--> ConfigurationManager::json_interface : <<JSONInterface>>
+MappingInterface o--> ConfigurationManager::map_interface : <<MappingInterface>>
 @enduml

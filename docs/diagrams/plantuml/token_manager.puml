@@ -1,7 +1,7 @@
 @startuml ChatSessionTokenManager
 !theme blueprint
 
-' docs/diagrams/plantuml/chat_message_handler.puml
+' docs/diagrams/plantuml/token_manager.puml
 
 class ChatSessionTokenManager {
   - provider: str

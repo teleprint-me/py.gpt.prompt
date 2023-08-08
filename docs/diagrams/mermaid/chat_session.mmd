@@ -1,0 +1,23 @@
+graph TD
+
+    A[ChatSession] --> B[ChatModel]
+    A --> C[ChatSessionTokenManager]
+    A --> D[ContextWindowManager]
+    A --> E[TranscriptManager]
+    
+    B --> F[JSONManager]
+    B --> G[ChatCompletionMessage]
+    
+    C --> H[ConfigurationManager]
+    C --> B
+    
+    D --> I[ChatModelChatCompletion]
+    D --> C
+    
+    E --> I
+    E --> J[VectorDatabase]
+
+    F --> K[JSONInterface]
+    F --> L[MappingInterface]
+    
+    H --> F

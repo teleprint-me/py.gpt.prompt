@@ -1,0 +1,63 @@
+@startuml ChatSession Initialization
+!theme blueprint
+
+actor User
+participant "ChatSession" as CS
+participant "ConfigurationManager" as CM
+participant "JSONInterface" as JI
+participant "MappingInterface" as MI
+participant "ChatModelFactory" as CMF
+participant "ChatModel" as CMo
+participant "ChatSessionTokenManager" as CST
+participant "ContextWindowManager" as CWM
+participant "TranscriptManager" as TM
+
+User -> CS : Instantiate
+activate CS
+
+CS -> CM : Instantiate
+activate CM
+
+CM -> JI : Initialize
+activate JI
+
+CM -> MI : Initialize
+activate MI
+
+CM -> JI : load_json()
+JI --> CM : Configuration Data
+
+CS -> CMF : create ChatModelFactory
+activate CMF
+
+CMF -> CMo : create_model(provider)
+activate CMo
+
+CMo --> CS : Ready
+CS --> User : Initialized
+
+CS -> CST : create ChatSessionTokenManager
+CST -> CM : Accessing the configuration
+CST -> CMo : Accessing the model
+activate CST
+
+CS -> CWM : create ContextWindowManager
+activate CWM
+
+CS -> TM : create TranscriptManager
+activate TM
+
+deactivate CS
+deactivate JI
+deactivate MI
+deactivate CMF
+deactivate CMo
+deactivate CST
+deactivate CWM
+deactivate TM
+
+note right
+  ConfigurationManager has a separate lifecycle.
+end note
+
+@enduml

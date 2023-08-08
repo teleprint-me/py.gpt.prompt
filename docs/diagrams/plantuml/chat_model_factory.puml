@@ -1,0 +1,11 @@
+@startuml ChatModelFactory
+!theme blueprint
+
+class ChatModelFactory{
+    - ConfigurationManager config
+    - Dict[Literal, Callable] provider_map
+    + ChatModelFactory(config: ConfigurationManager):
+    + create_model(provider: str) ChatModel
+}
+
+@enduml

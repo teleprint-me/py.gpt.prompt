@@ -28,12 +28,12 @@ class JSONInterface {
     + bool make_directory()
 }
 
-class JSONManager {
+abstract class JSONManager {
     - JSONInterface json_interface
     - MappingInterface map_interface
     + JSONManager(file_path: str, initial_data: Optional[dict[str, Any]])
 }
 
-MappingInterface o--> JSONManager::map : <<mapping instance>>
-JSONInterface o--> JSONManager::json : <<json instance>>
+MappingInterface o--> JSONManager::map : <<MappingInterface>>
+JSONInterface o--> JSONManager::json : <<JSONInterface>>
 @enduml
