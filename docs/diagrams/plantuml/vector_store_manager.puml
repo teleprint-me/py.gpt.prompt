@@ -1,0 +1,25 @@
+@startuml
+!theme blueprint
+
+class ContextWindowManager {
+    + pop_oldest_message() : ChatModelChatCompletion
+    + append_message(message: ChatModelChatCompletion)
+    // Other methods
+}
+
+class TranscriptManager {
+    + append_message(message: ChatModelChatCompletion)
+    // Other methods
+}
+
+class VectorStoreManager {
+    + store_message(message: ChatModelChatCompletion)
+    + query_messages(query: SomeQueryType) : List[ChatModelChatCompletion]
+    // Other methods
+}
+
+ContextWindowManager -> TranscriptManager : Sends messages
+ContextWindowManager -> VectorStoreManager : Sends dequeued messages
+TranscriptManager -> VectorStoreManager : Optional: Interacts with dequeued messages
+
+@enduml
