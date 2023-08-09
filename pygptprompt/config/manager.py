@@ -1,119 +1,101 @@
 """
 pygptprompt/config/manager.py
 """
-import datetime
 import os
-import shutil
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 import dotenv
 
-from pygptprompt.config.json import read_json, write_json
 from pygptprompt.config.path import evaluate_path
-from pygptprompt.pattern.mapping import MappingTemplate
+from pygptprompt.pattern.mapping import JSONManager
 from pygptprompt.pattern.singleton import Singleton
 
 
-class ConfigurationManager(Singleton, MappingTemplate):
-    """
-    Singleton class for managing global configuration settings.
-
-    This class inherits from `Singleton` and `MappingTemplate` to implement the Singleton pattern and provide key-value mapping functionality for configuration settings.
+class ConfigurationManager(Singleton, JSONManager):
+    """Singleton class for managing configuration data using JSON files.
 
     Args:
-        file_path (str): The path to the configuration file.
+        file_path (str): The path to the configuration JSON file.
+        initial_data (Optional[Dict[str, Any]], optional): Initial configuration data. Defaults to None.
 
     Attributes:
-        file_path (Path): The path to the configuration file.
-        _data (dict): The underlying data structure for storing the configuration settings.
+        json_interface (JSONInterface): Interface for interacting with the JSON file.
+        map_interface (MappingInterface): Interface for managing mapping data.
+        file_path (Path): The pathlib.Path object representing the configuration file path.
+
+    Methods:
+        load() -> dict[str, Any]: Load configuration data from the JSON file.
+        save() -> None: Save configuration data to the JSON file.
+        backup() -> None: Create a backup copy of the JSON file.
+        get_value(key: str, default: Optional[Any] = None) -> Any: Retrieve a configuration value.
+        set_value(key: str, value: Any) -> bool: Set a configuration value.
+        get_env_variable(env_var: str = "OPENAI_API_KEY") -> str: Get an environment variable value.
     """
 
-    def __init__(self, file_path: str):
-        super().__init__()
+    def __init__(self, file_path: str, initial_data: Optional[Dict[str, Any]] = None):
+        """Initialize the ConfigurationManager.
+
+        Args:
+            file_path (str): The path to the configuration JSON file.
+            initial_data (Optional[Dict[str, Any]], optional): Initial configuration data. Defaults to None.
+        """
+        super().__init__(file_path, initial_data)
         self.file_path = Path(file_path)
-        self._data = self.load()
 
     def load(self) -> dict[str, Any]:
-        """
-        Load the configuration settings from the configuration file.
+        """Load configuration data from the JSON file.
 
         Returns:
-            dict[str, Any]: The loaded configuration settings.
+            dict[str, Any]: The loaded configuration data.
         """
-        return read_json(self.file_path)
+        return self.json_interface.load_json()
 
     def save(self) -> None:
-        """
-        Save the configuration settings to the configuration file.
-        """
-        write_json(self.file_path, self.data)
+        """Save configuration data to the JSON file."""
+        self.json_interface.save_json(self.map_interface.data)
 
     def backup(self) -> None:
-        """
-        Create a backup of the configuration file.
+        """Create a backup copy of the JSON file."""
+        self.json_interface.backup_json()
 
-        The backup file will have the same name as the original file, with a timestamp appended to it.
-        """
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_name = self.file_path.name.replace(".json", f"_{timestamp}.json")
-        backup_file_name = self.file_path.parent / file_name
-        shutil.copyfile(self.file_path, backup_file_name)
-
-    def get_value(
-        self,
-        key: str,
-        default: Optional[Any] = None,
-    ) -> Any:
-        """
-        Get the value associated with a configuration key.
-
-        The key can be a nested key, with each level separated by a dot ('.').
-        If the key is not found, the default value is returned.
+    def get_value(self, key: str, default: Optional[Any] = None) -> Any:
+        """Retrieve a configuration value.
 
         Args:
             key (str): The configuration key.
-            default (Optional[Any]): The default value to return if the key is not found. Defaults to None.
+            default (Optional[Any], optional): Default value if the key is not found. Defaults to None.
 
         Returns:
-            Any: The value associated with the key, or the default value if the key is not found.
+            Any: The retrieved configuration value or the default value if not found.
         """
         keys = key.split(".")
-        data = self.read_nested(*keys)
-        return data if data is not None else default
+        return self.map_interface.read_nested(*keys) or default
 
     def set_value(self, key: str, value: Any) -> bool:
-        """
-        Set or update the value associated with a configuration key.
-
-        The key can be a nested key, with each level separated by a dot ('.').
-        If the key hierarchy exists, the value is updated; otherwise, a new nested key-value pair is created.
+        """Set a configuration value.
 
         Args:
             key (str): The configuration key.
-            value (Any): The value to set or update for the given key.
+            value (Any): The value to set.
 
         Returns:
-            bool: True if the value was updated, False if a new nested key-value pair was created.
+            bool: True if the value was successfully set, False otherwise.
         """
         keys = key.split(".")
-        return self.update_nested(value, *keys)
+        return self.map_interface.update_nested(value, *keys)
 
     def get_env_variable(self, env_var: str = "OPENAI_API_KEY") -> str:
-        """
-        Get an environment variable from the .env file.
-
-        The environment variable is read from the `.env` file specified in the configuration settings.
-        If the variable is not found or empty, an error is raised.
+        """Get an environment variable value.
 
         Args:
-            env_var (str): The name of the environment variable to fetch. Defaults to "OPENAI_API_KEY".
+            env_var (str, optional): The name of the environment variable. Defaults to "OPENAI_API_KEY".
 
         Returns:
-            str: The value of the requested environment variable.
+            str: The value of the environment variable.
 
         Raises:
-            ValueError: If the `.env` file cannot be loaded or the specified environment variable is not set.
+            ValueError: If the environment variable is not found or cannot be loaded.
         """
         env = evaluate_path(self.get_value("app.path.env", ".env"))
 
