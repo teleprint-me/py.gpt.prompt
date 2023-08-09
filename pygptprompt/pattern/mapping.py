@@ -37,7 +37,7 @@ class JSONInterface:
         Returns:
             Dict[str, Any]: The loaded JSON data.
         """
-        with self._file_path.open("r") as file:
+        with open(self._file_path, "r") as file:
             return json.load(file)
 
     def save_json(self, data: Dict[str, Any]) -> bool:
