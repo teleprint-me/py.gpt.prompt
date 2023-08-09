@@ -1,23 +1,31 @@
-graph TD
+flowchart TD
 
-    A[ChatSession] --> B[ChatModel]
-    A --> C[ChatSessionTokenManager]
-    A --> D[ContextWindowManager]
-    A --> E[TranscriptManager]
-    
-    B --> F[JSONManager]
-    B --> G[ChatCompletionMessage]
-    
-    C --> H[ConfigurationManager]
-    C --> B
-    
-    D --> I[ChatModelChatCompletion]
-    D --> C
-    
-    E --> I
-    E --> J[VectorDatabase]
+    subgraph ChatSession Initialization
+        User[User] --> ChatSession[ChatSession]
+        ChatSession --> ConfigurationManager[ConfigurationManager]
+        ConfigurationManager --> JSONInterface[JSONInterface]
+        ConfigurationManager --> MappingInterface[MappingInterface]
+        ChatSession --> ChatModelFactory[ChatModelFactory]
+        ChatModelFactory --> ChatModel[ChatModel]
+        ChatSession --> ChatSessionTokenManager[ChatSessionTokenManager]
+        ChatSession --> ContextWindowManager[ContextWindowManager]
+        ChatSession --> TranscriptManager[TranscriptManager]
+    end
 
-    F --> K[JSONInterface]
-    F --> L[MappingInterface]
-    
-    H --> F
+    subgraph ChatModel Interaction
+        ChatModel --> JSONManager[JSONManager]
+        ChatModel --> ChatCompletionMessage[ChatCompletionMessage]
+    end
+
+    subgraph Context Management
+        ContextWindowManager --> ChatModelChatCompletion[ChatModelChatCompletion]
+    end
+
+    subgraph Transcript Management
+        TranscriptManager --> ChatModelChatCompletion
+        TranscriptManager --> VectorDatabase[VectorDatabase]
+    end
+
+    JSONInterface --> JSONManager
+    MappingInterface --> ChatCompletionMessage
+    ChatSessionTokenManager --> ConfigurationManager
