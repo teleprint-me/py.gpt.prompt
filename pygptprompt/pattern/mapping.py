@@ -309,18 +309,18 @@ class JSONManager:
             file_path (str): The path to the JSON file.
             initial_data (Optional[Dict[str, Any]], optional): Initial data to populate the mapping interface. Defaults to None.
         """
-        # Create JSON interface and mapping interface instances
         self.json_interface = JSONInterface(file_path)
-        self.map_interface = MappingInterface(initial_data)
 
-        # Load data if JSON file exists, otherwise create it
+        # Load data if JSON file exists, otherwise use initial_data
         if self.json_interface.file_path.exists():
             data = self.json_interface.load_json()
-            self.map_interface = MappingInterface(data)
         else:
             # Create the directory for the file if it doesn't exist
             self.json_interface.make_directory()
-
+            data = initial_data
             # Save initial data if provided
             if initial_data:
                 self.json_interface.save_json(initial_data)
+
+        # Initialize the mapping interface with either loaded data or initial data
+        self.map_interface = MappingInterface(data)
