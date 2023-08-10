@@ -1,105 +1,21 @@
 """
 pygptprompt/pattern/mapping.py
 """
-import json
-from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 
-class JSONInterface:
-    """Interface for interacting with JSON files.
-
-    Args:
-        file_path (str): The path to the JSON file.
-
-    Attributes:
-        _file_path (Path): The pathlib.Path object representing the file path.
-
-    Methods:
-        load_json(): Load JSON data from the file.
-        save_json(data: Dict[str, Any]) -> bool: Save data to the JSON file.
-        backup_json() -> bool: Create a backup copy of the JSON file.
-        make_directory() -> bool: Create the directory for the file if it doesn't exist.
-    """
-
-    def __init__(self, file_path: str):
-        """Initialize the JSONInterface with a file path."""
-        self._file_path = Path(file_path)
-
-    @property
-    def file_path(self) -> Union[str, Path]:
-        """Get the file path as a pathlib.Path object."""
-        return self._file_path
-
-    def load_json(self) -> Dict[str, Any]:
-        """Load JSON data from the file.
-
-        Returns:
-            Dict[str, Any]: The loaded JSON data.
-        """
-        with open(self._file_path, "r") as file:
-            return json.load(file)
-
-    def save_json(self, data: Dict[str, Any]) -> bool:
-        """Save data to the JSON file.
-
-        Args:
-            data (Dict[str, Any]): The data to be saved.
-
-        Returns:
-            bool: True if the data was successfully saved, False otherwise.
-        """
-        try:
-            with self._file_path.open("w") as file:
-                json.dump(data, file, indent=4)
-            return True
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return False
-
-    def backup_json(self) -> bool:
-        """Create a backup copy of the JSON file.
-
-        Returns:
-            bool: True if the backup was created successfully, False otherwise.
-        """
-        try:
-            backup_path = self._file_path.with_suffix(".backup.json")
-            with self._file_path.open("r") as original_file, backup_path.open(
-                "w"
-            ) as backup_file:
-                json.dump(json.load(original_file), backup_file, indent=4)
-            return True
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return False
-
-    def make_directory(self) -> bool:
-        """Create the directory for the file if it doesn't exist.
-
-        Returns:
-            bool: True if the directory was created successfully or already exists, False otherwise.
-        """
-        try:
-            self._file_path.parent.mkdir(parents=True, exist_ok=True)
-            return True
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return False
-
-
-class MappingInterface:
+class MappingTemplate:
     """
     A template class for creating and managing a mapping of key-value pairs.
 
     Args:
-        initial_data (Optional[dict[str, Any]]): Optional initial data to populate the mapping.
+        initial_data (Optional[Dict[str, Any]]): Optional initial data to populate the mapping.
 
     Attributes:
-        _data (dict[str, Any]): The underlying data structure for storing the key-value pairs.
+        _data (Dict[str, Any]): The underlying data structure for storing the key-value pairs.
     """
 
-    def __init__(self, initial_data: Optional[dict[str, Any]] = None):
+    def __init__(self, initial_data: Optional[Dict[str, Any]] = None):
         self._data = initial_data if initial_data is not None else {}
 
     @property
@@ -113,14 +29,28 @@ class MappingInterface:
         return list(self._data.keys())
 
     @property
-    def data(self) -> dict[str, Any]:
+    def data(self) -> Dict[str, Any]:
         """
         Get the underlying data structure of the mapping.
 
         Returns:
-            dict[str, Any]: The underlying data structure.
+            Dict[str, Any]: The underlying data structure.
         """
         return self._data
+
+    def observe(self, data: Dict[str, Any]) -> None:
+        """
+        Update the underlying data structure with new data.
+
+        This method updates the internal data structure. If any callbacks are registered that rely on the updated data, they must be designed to handle the data structure defined by this method.
+
+        Parameters:
+            data (Dict[str, Any]): The new data to update the mapping with.
+
+        Returns:
+            None
+        """
+        self._data = data
 
     def create(self, key: str, value: Any) -> bool:
         """
@@ -285,42 +215,3 @@ class MappingInterface:
             return True
         else:
             return False
-
-
-class JSONManager:
-    """Manager class for coordinating interactions with JSON files and mapping data.
-
-    Args:
-        file_path (str): The path to the JSON file.
-        initial_data (Optional[Dict[str, Any]], optional): Initial data to populate the mapping interface. Defaults to None.
-
-    Attributes:
-        json_interface (JSONInterface): Interface for interacting with the JSON file.
-        map_interface (MappingInterface): Interface for managing mapping data.
-
-    Methods:
-        __init__(file_path: str, initial_data: Optional[Dict[str, Any]] = None): Initialize the JSONManager.
-    """
-
-    def __init__(self, file_path: str, initial_data: Optional[Dict[str, Any]] = None):
-        """Initialize the JSONManager.
-
-        Args:
-            file_path (str): The path to the JSON file.
-            initial_data (Optional[Dict[str, Any]], optional): Initial data to populate the mapping interface. Defaults to None.
-        """
-        self.json_interface = JSONInterface(file_path)
-
-        # Load data if JSON file exists, otherwise use initial_data
-        if self.json_interface.file_path.exists():
-            data = self.json_interface.load_json()
-        else:
-            # Create the directory for the file if it doesn't exist
-            self.json_interface.make_directory()
-            data = initial_data
-            # Save initial data if provided
-            if initial_data:
-                self.json_interface.save_json(initial_data)
-
-        # Initialize the mapping interface with either loaded data or initial data
-        self.map_interface = MappingInterface(data)
