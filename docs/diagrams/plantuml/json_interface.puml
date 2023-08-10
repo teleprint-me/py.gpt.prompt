@@ -1,21 +1,37 @@
 @startuml JSONInterface
 !theme blueprint
 
-class JSONInterface {
+interface JSONInterface {
     - Path _file_path
+    - List[Callable] _callbacks
     + JSONInterface(file_path: Union[str, Path])
     # Path file_path
+    + None register(callback: Callable)
     + bool load_json()
     + bool save_json()
     + bool backup_json()
     + bool make_directory()
 }
 
-class MappingInterface {
+interface ListInterface {
+    - Optional[List[dict[str, Any]]] _data
+    + ListInterface(initial_data: Optional[List[dict[str, Any]]])
+    # int length
+    # Optional[List[dict[str, Any]]] data
+    + None observe(self, data: List[dict[str, Any]])
+    + bool append(item: Dict[str, Any])
+    + bool insert(index: int, item: Dict[str, Any])
+    + Any get(index: int)
+    + bool update(index: int, item: Dict[str, Any])
+    + bool remove(index: int)
+}
+
+interface MappingInterface {
     - Dict _data
     + MappingInterface(initial_data: Optional[dict[str, Any]])
     # List[str] keys
     # Dict[str, Any] data
+    + None observe(self, data: dict[str, Any])
     + bool create(key: str, value: Any)
     + bool create_nested(value: Any, *keys: str)
     + Any read(key: str)
@@ -37,13 +53,4 @@ ListInterface <|.. ContextWindowManager
 class TranscriptManager
 JSONInterface <|-- TranscriptManager
 ListInterface <|.. TranscriptManager
-
-interface ListInterface {
-    + bool append(item: Dict[str, Any])
-    + bool insert(index: int, item: Dict[str, Any])
-    + Any get(index: int)
-    + bool update(index: int, item: Dict[str, Any])
-    + bool remove(index: int)
-}
-
 @enduml
