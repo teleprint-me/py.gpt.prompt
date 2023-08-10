@@ -36,9 +36,9 @@ JSONError = EncodeError + DecodeError
 JSONData = Union[Dict[str, Any], List[Dict[str, Any]]]
 
 
-class JSONInterface:
+class JSONTemplate:
     """
-    A class for working with JSON files and providing callback support.
+    A template class for working with JSON files and providing callback support.
     """
 
     def __init__(self, file_path: str):
