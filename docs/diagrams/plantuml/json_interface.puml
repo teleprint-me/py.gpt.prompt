@@ -1,10 +1,10 @@
-@startuml JSONInterface
+@startuml MappingTemplate
 !theme blueprint
 
-interface JSONInterface {
+class JSONTemplate {
     - Path _file_path
     - List[Callable] _callbacks
-    + JSONInterface(file_path: Union[str, Path])
+    + JSONTemplate(file_path: Union[str, Path])
     # Path file_path
     + None register(callback: Callable)
     + bool load_json()
@@ -13,9 +13,9 @@ interface JSONInterface {
     + bool make_directory()
 }
 
-interface ListInterface {
+class ListTemplate {
     - Optional[List[dict[str, Any]]] _data
-    + ListInterface(initial_data: Optional[List[dict[str, Any]]])
+    + ListTemplate(initial_data: Optional[List[dict[str, Any]]])
     # int length
     # Optional[List[dict[str, Any]]] data
     + None observe(self, data: List[dict[str, Any]])
@@ -26,9 +26,9 @@ interface ListInterface {
     + bool remove(index: int)
 }
 
-interface MappingInterface {
+class MappingTemplate {
     - Dict _data
-    + MappingInterface(initial_data: Optional[dict[str, Any]])
+    + MappingTemplate(initial_data: Optional[dict[str, Any]])
     # List[str] keys
     # Dict[str, Any] data
     + None observe(self, data: dict[str, Any])
@@ -43,14 +43,14 @@ interface MappingInterface {
 }
 
 class ConfigurationManager
-JSONInterface <|-- ConfigurationManager
-MappingInterface <|.. ConfigurationManager
+JSONTemplate <|-- ConfigurationManager
+MappingTemplate <|.. ConfigurationManager
 
 class ContextWindowManager
-JSONInterface <|-- ContextWindowManager
-ListInterface <|.. ContextWindowManager
+JSONTemplate <|-- ContextWindowManager
+ListTemplate <|.. ContextWindowManager
 
 class TranscriptManager
-JSONInterface <|-- TranscriptManager
-ListInterface <|.. TranscriptManager
+JSONTemplate <|-- TranscriptManager
+ListTemplate <|.. TranscriptManager
 @enduml
