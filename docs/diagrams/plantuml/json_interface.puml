@@ -1,0 +1,49 @@
+@startuml JSONInterface
+!theme blueprint
+
+class JSONInterface {
+    - Path _file_path
+    + JSONInterface(file_path: Union[str, Path])
+    # Path file_path
+    + bool load_json()
+    + bool save_json()
+    + bool backup_json()
+    + bool make_directory()
+}
+
+class MappingInterface {
+    - Dict _data
+    + MappingInterface(initial_data: Optional[dict[str, Any]])
+    # List[str] keys
+    # Dict[str, Any] data
+    + bool create(key: str, value: Any)
+    + bool create_nested(value: Any, *keys: str)
+    + Any read(key: str)
+    + Any read_nested(*keys: str)
+    + bool update(key: str, value: Any)
+    + bool update_nested(value: Any, *keys: str)
+    + bool delete(key: str)
+    + bool delete_nested(*keys: str)
+}
+
+class ConfigurationManager
+JSONInterface <|-- ConfigurationManager
+MappingInterface <|.. ConfigurationManager
+
+class ContextWindowManager
+JSONInterface <|-- ContextWindowManager
+ListInterface <|.. ContextWindowManager
+
+class TranscriptManager
+JSONInterface <|-- TranscriptManager
+ListInterface <|.. TranscriptManager
+
+interface ListInterface {
+    + bool append(item: Dict[str, Any])
+    + bool insert(index: int, item: Dict[str, Any])
+    + Any get(index: int)
+    + bool update(index: int, item: Dict[str, Any])
+    + bool remove(index: int)
+}
+
+@enduml
