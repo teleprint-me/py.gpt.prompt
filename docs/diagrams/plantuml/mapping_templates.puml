@@ -1,4 +1,4 @@
-@startuml MappingTemplate
+@startuml MappingTemplates
 !theme blueprint
 
 class JSONTemplate {
@@ -14,24 +14,25 @@ class JSONTemplate {
 }
 
 class ListTemplate {
-    - Optional[List[dict[str, Any]]] _data
-    + ListTemplate(initial_data: Optional[List[dict[str, Any]]])
+    - Optional[List[Dict[str, Any]]] _data
+    + ListTemplate(initial_data: Optional[List[Dict[str, Any]]])
     # int length
-    # Optional[List[dict[str, Any]]] data
-    + None observe(self, data: List[dict[str, Any]])
-    + bool append(item: Dict[str, Any])
+    # Optional[List[Dict[str, Any]]] data
+    + None observe(self, data: List[Dict[str, Any]])
+    + None append(item: Dict[str, Any])
     + bool insert(index: int, item: Dict[str, Any])
-    + Any get(index: int)
+    + Optional[Dict[str, Any]] get(index: int)
     + bool update(index: int, item: Dict[str, Any])
     + bool remove(index: int)
+    + None clear()
 }
 
 class MappingTemplate {
     - Dict _data
-    + MappingTemplate(initial_data: Optional[dict[str, Any]])
+    + MappingTemplate(initial_data: Optional[Dict[str, Any]])
     # List[str] keys
     # Dict[str, Any] data
-    + None observe(self, data: dict[str, Any])
+    + None observe(self, data: Dict[str, Any])
     + bool create(key: str, value: Any)
     + bool create_nested(value: Any, *keys: str)
     + Any read(key: str)
