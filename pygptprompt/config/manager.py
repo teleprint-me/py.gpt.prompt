@@ -8,11 +8,12 @@ from typing import Any, Dict, Optional
 import dotenv
 
 from pygptprompt.config.path import evaluate_path
-from pygptprompt.pattern.mapping import JSONManager
+from pygptprompt.pattern.json import JSONTemplate
+from pygptprompt.pattern.mapping import MappingTemplate
 from pygptprompt.pattern.singleton import Singleton
 
 
-class ConfigurationManager(Singleton, JSONManager):
+class ConfigurationManager(Singleton):
     """Singleton class for managing configuration data using JSON files.
 
     Args:
@@ -20,8 +21,8 @@ class ConfigurationManager(Singleton, JSONManager):
         initial_data (Optional[Dict[str, Any]], optional): Initial configuration data. Defaults to None.
 
     Attributes:
-        json_interface (JSONInterface): Interface for interacting with the JSON file.
-        map_interface (MappingInterface): Interface for managing mapping data.
+        json_template (JSONInterface): Interface for interacting with the JSON file.
+        map_template (MappingInterface): Interface for managing mapping data.
         file_path (Path): The pathlib.Path object representing the configuration file path.
 
     Methods:
@@ -42,6 +43,9 @@ class ConfigurationManager(Singleton, JSONManager):
         """
         super().__init__(file_path, initial_data)
         self.file_path = Path(file_path)
+        self.json_template = JSONTemplate(file_path=file_path)
+        self.mapping_template = MappingTemplate(initial_data=initial_data)
+        self.json_template.register(self.mapping_template.observe)
 
     def load(self) -> dict[str, Any]:
         """Load configuration data from the JSON file.
@@ -49,15 +53,15 @@ class ConfigurationManager(Singleton, JSONManager):
         Returns:
             dict[str, Any]: The loaded configuration data.
         """
-        return self.json_interface.load_json()
+        return self.json_template.load_json()
 
     def save(self) -> None:
         """Save configuration data to the JSON file."""
-        self.json_interface.save_json(self.map_interface.data)
+        self.json_template.save_json(self.map_template.data)
 
     def backup(self) -> None:
         """Create a backup copy of the JSON file."""
-        self.json_interface.backup_json()
+        self.json_template.backup_json()
 
     def get_value(self, key: str, default: Optional[Any] = None) -> Any:
         """Retrieve a configuration value.
@@ -70,7 +74,7 @@ class ConfigurationManager(Singleton, JSONManager):
             Any: The retrieved configuration value or the default value if not found.
         """
         keys = key.split(".")
-        return self.map_interface.read_nested(*keys) or default
+        return self.map_template.read_nested(*keys) or default
 
     def set_value(self, key: str, value: Any) -> bool:
         """Set a configuration value.
@@ -83,7 +87,7 @@ class ConfigurationManager(Singleton, JSONManager):
             bool: True if the value was successfully set, False otherwise.
         """
         keys = key.split(".")
-        return self.map_interface.update_nested(value, *keys)
+        return self.map_template.update_nested(value, *keys)
 
     def get_env_variable(self, env_var: str = "OPENAI_API_KEY") -> str:
         """Get an environment variable value.
