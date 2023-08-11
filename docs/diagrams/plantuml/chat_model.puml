@@ -3,10 +3,17 @@
 
 ' docs/diagrams/plantuml/chat_model.puml
 
-abstract class JSONManager {
-    - JSONInterface json_interface
-    - MappingInterface map_interface
-    + JSONManager(file_path: str, initial_data: Optional[dict[str, Any]])
+class ConfigurationManager extends Singleton {
+    - Path file_path
+    - JSONTemplate json_template
+    - MappingTemplate map_template
+    + ConfigurationManager(file_path: str, initial_data: Optional[dict[str, Any]])
+    + bool load()
+    + bool save()
+    + bool backup()
+    + Any get_value(key: str, default: Optional[Any])
+    + bool set_value(key: str, value: Any)
+    + str get_env_variable(env_var: str)
 }
 
 class ChatCompletionMessage {
@@ -24,15 +31,22 @@ class ChatModelChatCompletion extends ChatCompletionMessage {
 }
 
 abstract class ChatModel {
-    - config: JSONManager
-    + ChatModel(config: MappingTemplate)
+    - ConfigurationManager _config
+    + ChatModel(config: ConfigurationManager)
     + get_completion(prompt: str): str ' ChatModelCompletion
     + get_chat_completion(messages: List[ChatModelChatCompletion]): ChatModelChatCompletion
     + get_embedding(input: Union[str, List[str]]): List[List[float]] ' ChatModelEmbedding
     + get_encoding(text: str): List[int] ' ChatModelEncoding
 }
 
-ChatModel::config o--> JSONManager : <<ConfigurationManager>>
+class ChatModelFactory{
+    - ConfigurationManager config
+    - Dict[Literal, Callable] provider_map
+    + ChatModelFactory(config: ConfigurationManager):
+    + create_model(provider: str) ChatModel
+}
+
+ChatModel::config o--> MappingTemplate : <<ConfigurationManager>>
 ChatModel --> ChatModelChatCompletion : uses
 
 @enduml
