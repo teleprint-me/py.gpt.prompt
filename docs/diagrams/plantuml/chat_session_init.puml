@@ -2,59 +2,59 @@
 !theme blueprint
 
 actor User
-participant "ChatSession" as CS
-participant "ConfigurationManager" as CM
-participant "JSONInterface" as JI
-participant "MappingInterface" as MI
-participant "ChatModelFactory" as CMF
-participant "ChatModel" as CMo
-participant "ChatSessionTokenManager" as CST
-participant "ContextWindowManager" as CWM
-participant "TranscriptManager" as TM
+participant "ChatSession" as ChatSession
+participant "ConfigurationManager" as ConfigurationManager
+participant "JSONInterface" as JSONInterface
+participant "MappingInterface" as MappingInterface
+participant "ChatModelFactory" as ChatModelFactory
+participant "ChatModel" as ChatModel
+participant "ChatSessionTokenManager" as ChatSessionTokenManager
+participant "ContextWindowManager" as ContextWindowManager
+participant "TranscriptManager" as TranscriptManager
 
-User -> CS : Instantiate
-activate CS
+User -> ChatSession : Instantiate
+activate ChatSession
 
-CS -> CM : Instantiate
-activate CM
+ChatSession -> ConfigurationManager : Instantiate
+activate ConfigurationManager
 
-CM -> JI : Initialize
-activate JI
+ConfigurationManager -> JSONInterface : Initialize
+activate JSONInterface
 
-CM -> MI : Initialize
-activate MI
+ConfigurationManager -> MappingInterface : Initialize
+activate MappingInterface
 
-CM -> JI : load_json()
-JI --> CM : Configuration Data
+ConfigurationManager -> JSONInterface : load_json()
+JSONInterface --> ConfigurationManager : Configuration Data
 
-CS -> CMF : create ChatModelFactory
-activate CMF
+ChatSession -> ChatModelFactory : create ChatModelFactory
+activate ChatModelFactory
 
-CMF -> CMo : create_model(provider)
-activate CMo
+ChatModelFactory -> ChatModel : create_model(provider)
+activate ChatModel
 
-CMo --> CS : Ready
-CS --> User : Initialized
+ChatModel --> ChatSession : Ready
+ChatSession --> User : Initialized
 
-CS -> CST : create ChatSessionTokenManager
-CST -> CM : Accessing the configuration
-CST -> CMo : Accessing the model
-activate CST
+ChatSession -> ChatSessionTokenManager : create ChatSessionTokenManager
+ChatSessionTokenManager -> ConfigurationManager : Accessing the configuration
+ChatSessionTokenManager -> ChatModel : Accessing the model
+activate ChatSessionTokenManager
 
-CS -> CWM : create ContextWindowManager
-activate CWM
+ChatSession -> ContextWindowManager : create ContextWindowManager
+activate ContextWindowManager
 
-CS -> TM : create TranscriptManager
-activate TM
+ChatSession -> TranscriptManager : create TranscriptManager
+activate TranscriptManager
 
-deactivate CS
-deactivate JI
-deactivate MI
-deactivate CMF
-deactivate CMo
-deactivate CST
-deactivate CWM
-deactivate TM
+deactivate ChatSession
+deactivate JSONInterface
+deactivate MappingInterface
+deactivate ChatModelFactory
+deactivate ChatModel
+deactivate ChatSessionTokenManager
+deactivate ContextWindowManager
+deactivate TranscriptManager
 
 note right
   ConfigurationManager has a separate lifecycle.
