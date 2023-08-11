@@ -40,8 +40,8 @@ abstract class ChatModel {
 }
 
 class ChatModelFactory{
-    - ConfigurationManager config
-    - Dict[Literal, Callable] provider_map
+    - ConfigurationManager _config
+    - Dict[Literal, Callable] _provider_map
     + ChatModelFactory(config: ConfigurationManager):
     + create_model(provider: str) ChatModel
 }

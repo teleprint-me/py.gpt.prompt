@@ -26,6 +26,6 @@ class ConfigurationManager extends Singleton {
     + str get_env_variable(env_var: str)
 }
 
-JSONTemplate o--> ConfigurationManager::json_interface : <<JSONTemplate>>
-MappingTemplate o--> ConfigurationManager::map_interface : <<MappingTemplate>>
+JSONTemplate o--> ConfigurationManager::json_template : <<JSONTemplate>>
+MappingTemplate o--> ConfigurationManager::map_template : <<MappingTemplate>>
 @enduml
