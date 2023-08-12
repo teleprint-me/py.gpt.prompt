@@ -14,8 +14,6 @@ class Singleton extends MetaSingleton {
 }
 
 class ConfigurationManager extends Singleton {
-    - Path file_path
-    - JSONTemplate json_template
     - MappingTemplate map_template
     + ConfigurationManager(file_path: str, initial_data: Optional[dict[str, Any]])
     + bool load()
@@ -26,6 +24,5 @@ class ConfigurationManager extends Singleton {
     + str get_env_variable(env_var: str)
 }
 
-JSONTemplate o--> ConfigurationManager::json_template : <<JSONTemplate>>
 MappingTemplate o--> ConfigurationManager::map_template : <<MappingTemplate>>
 @enduml
