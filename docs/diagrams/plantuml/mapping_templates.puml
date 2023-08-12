@@ -2,7 +2,9 @@
 !theme blueprint
 
 class JSONTemplate {
-    // JSONData = Union[Dict[str, Any], List[Dict[str, Any]]]
+    // JSONMap = Dict[str, Any]
+    // JSONList = List[Dict[str, Any]]
+    // JSONData = Union[JSONMap, JSONList]
     - Path _file_path
     - Optional[JSONData] _data
     + JSONTemplate(file_path: str, initial_data: Optional[JSONData])
@@ -15,7 +17,8 @@ class JSONTemplate {
 }
 
 class ListTemplate extends JSONTemplate {
-    + ListTemplate(file_path: str, initial_data: Optional[List[Dict[str, Any]]])
+    // JSONList = List[Dict[str, Any]]
+    + ListTemplate(file_path: str, initial_data: Optional[JSONList])
     # int length
     + None append(item: Dict[str, Any])
     + bool insert(index: int, item: Dict[str, Any])
@@ -26,7 +29,8 @@ class ListTemplate extends JSONTemplate {
 }
 
 class MappingTemplate extends JSONTemplate {
-    + MappingTemplate(file_path: str, initial_data: Optional[Dict[str, Any]])
+    // JSONMap = Dict[str, Any]
+    + MappingTemplate(file_path: str, initial_data: Optional[JSONMap])
     # List[str] keys
     + bool create(key: str, value: Any)
     + bool create_nested(value: Any, *keys: str)
