@@ -1,6 +1,7 @@
 """
 tests/conftest.py
 """
+import json
 import os
 from typing import List, Union
 
@@ -11,12 +12,14 @@ from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.model.factory import ChatModelFactory
 from pygptprompt.model.llama_cpp import LlamaCppModel
 from pygptprompt.model.openai import OpenAIModel
-from pygptprompt.pattern.model import ChatModel
-from pygptprompt.pattern.types import ChatModelChatCompletion
+from pygptprompt.pattern.json import JSONTemplate
+from pygptprompt.pattern.list import ListTemplate
+from pygptprompt.pattern.mapping import MappingTemplate
+from pygptprompt.pattern.model import ChatModel, ChatModelChatCompletion
 
 # from pygptprompt.session.model import SessionModel
 # from pygptprompt.session.policy import SessionPolicy
-from pygptprompt.session.token import ChatSessionTokenManager
+# from pygptprompt.session.token import ChatSessionTokenManager
 
 
 def pytest_addoption(parser):
@@ -46,6 +49,16 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "private" in item.keywords:
             item.add_marker(private)
+
+
+@pytest.fixture
+def encoding_input() -> Union[str, List[str]]:
+    return "This is a test sentence."
+
+
+@pytest.fixture
+def embedding_input() -> Union[str, List[str]]:
+    return "This is a test sentence."
 
 
 @pytest.fixture(scope="module")
@@ -111,38 +124,78 @@ def mock_weather_callback() -> object:
     return get_current_weather
 
 
-@pytest.fixture
-def embedding_input() -> Union[str, List[str]]:
-    return "This is a test sentence."
-
-
-@pytest.fixture
-def encoding_input() -> Union[str, List[str]]:
-    return "This is a test sentence."
+@pytest.fixture(scope="module")
+def temp_json_path() -> str:
+    return "tests/test.temp.json"
 
 
 @pytest.fixture(scope="module")
-def json_config() -> dict:
-    return read_json("tests/config.sample.json")
+def temp_json_backup_path() -> str:
+    return "tests/test.temp.backup.json"
 
 
 @pytest.fixture(scope="module")
-def json_filepath(tmpdir_factory) -> str:
-    return str(tmpdir_factory.mktemp("data").join("test.json"))
+def temp_json_nested_path() -> str:
+    return "tests/nested/test.temp.json"
+
+
+@pytest.fixture(scope="module")
+def temp_json_data() -> dict:
+    return {"test": "data"}
+
+
+@pytest.fixture
+def temp_json_file(temp_json_path, temp_json_data):
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(temp_json_path), exist_ok=True)
+
+    # Write the temp data to the file
+    with open(temp_json_path, "w") as f:
+        json.dump(temp_json_data, f)
+
+    yield temp_json_path
+
+    # Cleanup the temporary file after the test
+    os.remove(temp_json_path)
+
+
+@pytest.fixture(scope="module")
+def json_template(temp_json_path: str, temp_json_data: dict) -> JSONTemplate:
+    return JSONTemplate(temp_json_path, temp_json_data)
+
+
+@pytest.fixture(scope="module")
+def json_template_nested(
+    temp_json_nested_path: str, temp_json_data: dict
+) -> JSONTemplate:
+    return JSONTemplate(temp_json_nested_path, temp_json_data)
 
 
 @pytest.fixture(scope="module")
 def config_file_path() -> str:
     if os.path.exists("config.json"):
-        filepath = "config.json"
-    else:
-        filepath = "tests/config.sample.json"
-    return filepath
+        return "config.json"
+    return "tests/config.sample.json"
+
+
+@pytest.fixture(scope="module")
+def config_json(config_file_path: str) -> dict:
+    return read_json(config_file_path)
+
+
+@pytest.fixture(scope="module")
+def map_template(config_json: dict) -> MappingTemplate:
+    return MappingTemplate(config_json)
+
+
+@pytest.fixture(scope="module")
+def list_template(messages: List[ChatModelChatCompletion]) -> ListTemplate:
+    return ListTemplate(messages)
 
 
 @pytest.fixture(scope="module")
 def config(config_file_path: str) -> ConfigurationManager:
-    return ConfigurationManager(file_path=config_file_path)
+    return ConfigurationManager(config_file_path)
 
 
 @pytest.fixture(scope="module")
@@ -165,13 +218,13 @@ def chat_model(chat_model_factory: ChatModelFactory) -> ChatModel:
     return chat_model_factory.create_model(provider="llama_cpp")
 
 
-@pytest.fixture(scope="module")
-def chat_session_token_manager(
-    config: ConfigurationManager, chat_model: ChatModel
-) -> ChatSessionTokenManager:
-    return ChatSessionTokenManager(
-        provider="llama_cpp", config=config, model=chat_model
-    )
+# @pytest.fixture(scope="module")
+# def chat_session_token_manager(
+#     config: ConfigurationManager, chat_model: ChatModel
+# ) -> ChatSessionTokenManager:
+#     return ChatSessionTokenManager(
+#         provider="llama_cpp", config=config, model=chat_model
+#     )
 
 
 # @pytest.fixture(scope="module")

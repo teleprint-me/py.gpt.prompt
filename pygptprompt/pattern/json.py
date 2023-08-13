@@ -10,9 +10,16 @@ REFERENCE:
 """
 import json
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pygptprompt import logging
+
+# NOTE:
+# List[Dict[str, Any]] uses a data type value of Any,
+# enforcing generic types, to allow for portability.
+JSONMap = Dict[str, Any]
+JSONList = List[Dict[str, Any]]
+JSONData = Union[JSONMap, JSONList]
 
 EncodeError = (
     TypeError,  # raised by json.dump(s)
@@ -30,69 +37,72 @@ DecodeError = (
 
 JSONError = EncodeError + DecodeError
 
-# NOTE:
-# List[Dict[str, Any]] uses a data type value of Any,
-# enforcing generic types, to allow for portability.
-JSONData = Union[Dict[str, Any], List[Dict[str, Any]]]
-
 
 class JSONTemplate:
     """
-    A template class for working with JSON files and providing callback support.
+    A template class for working with JSON files.
+
+    Properties:
+        _file_path (Path): A path-like object pointing to the JSON source file.
+        _data (Optional[JSONData]): The internal JSON data structure. May be None if not loaded.
     """
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, initial_data: Optional[JSONData] = None):
         """
-        Initialize a JSONInterface instance.
+        Initialize a JSONTemplate instance.
 
         Parameters:
             file_path (str): The path to the JSON file.
+            initial_data (Optional[JSONData]): The initial data. Defaults to None.
         """
         self._file_path = Path(file_path)
-        self._callbacks: List[Callable] = []
+        self._data: Optional[JSONData] = initial_data
+
+        # Test for initialization data
+        if initial_data is None:
+            # Read the JSON data into memory
+            loaded = self.load_json()
+            if not loaded:
+                raise ValueError("Failed to load JSON into memory")
+            else:
+                logging.info("JSON successfully loaded into memory")
+        else:
+            logging.info("JSON successfully initialized into memory")
 
     @property
-    def file_path(self) -> Union[str, Path]:
+    def file_path(self) -> Path:
         """
         Get the path to the JSON file.
 
         Returns:
-            Union[str, Path]: The file path.
+            Path: The file path.
         """
         return self._file_path
 
-    def register(self, callback: Callable) -> None:
+    @property
+    def data(self) -> JSONData:
         """
-        Register a callback function to be invoked on specific events.
-
-        The callback system is designed with flexibility to allow for different signatures depending on the use case. This accommodates various requirements and makes the interface adaptable to different parts of the application.
-
-        Example Callback Signatures:
-            For MappingInterface: callback(data: Dict[str, Any]) -> None
-            For ListInterface: callback(data: List[Dict[str, Any]]) -> None
-
-        Parameters:
-            callback (Callable): The function to register as a callback.
-        """
-        self._callbacks.append(callback)
-
-    def load_json(self) -> Optional[Dict[str, Any]]:
-        """
-        Load JSON data from the file and notify registered callbacks.
+        Get the underlying JSON data structure.
 
         Returns:
-            Optional[Dict[str, Any]]: The loaded JSON data or None on error.
+            JSONData (Union[JSONMap, JSONList]): The underlying data structure.
+        """
+        return self._data
+
+    def load_json(self) -> bool:
+        """
+        Load JSON data from the file into the _data attribute.
+
+        Returns:
+            bool: True if the JSON data was loaded successfully, False on error.
         """
         try:
             with self._file_path.open("r") as file:
-                data = json.load(file)
-            # Notify all registered callbacks
-            for callback in self._callbacks:
-                callback(data)
-            return data
+                self._data = json.load(file)
+            return True
         except DecodeError as e:
             logging.error(f"Error loading JSON from {self._file_path}: {e}")
-            return None
+            return False
 
     def save_json(self, data: JSONData) -> bool:
         """

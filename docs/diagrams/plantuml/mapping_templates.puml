@@ -11,7 +11,7 @@ class JSONTemplate {
     # Path file_path
     # JSONData data
     + bool load_json()
-    + bool save_json()
+    + bool save_json(data: JSONData)
     + bool backup_json()
     + bool make_directory()
 }
