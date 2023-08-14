@@ -1,6 +1,7 @@
 """
 tests/conftest.py
 """
+import copy
 import json
 import os
 from typing import List, Union
@@ -145,7 +146,7 @@ def temp_json_data() -> dict:
 
 
 @pytest.fixture
-def temp_json_file(temp_json_path, temp_json_data):
+def temp_json_file(temp_json_path: str, temp_json_data: dict):
     # Ensure the directory exists
     os.makedirs(os.path.dirname(temp_json_path), exist_ok=True)
 
@@ -171,6 +172,34 @@ def json_template_nested(
     return JSONTemplate(temp_json_nested_path, temp_json_data)
 
 
+@pytest.fixture
+def temp_json_list(
+    temp_json_path,
+    messages: List[ChatModelChatCompletion],
+):
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(temp_json_path), exist_ok=True)
+
+    # Write the temp data to the file
+    with open(temp_json_path, "w") as f:
+        json.dump(messages, f)
+
+    yield temp_json_path
+
+    # Cleanup the temporary file after the test
+    os.remove(temp_json_path)
+
+
+@pytest.fixture(scope="function")
+def list_template(
+    temp_json_path: str,
+    messages: List[ChatModelChatCompletion],
+) -> ListTemplate:
+    # NOTE: There is a bug that causes unintended side-effects in `messages`.
+    # `messages` is copied to ensure consistency across tests.
+    return ListTemplate(temp_json_path, copy.deepcopy(messages))
+
+
 @pytest.fixture(scope="module")
 def config_file_path() -> str:
     if os.path.exists("config.json"):
@@ -186,11 +215,6 @@ def config_json(config_file_path: str) -> dict:
 @pytest.fixture(scope="module")
 def map_template(config_json: dict) -> MappingTemplate:
     return MappingTemplate(config_json)
-
-
-@pytest.fixture(scope="module")
-def list_template(messages: List[ChatModelChatCompletion]) -> ListTemplate:
-    return ListTemplate(messages)
 
 
 @pytest.fixture(scope="module")
