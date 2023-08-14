@@ -1,22 +1,32 @@
 """
 pygptprompt/pattern/mapping.py
 """
-from typing import Any, Dict, Optional
+from typing import Any, Optional
+
+from pygptprompt.pattern.json import JSONMap, JSONTemplate
 
 
-class MappingTemplate:
+class MappingTemplate(JSONTemplate):
     """
     A template class for creating and managing a mapping of key-value pairs.
 
     Args:
-        initial_data (Optional[Dict[str, Any]]): Optional initial data to populate the mapping.
+        initial_data (Optional[JSONMap]): Optional initial data to populate the mapping.
 
     Attributes:
-        _data (Dict[str, Any]): The underlying data structure for storing the key-value pairs.
+        _file_path (Path): The file path of the JSON file.
+        _data (JSONMap): The underlying data structure for storing the key-value pairs.
     """
 
-    def __init__(self, initial_data: Optional[Dict[str, Any]] = None):
-        self._data = initial_data if initial_data is not None else {}
+    def __init__(self, file_path: str, initial_data: Optional[JSONMap] = None):
+        """
+        Initialize a MappingTemplate instance.
+
+        Args:
+            file_path (str): The path to the JSON file that stores the list.
+            initial_data (Optional[JSONMap]): Optional initial data to populate the map.
+        """
+        super(MappingTemplate, self).__init__(file_path, initial_data)
 
     @property
     def keys(self) -> list[str]:
@@ -29,28 +39,14 @@ class MappingTemplate:
         return list(self._data.keys())
 
     @property
-    def data(self) -> Dict[str, Any]:
+    def data(self) -> JSONMap:
         """
         Get the underlying data structure of the mapping.
 
         Returns:
-            Dict[str, Any]: The underlying data structure.
+            JSONMap: The underlying data structure.
         """
         return self._data
-
-    def observe(self, data: Dict[str, Any]) -> None:
-        """
-        Update the underlying data structure with new data.
-
-        This method updates the internal data structure. If any callbacks are registered that rely on the updated data, they must be designed to handle the data structure defined by this method.
-
-        Parameters:
-            data (Dict[str, Any]): The new data to update the mapping with.
-
-        Returns:
-            None
-        """
-        self._data = data
 
     def create(self, key: str, value: Any) -> bool:
         """

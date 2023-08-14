@@ -1,7 +1,6 @@
 """
 tests/conftest.py
 """
-import copy
 import json
 import os
 from typing import List, Union
@@ -211,8 +210,31 @@ def config_json(config_file_path: str) -> dict:
 
 
 @pytest.fixture(scope="module")
-def map_template(config_json: dict) -> MappingTemplate:
-    return MappingTemplate(config_json)
+def temp_map_data() -> dict:
+    return {"key1": "value1", "nested": {"key2": "value2"}}
+
+
+@pytest.fixture
+def temp_json_map(temp_json_path: str, temp_map_data: dict):
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(temp_json_path), exist_ok=True)
+
+    # Write the temp data to the file
+    with open(temp_json_path, "w") as f:
+        json.dump(messages, f)
+
+    yield temp_json_path
+
+    # Cleanup the temporary file after the test
+    os.remove(temp_json_path)
+
+
+@pytest.fixture(scope="module")
+def map_template(
+    temp_json_path: str,
+    temp_map_data: dict,
+) -> MappingTemplate:
+    return MappingTemplate(temp_json_path, temp_map_data)
 
 
 @pytest.fixture(scope="module")
