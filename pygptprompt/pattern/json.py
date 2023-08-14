@@ -18,7 +18,7 @@ from pygptprompt import logging
 # List[Dict[str, Any]] uses a data type value of Any,
 # enforcing generic types, to allow for portability.
 JSONMap = Dict[str, Any]
-JSONList = List[Dict[str, Any]]
+JSONList = List[JSONMap]
 JSONData = Union[JSONMap, JSONList]
 
 EncodeError = (

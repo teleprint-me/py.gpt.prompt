@@ -3,7 +3,7 @@
 
 class JSONTemplate {
     // JSONMap = Dict[str, Any]
-    // JSONList = List[Dict[str, Any]]
+    // JSONList = List[JSONMap]
     // JSONData = Union[JSONMap, JSONList]
     - Path _file_path
     - Optional[JSONData] _data
@@ -17,14 +17,16 @@ class JSONTemplate {
 }
 
 class ListTemplate extends JSONTemplate {
-    // JSONList = List[Dict[str, Any]]
+    // JSONMap = Dict[str, Any]
+    // JSONList = List[JSONMap]
     + ListTemplate(file_path: str, initial_data: Optional[JSONList])
     # int length
-    + None append(item: Dict[str, Any])
-    + bool insert(index: int, item: Dict[str, Any])
-    + Optional[Dict[str, Any]] get(index: int)
-    + bool update(index: int, item: Dict[str, Any])
+    + None append(item: JSONMap)
+    + bool insert(index: int, item: JSONMap)
+    + Optional[JSONMap] get(index: int)
+    + bool update(index: int, item: JSONMap)
     + bool remove(index: int)
+    + Optional[JSONMap] pop(index: int)
     + None clear()
 }
 
