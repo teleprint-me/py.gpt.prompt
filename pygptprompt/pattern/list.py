@@ -24,7 +24,7 @@ class ListTemplate(JSONTemplate):
             file_path (str): The path to the JSON file that stores the list.
             initial_data (Optional[JSONList]): Optional initial data to populate the list.
         """
-        super(ListTemplate, self).__init__(file_path, initial_data)
+        super(ListTemplate, self).__init__(file_path, deepcopy(initial_data))
 
     @property
     def length(self) -> int:

@@ -195,9 +195,7 @@ def list_template(
     temp_json_path: str,
     messages: List[ChatModelChatCompletion],
 ) -> ListTemplate:
-    # NOTE: There is a bug that causes unintended side-effects in `messages`.
-    # `messages` is copied to ensure consistency across tests.
-    return ListTemplate(temp_json_path, copy.deepcopy(messages))
+    return ListTemplate(temp_json_path, messages)
 
 
 @pytest.fixture(scope="module")
