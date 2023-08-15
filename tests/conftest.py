@@ -198,18 +198,6 @@ def list_template(
 
 
 @pytest.fixture(scope="module")
-def config_file_path() -> str:
-    if os.path.exists("config.json"):
-        return "config.json"
-    return "tests/config.sample.json"
-
-
-@pytest.fixture(scope="module")
-def config_json(config_file_path: str) -> dict:
-    return read_json(config_file_path)
-
-
-@pytest.fixture(scope="module")
 def temp_map_data() -> dict:
     return {"key1": "value1", "nested": {"key2": "value2"}}
 
@@ -235,6 +223,13 @@ def map_template(
     temp_map_data: dict,
 ) -> MappingTemplate:
     return MappingTemplate(temp_json_path, temp_map_data)
+
+
+@pytest.fixture(scope="module")
+def config_file_path() -> str:
+    if os.path.exists("config.json"):
+        return "config.json"
+    return "tests/config.sample.json"
 
 
 @pytest.fixture(scope="module")
