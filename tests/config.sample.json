@@ -4,7 +4,8 @@
     "path": {
       "local": "${HOME}/.local/share/pygptprompt",
       "cache": "${HOME}/.cache/pygptprompt",
-      "config": "${HOME}/.config/pygptprompt"
+      "config": "${HOME}/.config/pygptprompt",
+      "test": "/tmp"
     },
     "access": {
       "confirm": false,
