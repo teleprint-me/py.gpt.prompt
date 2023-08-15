@@ -4,8 +4,8 @@
 ' docs/diagrams/plantuml/configuration_manager.puml
 
 class MetaSingleton extends Type {
-    # Dict[Type[object], object] _instances
-    # Dict[Type[object], object] __call__(cls, *args, **kwargs)
+    # Dict[Type, object] _instances
+    # Dict[Type, object] __call__(cls, *args, **kwargs)
     # MetaSingleton()
 }
 
@@ -14,15 +14,17 @@ class Singleton extends MetaSingleton {
 }
 
 class ConfigurationManager extends Singleton {
-    - MappingTemplate map_template
-    + ConfigurationManager(file_path: str, initial_data: Optional[dict[str, Any]])
+    // JSONMap = Dict[str, Any]
+    - MappingTemplate _map_template
+    + ConfigurationManager(file_path: str, initial_data: Optional[JSONMap])
     + bool load()
     + bool save()
     + bool backup()
     + Any get_value(key: str, default: Optional[Any])
     + bool set_value(key: str, value: Any)
-    + str get_env_variable(env_var: str)
+    + Optional[str] evaluate_path(key: str, default: Optional[Any])
+    + str get_environment(variable: str)
 }
 
-MappingTemplate o--> ConfigurationManager::map_template : <<MappingTemplate>>
+MappingTemplate o--> ConfigurationManager::map_template
 @enduml
