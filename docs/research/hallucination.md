@@ -1,53 +1,53 @@
 ### Introduction
 
-In AI, the complexities of model behavior require an intricate understanding of
-certain terms and concepts. This documentation explores key terms, starting with
-"hallucinations" and "perplexity," unraveling why "imputation" is involved, and
-ending with the concept of "stop-gap." Together, these terms help elucidate the
-complexities of AI models.
+Hallucinations within AI models represent instances where the model's outputs
+are not aligned with the input data. This documentation explores why these
+hallucinations occur and the connection between various terms, such as
+"perplexity," "imputation," and "stop-gap," in an attempt to elucidate potential
+expressions, interpretations, and misunderstandings.
 
 ### Hallucinations and Perplexity
 
 #### Hallucination
 
-In AI, "hallucination" metaphorically refers to a model generating outputs not
-grounded in input data. It vividly conveys the unexpected nature but can be
-imprecise.
+In AI, "hallucination" is when a model generates outputs not grounded in input
+data. This may lead to erroneous output and is a complex issue to understand and
+communicate.
 
 #### Perplexity
 
-Perplexity measures how well a probability model predicts a sample, defined as:
+Perplexity is a measure to evaluate how well a probability model predicts a
+sample. In the context of hallucinations, it's an essential concept:
 
 \[ \text{Perplexity}(x) = 2^{-\frac{1}{N}\sum\_{i=1}^{N} \log_2 p(x_i)} \]
 
-In language models, it measures the alignment of the predicted probability
-distribution with the actual distribution. A lower perplexity often correlates
-with better performance.
+A higher perplexity might indicate a greater likelihood of hallucinations, where
+the model's predictions diverge from the true data distribution.
 
 ### Imputation
 
-Imputation, the process of filling missing data with substitutes, is involved in
-models to address gaps or inconsistencies. However, it can lead to
-misappropriation, reflecting flaws in the method.
+Imputation is the process of filling missing data, often used in AI. It can
+sometimes lead to hallucinations due to misalignment of probability
+distribution. This misalignment is a significant source of the erroneous output
+in models.
 
-### Stop-Gap
+### Stop-Gap: An Emergent Process
 
-A "stop-gap" represents a temporary solution to the complexities and
-inconsistencies that may arise from imputation. It captures the intention to
-solve an immediate problem but may imply design or intentionality.
+The term "stop-gap" is used to explain the phenomenon of attempting to
+temporarily solve or mask the problem of hallucinations. It may be an emergent
+process caused by imputation, where incorrect filling of data leads to
+misalignment in the probability distribution.
 
-### Comparison and Conclusion
+### Conclusion
 
-- "Hallucination" and "Perplexity" set the stage, highlighting unexpected
-  behaviors and statistical evaluation.
-- "Imputation" offers insight into the handling of gaps and potential
-  inaccuracies.
-- "Stop-gap" concludes the exploration, emphasizing the temporary solutions.
+- "Hallucination" and "Perplexity" explain the phenomenon of unexpected outputs
+  and how statistical evaluation can detect them.
+- "Imputation" sheds light on a mechanism that may lead to hallucinations.
+- "Stop-gap" encapsulates the temporary solutions or patches used to address
+  these issues.
 
-Your preference for "stop-gap" indicates a desire for a term that clarifies
-what's happening without relying on metaphor. By threading these terms together,
-we enhance communication within the field and enable a deeper understanding of
-the complexities of AI models.
-
-These insights align with your inclination for clarity, reflecting your
-background and values in mathematics, programming, and software development.
+The exploration of these terms is a crucial step in improving the communication
+about why and how AI models may produce erroneous outputs. By unraveling the
+connections and implications of these terms, we've made strides towards a
+clearer understanding of the complexities of AI models and their behavior,
+particularly in relation to probability distribution.
