@@ -87,12 +87,7 @@ hallucinations.
 
 Hallucinations refer to instances where the model generates outputs that are not
 grounded in the input data. The concept of a stop-gap seeks to explain this
-phenomenon by drawing a connection to the process of imputation. Certainly,
-Austin! Regression and stochastic regression are essential aspects of
-imputation, and they are indeed key to understanding the phenomenon you're
-describing. Incorporating noise in the context of stochastic regression adds
-another layer of complexity and can lead to the hallucinations you've mentioned.
-Here's how you can expand on that part of the document:
+phenomenon by drawing a connection to the process of imputation.
 
 ### Imputation's Role in AI Hallucinations: Regression and Stochastic Regression
 
