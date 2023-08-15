@@ -2,113 +2,126 @@
 pygptprompt/config/manager.py
 """
 import os
-from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import dotenv
 
-from pygptprompt.config.path import evaluate_path
-from pygptprompt.pattern.json import JSONTemplate
+from pygptprompt.pattern.json import JSONMap
 from pygptprompt.pattern.mapping import MappingTemplate
 from pygptprompt.pattern.singleton import Singleton
 
 
 class ConfigurationManager(Singleton):
-    """Singleton class for managing configuration data using JSON files.
-
-    Args:
-        file_path (str): The path to the configuration JSON file.
-        initial_data (Optional[Dict[str, Any]], optional): Initial configuration data. Defaults to None.
-
-    Attributes:
-        json_template (JSONInterface): Interface for interacting with the JSON file.
-        map_template (MappingInterface): Interface for managing mapping data.
-        file_path (Path): The pathlib.Path object representing the configuration file path.
-
-    Methods:
-        load() -> dict[str, Any]: Load configuration data from the JSON file.
-        save() -> None: Save configuration data to the JSON file.
-        backup() -> None: Create a backup copy of the JSON file.
-        get_value(key: str, default: Optional[Any] = None) -> Any: Retrieve a configuration value.
-        set_value(key: str, value: Any) -> bool: Set a configuration value.
-        get_env_variable(env_var: str = "OPENAI_API_KEY") -> str: Get an environment variable value.
+    """
+    Singleton class for managing configuration data.
     """
 
-    def __init__(self, file_path: str, initial_data: Optional[Dict[str, Any]] = None):
-        """Initialize the ConfigurationManager.
+    def __init__(self, file_path: str, initial_data: Optional[JSONMap] = None):
+        """
+        Initialize the ConfigurationManager instance.
 
         Args:
-            file_path (str): The path to the configuration JSON file.
-            initial_data (Optional[Dict[str, Any]], optional): Initial configuration data. Defaults to None.
+            file_path (str): The path to the configuration file.
+            initial_data (Optional[JSONMap], optional): Initial configuration data. Defaults to None.
         """
-        super().__init__(file_path, initial_data)
-        self.file_path = Path(file_path)
-        self.json_template = JSONTemplate(file_path=file_path)
-        self.mapping_template = MappingTemplate(initial_data=initial_data)
-        self.json_template.register(self.mapping_template.observe)
+        super(ConfigurationManager, self).__init__()
 
-    def load(self) -> dict[str, Any]:
-        """Load configuration data from the JSON file.
+        # Initialize the Configuration map
+        self._map_template = MappingTemplate(
+            file_path=file_path, initial_data=initial_data
+        )
+
+    def load(self) -> bool:
+        """
+        Load configuration data from the file.
 
         Returns:
-            dict[str, Any]: The loaded configuration data.
+            bool: True if the data was loaded successfully, False otherwise.
         """
-        return self.json_template.load_json()
+        return self._map_template.load_json()
 
-    def save(self) -> None:
-        """Save configuration data to the JSON file."""
-        self.json_template.save_json(self.map_template.data)
+    def save(self) -> bool:
+        """
+        Save configuration data to the file.
 
-    def backup(self) -> None:
-        """Create a backup copy of the JSON file."""
-        self.json_template.backup_json()
+        Returns:
+            bool: True if the data was saved successfully, False otherwise.
+        """
+        return self._map_template.save_json(self._map_template.data)
+
+    def backup(self) -> bool:
+        """
+        Create a backup of the configuration file.
+
+        Returns:
+            bool: True if the backup was created successfully, False otherwise.
+        """
+        return self._map_template.backup_json()
 
     def get_value(self, key: str, default: Optional[Any] = None) -> Any:
-        """Retrieve a configuration value.
+        """
+        Get a configuration value based on the provided key.
 
         Args:
-            key (str): The configuration key.
-            default (Optional[Any], optional): Default value if the key is not found. Defaults to None.
+            key (str): The key to retrieve the value for.
+            default (Optional[Any], optional): The default value to return if the key is not found. Defaults to None.
 
         Returns:
-            Any: The retrieved configuration value or the default value if not found.
+            Any: The configuration value corresponding to the key, or the default value if not found.
         """
         keys = key.split(".")
-        return self.map_template.read_nested(*keys) or default
+        return self._map_template.read_nested(*keys) or default
 
     def set_value(self, key: str, value: Any) -> bool:
-        """Set a configuration value.
+        """
+        Set a configuration value for the provided key.
 
         Args:
-            key (str): The configuration key.
+            key (str): The key to set the value for.
             value (Any): The value to set.
 
         Returns:
-            bool: True if the value was successfully set, False otherwise.
+            bool: True if the value was set successfully, False otherwise.
         """
         keys = key.split(".")
-        return self.map_template.update_nested(value, *keys)
+        return self._map_template.update_nested(value, *keys)
 
-    def get_env_variable(self, env_var: str = "OPENAI_API_KEY") -> str:
-        """Get an environment variable value.
+    def evaluate_path(self, key: str, default: Optional[Any] = None) -> Optional[str]:
+        """
+        Evaluate a configuration path based on the provided key.
 
         Args:
-            env_var (str, optional): The name of the environment variable. Defaults to "OPENAI_API_KEY".
+            key (str): The key to retrieve the path for.
+            default (Optional[Any], optional): The default value to return if the path is not found. Defaults to None.
+
+        Returns:
+            Optional[str]: The evaluated path, or the default value if not found.
+        """
+        path = self.get_value(key, default)
+        if path is None:
+            return None
+        if not isinstance(path, str):
+            raise TypeError(f"Expected a string for path but got {type(path).__name__}")
+        return os.path.expanduser(os.path.expandvars(path))
+
+    def get_environment(self, variable: str = "OPENAI_API_KEY") -> str:
+        """
+        Get the value of an environment variable.
+
+        Args:
+            variable (str, optional): The name of the environment variable. Defaults to "OPENAI_API_KEY".
 
         Returns:
             str: The value of the environment variable.
-
-        Raises:
-            ValueError: If the environment variable is not found or cannot be loaded.
         """
-        env = evaluate_path(self.get_value("app.path.env", ".env"))
+        env_path = self.evaluate_path("app.path.env", ".env")
 
-        if not dotenv.load_dotenv(env):
+        if not dotenv.load_dotenv(env_path):
             raise ValueError("EnvironmentError: Failed to load `.env`")
 
-        value = os.getenv(env_var) or ""
+        value = os.getenv(variable) or ""
 
         if not value:
-            raise ValueError(f"EnvironmentError: Failed to load `{env_var}`")
+            raise ValueError(f"EnvironmentError: Failed to find `{variable}`")
 
         return value
