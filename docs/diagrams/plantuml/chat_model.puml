@@ -4,16 +4,16 @@
 ' docs/diagrams/plantuml/chat_model.puml
 
 class ConfigurationManager extends Singleton {
-    - Path file_path
-    - JSONTemplate json_template
-    - MappingTemplate map_template
-    + ConfigurationManager(file_path: str, initial_data: Optional[dict[str, Any]])
+    // JSONMap = Dict[str, Any]
+    - MappingTemplate _map_template
+    + ConfigurationManager(file_path: str, initial_data: Optional[JSONMap])
     + bool load()
     + bool save()
     + bool backup()
     + Any get_value(key: str, default: Optional[Any])
     + bool set_value(key: str, value: Any)
-    + str get_env_variable(env_var: str)
+    + Optional[str] evaluate_path(key: str, default: Optional[Any])
+    + str get_environment(variable: str)
 }
 
 class ChatCompletionMessage {
@@ -31,22 +31,28 @@ class ChatModelChatCompletion extends ChatCompletionMessage {
 }
 
 abstract class ChatModel {
+    // ChatModelVector = Union[List[int], List[float]]
+    // ChatModelEncoding = ChatModelVector
+    // ChatModelEmbedding = List[ChatModelVector]
     - ConfigurationManager _config
     + ChatModel(config: ConfigurationManager)
-    + get_completion(prompt: str): str ' ChatModelCompletion
-    + get_chat_completion(messages: List[ChatModelChatCompletion]): ChatModelChatCompletion
-    + get_embedding(input: Union[str, List[str]]): List[List[float]] ' ChatModelEmbedding
-    + get_encoding(text: str): List[int] ' ChatModelEncoding
+    + ChatModelTextCompletion get_completion(prompt: str)
+    + ChatModelChatCompletion get_chat_completion(messages: List[ChatModelChatCompletion])
+    + ChatModelEmbedding get_embedding(input: Union[str, List[str]])
+    + ChatModelEncoding get_encoding(text: str)
 }
 
 class ChatModelFactory{
+    // Provider is one of: openai, llama, llama_cpp, etc...
     - ConfigurationManager _config
-    - Dict[Literal, Callable] _provider_map
+    - Dict[str, Callable] _provider_map
     + ChatModelFactory(config: ConfigurationManager):
     + create_model(provider: str) ChatModel
 }
 
-ChatModel::config o--> MappingTemplate : <<ConfigurationManager>>
-ChatModel --> ChatModelChatCompletion : uses
+ChatModelFactory --> ChatModel : <<creates>>
+ChatModelFactory::_config o--> ConfigurationManager
+ChatModel::_config o--> ConfigurationManager
+ChatModel --> ChatModelChatCompletion : <<uses>>
 
 @enduml
