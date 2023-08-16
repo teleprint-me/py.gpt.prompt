@@ -37,7 +37,7 @@ In the realm of AI and machine learning, perplexity is a measure used to
 evaluate how well a probability model predicts a sample. It's an essential
 concept in understanding hallucinations:
 
-\[ \text{Perplexity}(x) = 2^{-\frac{1}{N}\sum\_{i=1}^{N} \log_2 p(x_i)} \]
+Perplexity(x) = 2^(-1/N * sum(i=1 to N) log2(p(x_i)))
 
 A higher perplexity value might indicate a greater likelihood of hallucinations,
 where the model's predictions diverge from the true data distribution.
