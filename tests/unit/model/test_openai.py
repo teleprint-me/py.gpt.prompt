@@ -7,8 +7,8 @@ from typing import List
 import pytest
 
 from pygptprompt.model.openai import OpenAIModel
-from pygptprompt.pattern.model import ChatModel
-from pygptprompt.pattern.types import (
+from pygptprompt.pattern.model import (
+    ChatModel,
     ChatModelChatCompletion,
     ChatModelEmbedding,
     ChatModelEncoding,

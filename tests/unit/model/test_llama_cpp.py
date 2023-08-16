@@ -4,8 +4,8 @@ tests/unit/model/test_llama_cpp.py
 import pytest
 
 from pygptprompt.model.llama_cpp import LlamaCppModel
-from pygptprompt.pattern.model import ChatModel
-from pygptprompt.pattern.types import (
+from pygptprompt.pattern.model import (
+    ChatModel,
     ChatModelChatCompletion,
     ChatModelEmbedding,
     ChatModelEncoding,
