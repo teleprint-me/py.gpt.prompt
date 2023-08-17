@@ -5,6 +5,9 @@ import sys
 from typing import List
 
 import click
+from chromadb import API, PersistentClient, Settings
+from chromadb.api.models.Collection import Collection
+from chromadb.api.types import Documents, QueryResult
 from llama_cpp import ChatCompletionMessage
 from prompt_toolkit import prompt as input
 
@@ -12,7 +15,7 @@ from pygptprompt import logging
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.factory import FunctionFactory
 from pygptprompt.model.factory import ChatModelFactory
-from pygptprompt.pattern.model import ChatModel
+from pygptprompt.pattern.model import ChatModel, ChatModelEmbeddingFunction
 
 
 @click.command()
@@ -43,7 +46,13 @@ from pygptprompt.pattern.model import ChatModel
     default="llama_cpp",
     help="Specify the model provider to use. Options are 'openai' for GPT models and 'llama_cpp' for Llama models.",
 )
-def main(config_path, prompt, chat, embed, provider):
+@click.option(
+    "--path_database",
+    type=click.STRING,
+    default="database",
+    help="The path the embeddings are written to.",
+)
+def main(config_path, prompt, chat, embed, provider, path_database):
     if not (bool(prompt) ^ chat):
         print(
             "Use either --prompt or --chat, but not both.",
@@ -51,11 +60,24 @@ def main(config_path, prompt, chat, embed, provider):
         )
         sys.exit(1)
 
+    session_name: str = "test"
+    collection_name: str = "test"
+
     config: ConfigurationManager = ConfigurationManager(config_path)
 
     function_factory = FunctionFactory(config)
     model_factory: ChatModelFactory = ChatModelFactory(config)
     chat_model: ChatModel = model_factory.create_model(provider)
+
+    embedding_function: ChatModelEmbeddingFunction = ChatModelEmbeddingFunction(
+        model=chat_model
+    )
+
+    # Uses PostHog library to collect telemetry
+    chroma_client: API = PersistentClient(
+        path=path_database,
+        settings=Settings(anonymized_telemetry=False),
+    )
 
     system_prompt = ChatCompletionMessage(
         role=config.get_value(f"{provider}.system_prompt.role"),
