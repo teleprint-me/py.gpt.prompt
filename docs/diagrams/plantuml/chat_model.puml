@@ -47,12 +47,30 @@ class ChatModelFactory {
     - ConfigurationManager _config
     - Dict[str, Callable] _provider_map
     + ChatModelFactory(config: ConfigurationManager):
-    + create_model(provider: str) ChatModel
+    + ChatModel create_model(provider: str)
+}
+
+class FunctionFactory {
+    - ConfigurationManager _config
+    - dict[str, Callable] _functions
+    - str _function_name
+    - dict[str, Any] _function_args
+    - Optional[Callable] _function
+    + FunctionFactory(config: ConfigurationManager)
+    + dict[str, Any] get_function_args(message: ChatModelChatCompletion)
+    + Optional[Callable] get_function(message: ChatModelChatCompletion)
+    + None register_function(function_name: str, function: Callable)
+    + Optional[ChatModelChatCompletion] execute_function(message: ChatModelChatCompletion)
+    + Optional[ChatModelChatCompletion] query_function(model: ChatModel, result: ChatModelChatCompletion, messages: List[ChatModelChatCompletion])
 }
 
 ChatModelFactory --> ChatModel : <<creates>>
 ChatModelFactory::_config o--> ConfigurationManager
+
 ChatModel::_config o--> ConfigurationManager
 ChatModel --> ChatModelChatCompletion : <<uses>>
 
+FunctionFactory::_config o--> ConfigurationManager
+FunctionFactory --> ChatModelChatCompletion : <<uses>>
+ChatModel --> FunctionFactory : <<uses>>
 @enduml
