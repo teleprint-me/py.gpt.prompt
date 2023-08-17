@@ -1,13 +1,42 @@
 @startuml ChatSession
 !theme blueprint
 
-abstract class JSONManager {
-    - JSONInterface json_interface
-    - MappingInterface map_interface
-    + JSONManager(file_path: str, initial_data: Optional[dict[str, Any]])
+class JSONTemplate {
+    // Template class for managing JSON sources
+    // JSONMap = Dict[str, Any]
+    // JSONList = List[JSONMap]
+    // JSONData = Union[JSONMap, JSONList]
+    + JSONTemplate(file_path: str, initial_data: Optional[JSONData])
+    # Path file_path
+    # JSONData data
+    + bool load_json()
+    + bool save_json(data: JSONData)
+    + bool backup_json()
+    + bool make_directory()
 }
 
-class ChatModelChatCompletion {
+class ListTemplate extends JSONTemplate {
+    // Template class for managing sequences of chat completions
+    // JSONMap = Dict[str, Any]
+    // JSONList = List[JSONMap]
+    + ListTemplate(file_path: str, initial_data: Optional[JSONList])
+    # int length
+    + None append(item: JSONMap)
+    + bool insert(index: int, item: JSONMap)
+    + Optional[JSONMap] get(index: int)
+    + bool update(index: int, item: JSONMap)
+    + bool remove(index: int)
+    + Optional[JSONMap] pop(index: int)
+    + None clear()
+}
+
+class ChatCompletionMessage extends TypeDict {
+    + role: Literal["assistant", "user", "system"]
+    + content: str
+    + user: NotRequired[str]
+}
+
+class ChatModelChatCompletion extends ChatCompletionMessage {
     + role: Literal["assistant", "user", "system", "function"]
     + content: NotRequired[str]
     + function_call: NotRequired[str]
@@ -15,19 +44,27 @@ class ChatModelChatCompletion {
     + user: NotRequired[str]
 }
 
-class ContextWindowManager extends JSONManager {
-    - MAX_SEQ_LENGTH: int
-    + append_message(message: ChatModelChatCompletion)
-    + pop_oldest_message()
-    + retrieve_current_window(): List[ChatModelChatCompletion]
-    + clear_window()
+class ContextWindowManager {
+    // Contains the current contextual sequence of chat completions
+    - int _max_length
+    - ListTemplate _list_template
+    + ContextWindowManager(file_path: str, initial_data: Optional[JSONList])
+    # int max_length
+    # int length
+    # List[ChatModelChatCompletion] sequence
+    + None append(message: ChatModelChatCompletion)
+    + Optional[ChatModelChatCompletion] pop_initial_message()
+    + bool insert(index: int, message: ChatModelChatCompletion)
+    + bool remove(index: int)
+    + None clear()
 }
 
-class TranscriptManager extends JSONManager {
-    + append_message(message: ChatModelChatCompletion)
-    + retrieve_transcript(): List[ChatModelChatCompletion]
-    + remove_specific_entry(index: int)
-    + clear_transcript()
+class TranscriptManager {
+    // Contains complete and full records of every chat completion
+    - ListTemplate _list_template
+    + TranscriptManager(file_path: str, initial_data: Optional[JSONList])
+    + None append(message: ChatModelChatCompletion)
+    + List[ChatModelChatCompletion] sequence
 }
 
 class ChatSessionTokenManager {
@@ -46,6 +83,26 @@ class ChatSessionTokenManager {
     + is_overflow(new_message: ChatModelChatCompletion, messages: List[ChatModelChatCompletion]): bool
 }
 
+abstract class ChatModel {
+    // ChatModelVector = Union[List[int], List[float]]
+    // ChatModelEncoding = ChatModelVector
+    // ChatModelEmbedding = List[ChatModelVector]
+    - ConfigurationManager _config
+    + ChatModel(config: ConfigurationManager)
+    + ChatModelTextCompletion get_completion(prompt: str)
+    + ChatModelChatCompletion get_chat_completion(messages: List[ChatModelChatCompletion])
+    + ChatModelEmbedding get_embedding(input: Union[str, List[str]])
+    + ChatModelEncoding get_encoding(text: str)
+}
+
+class ChatModelFactory {
+    // Provider is one of: openai, llama, llama_cpp, etc...
+    - ConfigurationManager _config
+    - Dict[str, Callable] _provider_map
+    + ChatModelFactory(config: ConfigurationManager):
+    + create_model(provider: str) ChatModel
+}
+
 class ChatSession {
     - context_window: ContextWindowManager
     - transcript: TranscriptManager
@@ -57,10 +114,17 @@ class ChatSession {
     + clear_session()
 }
 
-ChatSession --> ChatModelChatCompletion : uses
-ChatSession --> ChatModel : uses
-ChatSession --> ContextWindowManager : uses
-ChatSession --> TranscriptManager : uses
-ChatSession --> ChatSessionTokenManager : uses
+
+ContextWindowManager::_list_template o--> ListTemplate : <<component>>
+TranscriptManager::_list_template o--> ListTemplate : <<component>>
+
+ChatSession --> ChatModelFactory : <<creates>>
+ChatModelFactory --> ChatModel : <<creates>>
+
+ChatSession --> ChatModelChatCompletion : <<uses>>
+ChatSession --> ChatModel : <<uses>>
+ChatSession --> ContextWindowManager : <<uses>>
+ChatSession --> TranscriptManager : <<uses>>
+ChatSession --> ChatSessionTokenManager : <<uses>>
 
 @enduml
