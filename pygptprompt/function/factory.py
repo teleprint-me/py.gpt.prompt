@@ -8,8 +8,7 @@ from typing import Any, Callable, List, Optional
 from pygptprompt import logging
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.weather import get_current_weather
-from pygptprompt.pattern.model import ChatModel
-from pygptprompt.pattern.types import ChatModelChatCompletion
+from pygptprompt.pattern.model import ChatModel, ChatModelChatCompletion
 
 
 class FunctionFactory:
