@@ -1,5 +1,8 @@
 """
 pygptprompt/model/openai.py
+
+"Embrace the journey of discovery and evolution in the world of software development, and remember that adaptability is key to staying resilient in the face of change."
+    - OpenAI's GPT-3.5
 """
 import sys
 from typing import Any, Dict, Iterator, List, Tuple, Union
@@ -38,7 +41,7 @@ class OpenAIModel(ChatModel):
             config (ConfigurationManager): The configuration manager instance.
         """
         self.config = config
-        openai.api_key = config.get_env_variable("OPENAI_API_KEY")
+        openai.api_key = config.get_environment()
 
     def _extract_content(self, delta: dict, content: str) -> str:
         """
