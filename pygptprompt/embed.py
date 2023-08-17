@@ -11,11 +11,10 @@ import click
 from chromadb import API, PersistentClient, Settings
 from chromadb.api.models.Collection import Collection
 from chromadb.api.types import Documents, QueryResult
-from chromadb.utils import embedding_functions
 
-from pygptprompt.api.factory import ChatModel, ChatModelFactory
 from pygptprompt.config.manager import ConfigurationManager
-from pygptprompt.database.function import ChatModelEmbeddingFunction
+from pygptprompt.model.factory import ChatModelFactory
+from pygptprompt.pattern.model import ChatModel, ChatModelEmbeddingFunction
 
 
 @click.command()
@@ -54,16 +53,13 @@ def main(
     embedding_function: ChatModelEmbeddingFunction = ChatModelEmbeddingFunction(
         chat_model=chat_model
     )
-    # Using model and types
-    # logging.info(f"Using Embedding Model: {embeddings_model}")
-    # logging.info(f"Using Device Type: {torch_device_type}")
-    # logging.info(f"Device Type is Triton: {torch_triton_type}")
 
     name: str = "my_collection"
 
     # Load documents and split them into chunks
     logging.info(f"Loading documents from {path_source}")
 
+    # NOTE: Imagine that documents are messages
     documents: Documents = [
         "This is the first synthetic document.",
         "Here is another synthetic document.",
@@ -71,6 +67,10 @@ def main(
     ]
 
     # Each document needs a unique ID
+    # NOTE: We can use the role as a part of the ID
+    # This will require something thoughtful to make
+    # each role reference unique. Maybe the position/index
+    # within the transcript?
     ids: list[str] = ["doc1", "doc2", "doc3"]
 
     # Uses PostHog library to collect telemetry
@@ -101,9 +101,7 @@ def main(
         print(f"Similarity Scores: {results['distances']}")
 
     logging.info(f"Loaded {len(documents)} documents from {path_source}")
-    # logging.info(f"Split into {len(texts)} chunks of text")
-
-    # logging.info("Embeddings persisted to Chroma database.")
+    logging.info("Embeddings persisted to Chroma database.")
 
 
 if __name__ == "__main__":
