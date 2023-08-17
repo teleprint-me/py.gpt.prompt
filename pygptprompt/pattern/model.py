@@ -19,7 +19,7 @@ class ChatCompletionMessage(TypedDict):
     Attributes:
         role (Literal["assistant", "user", "system"]): The role of the message.
         content (str): The content of the message.
-        user (Optional[str]): The user associated with the message (optional).
+        user (NotRequired[str]): The user associated with the message (optional).
     """
 
     role: Literal["assistant", "user", "system"]
@@ -37,9 +37,9 @@ class ChatModelChatCompletion(ChatCompletionMessage):
     Attributes:
         role (Literal["assistant", "user", "system", "function"]): The role of the message.
         content (str): The content of the message.
-        function_call (Optional[str]): The function call associated with the message (optional).
-        function_args (Optional[str]): The function arguments associated with the message (optional).
-        user (Optional[str]): The user associated with the message (optional).
+        function_call (NotRequired[str]): The function call associated with the message (optional).
+        function_args (NotRequired[str]): The function arguments associated with the message (optional).
+        user (NotRequired[str]): The user associated with the message (optional).
     """
 
     role: Literal["assistant", "user", "system", "function"]
