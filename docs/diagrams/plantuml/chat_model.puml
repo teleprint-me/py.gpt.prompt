@@ -42,7 +42,7 @@ abstract class ChatModel {
     + ChatModelEncoding get_encoding(text: str)
 }
 
-class ChatModelFactory{
+class ChatModelFactory {
     // Provider is one of: openai, llama, llama_cpp, etc...
     - ConfigurationManager _config
     - Dict[str, Callable] _provider_map
