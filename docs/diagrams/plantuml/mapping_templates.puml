@@ -5,29 +5,15 @@ class JSONTemplate {
     // JSONMap = Dict[str, Any]
     // JSONList = List[JSONMap]
     // JSONData = Union[JSONMap, JSONList]
-    - Path _file_path
-    - Optional[JSONData] _data
     + JSONTemplate(file_path: str, initial_data: Optional[JSONData])
+    - Path _file_path
     # Path file_path
+    - JSONData _data
     # JSONData data
     + bool load_json()
     + bool save_json(data: JSONData)
     + bool backup_json()
     + bool make_directory()
-}
-
-class ListTemplate extends JSONTemplate {
-    // JSONMap = Dict[str, Any]
-    // JSONList = List[JSONMap]
-    + ListTemplate(file_path: str, initial_data: Optional[JSONList])
-    # int length
-    + None append(item: JSONMap)
-    + bool insert(index: int, item: JSONMap)
-    + Optional[JSONMap] get(index: int)
-    + bool update(index: int, item: JSONMap)
-    + bool remove(index: int)
-    + Optional[JSONMap] pop(index: int)
-    + None clear()
 }
 
 class MappingTemplate extends JSONTemplate {
@@ -42,6 +28,20 @@ class MappingTemplate extends JSONTemplate {
     + bool update_nested(value: Any, *keys: str)
     + bool delete(key: str)
     + bool delete_nested(*keys: str)
+}
+
+class ListTemplate extends JSONTemplate {
+    // JSONMap = Dict[str, Any]
+    // JSONList = List[JSONMap]
+    + ListTemplate(file_path: str, initial_data: Optional[JSONList])
+    # int length
+    + None append(item: JSONMap)
+    + bool insert(index: int, item: JSONMap)
+    + Optional[JSONMap] get(index: int)
+    + bool update(index: int, item: JSONMap)
+    + bool remove(index: int)
+    + Optional[JSONMap] pop(index: int)
+    + None clear()
 }
 
 class ConfigurationManager
