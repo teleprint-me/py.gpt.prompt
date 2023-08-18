@@ -16,13 +16,7 @@ class ConfigurationManager extends Singleton {
     + str get_environment(variable: str)
 }
 
-class ChatCompletionMessage {
-    + role: Literal["assistant", "user", "system"]
-    + content: str
-    + user: NotRequired[str]
-}
-
-class ChatModelChatCompletion extends ChatCompletionMessage {
+class ChatCompletionMessage extends TypeDict {
     + role: Literal["assistant", "user", "system", "function"]
     + content: NotRequired[str]
     + function_call: NotRequired[str]
@@ -34,19 +28,30 @@ abstract class ChatModel {
     // ChatModelVector = Union[List[int], List[float]]
     // ChatModelEncoding = ChatModelVector
     // ChatModelEmbedding = List[ChatModelVector]
+    // ChatModelDocument = str
+    // ChatModelDocuments = List[ChatModelDocument]
+    // ChatModelTextCompletion = str
     - ConfigurationManager _config
     + ChatModel(config: ConfigurationManager)
     + ChatModelTextCompletion get_completion(prompt: str)
-    + ChatModelChatCompletion get_chat_completion(messages: List[ChatModelChatCompletion])
+    + ChatCompletionMessage get_chat_completion(messages: List[ChatCompletionMessage])
     + ChatModelEmbedding get_embedding(input: Union[str, List[str]])
     + ChatModelEncoding get_encoding(text: str)
+}
+
+abstract class EmbeddingFunction {
+    - ChatModelEmbedding __call__(texts: ChatModelDocuments)
+}
+
+class ChatModelEmbeddingFunction extends EmbeddingFunction {
+    + ChatModelEmbeddingFunction(model: ChatModel)
 }
 
 class ChatModelFactory {
     // Provider is one of: openai, llama, llama_cpp, etc...
     - ConfigurationManager _config
     - Dict[str, Callable] _provider_map
-    + ChatModelFactory(config: ConfigurationManager):
+    + ChatModelFactory(config: ConfigurationManager)
     + ChatModel create_model(provider: str)
 }
 
@@ -57,20 +62,24 @@ class FunctionFactory {
     - dict[str, Any] _function_args
     - Optional[Callable] _function
     + FunctionFactory(config: ConfigurationManager)
-    + dict[str, Any] get_function_args(message: ChatModelChatCompletion)
-    + Optional[Callable] get_function(message: ChatModelChatCompletion)
+    + dict[str, Any] get_function_args(message: ChatCompletionMessage)
+    + Optional[Callable] get_function(message: ChatCompletionMessage)
     + None register_function(function_name: str, function: Callable)
-    + Optional[ChatModelChatCompletion] execute_function(message: ChatModelChatCompletion)
-    + Optional[ChatModelChatCompletion] query_function(model: ChatModel, result: ChatModelChatCompletion, messages: List[ChatModelChatCompletion])
+    + Optional[ChatCompletionMessage] execute_function(message: ChatCompletionMessage)
+    + Optional[ChatCompletionMessage] query_function(model: ChatModel, result: ChatCompletionMessage, messages: List[ChatCompletionMessage])
 }
 
-ChatModelFactory --> ChatModel : <<creates>>
-ChatModelFactory::_config o--> ConfigurationManager
+ChatModelFactory --> ChatModel : "creates"
+ChatModelFactory *-- ConfigurationManager
 
-ChatModel::_config o--> ConfigurationManager
-ChatModel --> ChatModelChatCompletion : <<uses>>
+ChatModel *-- ConfigurationManager
+ChatModel --> ChatCompletionMessage : "uses"
+' note left of ChatModel: Maximum token limit in sequence is model-dependent. Refer to model documentation for specifics.
 
-FunctionFactory::_config o--> ConfigurationManager
-FunctionFactory --> ChatModelChatCompletion : <<uses>>
-ChatModel --> FunctionFactory : <<uses>>
+FunctionFactory *-- ConfigurationManager
+FunctionFactory *-- Callable
+FunctionFactory --> ChatCompletionMessage : "uses"
+FunctionFactory <-- ChatModel : "uses"
+
+ChatModelEmbeddingFunction --> ChatModel : "uses"
 @enduml
