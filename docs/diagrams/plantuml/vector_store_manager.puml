@@ -1,46 +1,136 @@
 @startuml VectorStoreManager
 !theme blueprint
 
-abstract class JSONManager {
-    - JSONInterface json_interface
-    - MappingInterface map_interface
-    + JSONManager(file_path: str, initial_data: Optional[dict[str, Any]])
+class JSONTemplate {
+    ' ... attributes and methods ...
 }
 
-class ContextWindowManager extends JSONManager {
-    - MAX_SEQ_LENGTH: int
-    + append_message(message: ChatModelChatCompletion)
-    + pop_oldest_message()
-    + retrieve_current_window(): List[ChatModelChatCompletion]
-    + clear_window()
+class MappingTemplate extends JSONTemplate {
+    ' ... attributes and methods ...
 }
 
-class TranscriptManager extends JSONManager {
-    + append_message(message: ChatModelChatCompletion)
-    + retrieve_transcript(): List[ChatModelChatCompletion]
-    + remove_specific_entry(index: int)
-    + clear_transcript()
+class ListTemplate extends JSONTemplate {
+    // Template class for managing sequences of chat completions
+    // JSONMap = Dict[str, Any]
+    // JSONList = List[JSONMap]
+    + ListTemplate(file_path: str, initial_data: Optional[JSONList])
+    # int length
+    + None append(item: JSONMap)
+    + bool insert(index: int, item: JSONMap)
+    + Optional[JSONMap] get(index: int)
+    + bool update(index: int, item: JSONMap)
+    + bool remove(index: int)
+    + Optional[JSONMap] pop(index: int)
+    + None clear()
+}
+
+class ConfigurationManager extends Singleton {
+    - MappingTemplate _map_template
+    + ConfigurationManager(file_path: str, initial_data: Optional[JSONMap])
+    ' ... other methods ...
+}
+
+class ChatCompletionMessage extends TypeDict {
+    + role: Literal["assistant", "user", "system", "function"]
+    + content: NotRequired[str]
+    + function_call: NotRequired[str]
+    + function_args: NotRequired[str]
+    + user: NotRequired[str]
+}
+
+class ContextWindowManager {
+    // Contains the current contextual sequence of chat completions
+    - int _max_length
+    - ListTemplate _list_template
+    + ContextWindowManager(file_path: str, initial_data: Optional[JSONList])
+    # int max_length
+    # int length
+    # List[ChatCompletionMessage] sequence
+    + None append(message: ChatCompletionMessage)
+    + Optional[ChatCompletionMessage] pop_initial_message()
+    + bool insert(index: int, message: ChatCompletionMessage)
+    + bool remove(index: int)
+    + None clear()
+}
+
+class ChatSessionTokenManager {
+    - str provider
+    - ConfigurationManager config
+    - ChatModel model
+    + float reserve
+    + int offset
+    + int max_length
+    + int max_tokens
+    + int upper_bound
+    + int reserved_upper_bound
+    + int get_sequence_length(text: str)
+    + int get_message_length(message: ChatModelChatCompletion)
+    + int get_total_message_length(messages: List[ChatModelChatCompletion])
+    + bool is_overflow(new_message: ChatModelChatCompletion, messages: List[ChatModelChatCompletion])
+}
+
+class TranscriptManager {
+    // Contains complete and full records of every chat completion
+    - ListTemplate _list_template
+    + TranscriptManager(file_path: str, initial_data: Optional[JSONList])
+    + None append(message: ChatCompletionMessage)
+    + List[ChatCompletionMessage] sequence
+}
+
+abstract EmbeddingFunction extends Protocol {
+    - ChatModelEmbedding __call__(texts: ChatModelDocuments)
+}
+
+class ChatModelEmbeddingFunction extends EmbeddingFunction {
+    + ChatModelEmbeddingFunction(model: ChatModel)
+}
+
+' Added classes related to ChromaDB interaction
+class PersistentClient {
+    + create_collection(name: str, embedding_function: EmbeddingFunction)
+    + get_collection(name: str, embedding_function: EmbeddingFunction)
+}
+
+class Collection {
+    + add(documents: Documents, ids: list[str])
+    + query(query_texts: list[str], n_results: int)
 }
 
 class VectorStoreManager {
-    - chroma_client: PersistentClient
-    - embedding_function: ChatModelEmbeddingFunction
-    - collection_name: str
-    - collection: Collection
-    - config: ConfigurationManager
+    - PersistentClient chroma_client
+    - ChatModelEmbeddingFunction embedding_function
+    - str collection_name
+    - Collection collection
+    - ConfigurationManager config
     + __init__(path_database: str, chat_model: ChatModel, config_path: str)
     + store_message(message: str, message_id: str)
-    + query_messages(query_text: str, n_results: int): QueryResult
+    + QueryResult query_messages(query_text: str, n_results: int)
 }
 
-VectorStoreManager --> PersistentClient
-VectorStoreManager --> ChatModelEmbeddingFunction
-VectorStoreManager --> Collection
-VectorStoreManager --> ConfigurationManager : uses >
+' Relationships
+ContextWindowManager --> ChatCompletionMessage : <<uses>>
+TranscriptManager --> ChatCompletionMessage : <<uses>>
+ChatSessionTokenManager --> ChatCompletionMessage : <<uses>>
+ContextWindowManager --> ChatSessionTokenManager : <<uses>>
 
-ConfigurationManager <|-- JSONManager
+ContextWindowManager::_list_template o--> ListTemplate : <<component>>
+TranscriptManager::_list_template o--> ListTemplate : <<component>>
+
+VectorStoreManager --> ConfigurationManager : <<uses>> ' Configuration management
+VectorStoreManager --> PersistentClient : <<uses>> ' Uses to create and get collections
+VectorStoreManager --> ChatModelEmbeddingFunction : <<uses>> ' Embedding function
+VectorStoreManager --> Collection : <<uses>> ' Interacts with a specific collection
+
+ConfigurationManager --> MappingTemplate : <<component>>
+
 ContextWindowManager -> TranscriptManager : Sends messages
 ContextWindowManager -> VectorStoreManager : Sends dequeued messages
 TranscriptManager -> VectorStoreManager : Optional: Interacts with dequeued messages
 
+ChatModelEmbeddingFunction ..> EmbeddingFunction : <<extends>>
+VectorStoreManager --> ChatModelEmbeddingFunction : <<uses>> ' Uses to create embeddings
+VectorStoreManager --> PersistentClient : <<uses>> ' Uses to interact with ChromaDB
+VectorStoreManager --> Collection : <<uses>> ' Adds and queries embeddings to/from collection
+
+MappingTemplate o--> ConfigurationManager::map_template
 @enduml
