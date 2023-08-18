@@ -36,7 +36,7 @@ from typing import List, Union
 from pygptprompt.processor.image import ImageProcessor
 from pygptprompt.processor.pdf import PDFProcessor
 
-__version__ = "0.0.12"
+__version__ = "0.0.20"
 
 # Set logging configuration
 # NOTE: Can be overridden on a script-by-script basis
