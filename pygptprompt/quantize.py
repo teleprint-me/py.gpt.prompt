@@ -42,6 +42,23 @@ def create_output_path(input_path, q_type):
     return os.path.join(output_path, output_model)
 
 
+def validate_input_directory(model_input_path):
+    required_files = [
+        "checklist.chk",
+        "tokenizer_checklist.chk",
+        "tokenizer.model",
+        "consolidated.00.pth",
+        "params.json",
+    ]
+    with os.scandir(model_input_path) as entries:
+        files = [entry.name for entry in entries if entry.is_file()]
+        for required_file in required_files:
+            if required_file not in files:
+                raise RuntimeError(
+                    f"Missing required file {required_file} in input directory ({model_input_path})"
+                )
+
+
 @click.command()
 @click.argument(
     "model_input_path",
@@ -64,6 +81,13 @@ def create_output_path(input_path, q_type):
     help="The type of quantization to apply to the model. Quantization reduces the model size by representing weights in lower bit widths. Default is 'q4_0'.",
 )
 def main(model_input_path, model_output_path, q_type):
+    logging.info(f"Input model path: {model_input_path}")
+    logging.info(f"Quantization type: {q_type}")
+
+    logging.info("Validating model input...")
+    validate_input_directory(model_input_path)
+    logging.info("Validated model input.")
+
     if model_output_path is None:
         output_path = create_output_path(model_input_path, q_type)
     else:
@@ -74,6 +98,7 @@ def main(model_input_path, model_output_path, q_type):
 
     f_type = get_quantization_type(q_type)
 
+    logging.info("Starting quantization process...")
     return_code = llama_model_quantize(
         model_input_path.encode("utf-8"),
         output_path.encode("utf-8"),
@@ -82,6 +107,9 @@ def main(model_input_path, model_output_path, q_type):
 
     if return_code != 0:
         raise RuntimeError("Failed to quantize model")
+
+    logging.info(f"Quantized model saved to {output_path}")
+    logging.info("Quantization process completed successfully.")
 
 
 if __name__ == "__main__":
