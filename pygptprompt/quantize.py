@@ -29,19 +29,19 @@ def get_quantization_type(quant_type_str):
 @click.argument("model_input_path", type=click.Path(exists=True))
 @click.argument("model_output_path", type=click.Path(exists=False))
 @click.option(
-    "--quantization_type",
+    "--q_type",
     type=click.Choice(list(QUANTIZATION_TYPE_KEYS)),
     default="q4_0",
-    help="The number of bits to use for quantization.",
+    help="The type of quantization to apply to the model. Quantization reduces the model size by representing weights in lower bit widths. Default is 'q4_0'.",
 )
-def main(model_input_path, model_output_path, quantization_type):
+def main(model_input_path, model_output_path, q_type):
     if os.path.exists(model_output_path):
         raise RuntimeError(f"Quantized model already exists ({model_output_path})")
-    qtype = get_quantization_type(quantization_type)
+    f_type = get_quantization_type(q_type)
     return_code = llama_model_quantize(
         model_input_path.encode("utf-8"),
         model_output_path.encode("utf-8"),
-        qtype,  # enum llama_ftype ftype; // quantize to this llama_ftype
+        f_type,  # enum llama_ftype ftype; // quantize to this llama_ftype
     )
     if return_code != 0:
         raise RuntimeError("Failed to quantize model")
