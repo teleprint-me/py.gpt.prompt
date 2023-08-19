@@ -30,7 +30,7 @@ def get_quantization_type(quant_type_str):
 @click.argument("model_output_path", type=click.Path(exists=False))
 @click.option(
     "--quantization_type",
-    type=click.Choice(list(QUANTIZATION_TYPE_KEYS.keys())),
+    type=click.Choice(list(QUANTIZATION_TYPE_KEYS)),
     default="q4_0",
     help="The number of bits to use for quantization.",
 )
