@@ -14,6 +14,7 @@ from llama_cpp import (
     LLAMA_FTYPE_MOSTLY_Q5_0,
     LLAMA_FTYPE_MOSTLY_Q8_0,
     llama_model_quantize,
+    llama_model_quantize_default_params,
 )
 
 from pygptprompt import logging
@@ -70,7 +71,10 @@ def validate_input_directory(model_input_path):
 )
 @click.option(
     "--model_output_path",
-    type=click.Path(exists=False),
+    type=click.Path(
+        exists=False,
+        writable=True,
+    ),
     default=None,
     help="Path to store the quantized model. If not provided, a standard path will be used.",
 )
@@ -81,35 +85,48 @@ def validate_input_directory(model_input_path):
     help="The type of quantization to apply to the model. Quantization reduces the model size by representing weights in lower bit widths. Default is 'q4_0'.",
 )
 def main(model_input_path, model_output_path, q_type):
-    logging.info(f"Input model path: {model_input_path}")
-    logging.info(f"Quantization type: {q_type}")
-
-    logging.info("Validating model input...")
+    # Validate the model and tokenizer
     validate_input_directory(model_input_path)
-    logging.info("Validated model input.")
 
+    # Encode input file path to bytes
+    logging.info(f"Using Input Path: {model_input_path}")
+    fname_inp = model_input_path.encode("utf-8")
+
+    # Construct the models output file path
     if model_output_path is None:
-        output_path = create_output_path(model_input_path, q_type)
+        fname_out = create_output_path(model_input_path, q_type)
     else:
-        output_path = model_output_path
+        fname_out = model_output_path
 
-    if os.path.exists(output_path):
-        raise RuntimeError(f"Quantized model already exists ({output_path})")
+    if os.path.exists(fname_out):
+        raise RuntimeError(f"Quantized model already exists ({fname_out})")
 
-    f_type = get_quantization_type(q_type)
+    # Encode output file path to bytes
+    logging.info(f"Using Output Path: {fname_out}")
+    fname_out = fname_out.encode("utf-8")
 
-    logging.info("Starting quantization process...")
-    return_code = llama_model_quantize(
-        model_input_path.encode("utf-8"),
-        output_path.encode("utf-8"),
-        f_type,  # enum llama_ftype ftype; // quantize to this llama_ftype
-    )
+    # Get the default C struct parameters
+    logging.info("Initializing Quantization Parameters")
+    params = llama_model_quantize_default_params()
 
-    if return_code != 0:
-        raise RuntimeError("Failed to quantize model")
+    # Set the quantization type
+    # Defaults to 4-bit if not found
+    logging.info(f"Using Quantization Type: {q_type}")
+    # enum llama_ftype ftype; // quantize to this llama_ftype
+    params.ftype = get_quantization_type(q_type)
 
-    logging.info(f"Quantized model saved to {output_path}")
-    logging.info("Quantization process completed successfully.")
+    # Set the number of threads
+    params.nthread = os.cpu_count() or 2
+    logging.info(f"Using CPU Count: {params.nthread}")
+    # You can also set other fields as needed
+
+    logging.info("Starting Quantization Process...")
+    return_code = llama_model_quantize(fname_inp, fname_out, params)
+
+    if return_code == 0:
+        logging.info(f"Quantized model saved to {fname_out}")
+    else:
+        logging.error(f"Quantization failed with code: {return_code}")
 
 
 if __name__ == "__main__":
