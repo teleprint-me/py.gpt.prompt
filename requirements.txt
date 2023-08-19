@@ -117,7 +117,6 @@ pycodestyle==2.11.0
 pydantic==1.10.12
 pyflakes==3.1.0
 Pygments==2.16.1
--e git+ssh://git@github.com/teleprint-me/py.gpt.prompt.git@942e2163dd00e8a4a748f9de3fb9d579a2c53410#egg=pygptprompt
 pymdown-extensions==10.1
 pynvim==0.4.3
 pyopencl==2023.1.2
