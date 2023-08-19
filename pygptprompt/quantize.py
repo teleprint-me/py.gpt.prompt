@@ -30,7 +30,7 @@ def get_quantization_type(quant_type_str):
 @click.argument("model_output_path", type=click.Path(exists=False))
 @click.option(
     "--q_type",
-    type=click.Choice(list(QUANTIZATION_TYPE_KEYS)),
+    type=click.Choice(QUANTIZATION_TYPE_KEYS),
     default="q4_0",
     help="The type of quantization to apply to the model. Quantization reduces the model size by representing weights in lower bit widths. Default is 'q4_0'.",
 )
