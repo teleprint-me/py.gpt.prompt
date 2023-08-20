@@ -61,29 +61,12 @@ def get_quantization_type(quant_type_str):
     )  # Default to 4-bit if not found
 
 
-def create_output_path(input_path, q_type):
-    model_name = os.path.basename(input_path)
-    output_path = os.path.join(os.getcwd(), "GGML", model_name)
+def create_output_path(model_input_path, q_type):
+    output_path = os.path.dirname(model_input_path)
+    model_name = os.path.basename(output_path)
     os.makedirs(output_path, exist_ok=True)
     output_model = f"{model_name}.GGMLv3.{q_type}.bin"
     return os.path.join(output_path, output_model)
-
-
-def validate_input_directory(model_input_path):
-    required_files = [
-        "checklist.chk",
-        "tokenizer_checklist.chk",
-        "tokenizer.model",
-        "consolidated.00.pth",
-        "params.json",
-    ]
-    with os.scandir(model_input_path) as entries:
-        files = [entry.name for entry in entries if entry.is_file()]
-        for required_file in required_files:
-            if required_file not in files:
-                raise RuntimeError(
-                    f"Missing required file {required_file} in input directory ({model_input_path})"
-                )
 
 
 @click.command()
@@ -111,10 +94,10 @@ def validate_input_directory(model_input_path):
     help="The type of quantization to apply to the model. Quantization reduces the model size by representing weights in lower bit widths. Default is 'q4_0'.",
 )
 def main(model_input_path, model_output_path, q_type):
-    # Validate the model and tokenizer
-    validate_input_directory(model_input_path)
+    # Ensure converted model exists
+    if not os.path.exists(model_input_path):
+        raise RuntimeError(f"Converted model does not exist ({model_input_path})")
 
-    # Encode input file path to bytes
     logging.info(f"Using Input Path: {model_input_path}")
     fname_inp = model_input_path.encode("utf-8")
 
