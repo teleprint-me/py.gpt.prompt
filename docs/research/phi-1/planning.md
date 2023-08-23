@@ -59,7 +59,7 @@ and relevant content creation.
 
 ## **Approach**:
 
-Phi-1's core mission encompasses computer science, mathematics, ethics, and
+PhiChat's core mission encompasses computer science, mathematics, ethics, and
 emotional intelligence. Key aspects of the project include:
 
 ### 1. **Expertise in Subjects**:
@@ -99,7 +99,7 @@ emotional intelligence. Key aspects of the project include:
 
 ### Conclusion:
 
-Phi-1 is an ambitious endeavor blending STEM expertise, ethical reasoning, and
+PhiChat is an ambitious endeavor blending STEM expertise, ethical reasoning, and
 emotional intelligence. The project's interdisciplinary approach aims to foster
 engaging discussions about ethics, values, and morality while educating in
 mathematics and computer science.
