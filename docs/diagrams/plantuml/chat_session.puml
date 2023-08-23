@@ -68,19 +68,19 @@ class TranscriptManager {
 }
 
 class ChatSessionTokenManager {
-    - provider: str
-    - config: ConfigurationManager
-    - model: ChatModel
-    + reserve: float
-    + offset: int
-    + max_length: int
-    + max_tokens: int
-    + upper_limit: int
-    + base_limit: int
-    + get_sequence_length(text: str): int
-    + get_message_length(message: ChatModelChatCompletion): int
-    + get_total_message_length(messages: List[ChatModelChatCompletion]): int
-    + is_overflow(new_message: ChatModelChatCompletion, messages: List[ChatModelChatCompletion]): bool
+    - str provider
+    - ConfigurationManager config
+    - ChatModel model
+    + float reserve
+    + int offset
+    + int max_length
+    + int max_tokens
+    + int upper_bound
+    + int reserved_upper_bound
+    + int get_sequence_length(text: str)
+    + int get_message_length(message: ChatModelChatCompletion)
+    + int get_total_message_length(messages: List[ChatModelChatCompletion])
+    + bool is_overflow(new_message: ChatModelChatCompletion, messages: List[ChatModelChatCompletion])
 }
 
 abstract class ChatModel {
@@ -100,18 +100,32 @@ class ChatModelFactory {
     - ConfigurationManager _config
     - Dict[str, Callable] _provider_map
     + ChatModelFactory(config: ConfigurationManager):
-    + create_model(provider: str) ChatModel
+    + ChatModel create_model(provider: str)
+}
+
+class FunctionFactory {
+    - ConfigurationManager _config
+    - dict[str, Callable] _functions
+    - str _function_name
+    - dict[str, Any] _function_args
+    - Optional[Callable] _function
+    + FunctionFactory(config: ConfigurationManager)
+    + dict[str, Any] get_function_args(message: ChatModelChatCompletion)
+    + Optional[Callable] get_function(message: ChatModelChatCompletion)
+    + None register_function(function_name: str, function: Callable)
+    + Optional[ChatModelChatCompletion] execute_function(message: ChatModelChatCompletion)
+    + Optional[ChatModelChatCompletion] query_function(model: ChatModel, result: ChatModelChatCompletion, messages: List[ChatModelChatCompletion])
 }
 
 class ChatSession {
-    - context_window: ContextWindowManager
-    - transcript: TranscriptManager
-    - token_manager: ChatSessionTokenManager
-    - model: ChatModel
-    + ChatSession(provider: str, config: ConfigurationManager, model: ChatModel)
-    + send_message(message: ChatModelChatCompletion): ChatModelChatCompletion
-    + get_transcript(): List[ChatModelChatCompletion]
-    + clear_session()
+    - ContextWindowManager context_window
+    - TranscriptManager transcript
+    - ChatSessionTokenManager token_manager
+    - ChatModel model
+    + ChatSession(provider: str, config: ConfigurationManager)
+    + ChatModelChatCompletion send_message(message: ChatModelChatCompletion)
+    + List[ChatModelChatCompletion] get_transcript()
+    + clear()
 }
 
 
@@ -120,6 +134,10 @@ TranscriptManager::_list_template o--> ListTemplate : <<component>>
 
 ChatSession --> ChatModelFactory : <<creates>>
 ChatModelFactory --> ChatModel : <<creates>>
+
+FunctionFactory::_config o--> ConfigurationManager
+FunctionFactory --> ChatModelChatCompletion : <<uses>>
+ChatModel --> FunctionFactory : <<uses>>
 
 ChatSession --> ChatModelChatCompletion : <<uses>>
 ChatSession --> ChatModel : <<uses>>
