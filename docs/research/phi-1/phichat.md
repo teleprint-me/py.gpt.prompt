@@ -1,24 +1,48 @@
-### **Project Overview**:
+# Phi-1
+
+## **Project Overview**:
 
 - **Goal**: Develop specialized AI models that serve as a multifaceted
   companion, focusing on mathematics, programming, emotional intelligence,
   ethical considerations, and philosophical insights.
 
+- **Tools**: Leverage existing tools like llama.cpp, llama2.c, and
+  llama-cpp-python.
+
 ### **Development Stages**:
 
 1. **Teaching Arithmetic to Small Transformers**:
 
-   - Focus on arithmetic, building foundational mathematical expertise.
+   - Focus on Arithmetic, building foundational mathematical expertise.
+   - If possible, include annotations or metadata that describe the mathematical
+     expressions in more detail could aid the model in understanding the
+     underlying concepts.
+
+        ```json
+        {
+        "expression": "Summation from i=1 to n of a_i",
+        "annotations": {
+            "symbol": "Σ",
+            "operation": "summation",
+            "bounds": "i=1 to n",
+            "variable": "a_i",
+            "description": "This represents the sum of the sequence a_i from i=1 to n."
+        }
+        }
+        ```
 
 2. **Incorporating Emotional Intelligence, Ethics, and Philosophy**:
 
    - Train models on emotional understanding using "Emotions Revealed" and
      "Sway."
-   - Integrate philosophical insights from David Hume's works.
+   - Integrate philosophical insights from David Hume's "A Treatise of Human
+     Nature" and "An Enquiry Concerning the Principles of Morals."
 
 3. **Exploring Mixtures of Experts Models**:
 
    - Investigate integration of specialized models.
+   - Implement Context-Free Grammar and Backus–Naur form to define the syntax
+     and structure
 
 4. **Experimenting with LLaMA, LoRA, and QLoRA**:
 
