@@ -54,6 +54,7 @@ class ContextWindowManager {
 }
 
 class ChatSessionTokenManager {
+    // Possible alternate identifier is ContextWindowTokenManager
     - str provider
     - ConfigurationManager config
     - ChatModel model
