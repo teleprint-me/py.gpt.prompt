@@ -1,23 +1,98 @@
-@startuml ChatSessionTokenManager
+@startuml TokenManager
 !theme blueprint
 
 ' docs/diagrams/plantuml/token_manager.puml
 
-class ChatSessionTokenManager {
-  - provider: str
-  - config: ConfigurationManager
-  - model: ChatModel
-  + reserve: float
-  + offset: int
-  + max_length: int
-  + max_tokens: int
-  + upper_limit: int
-  + base_limit: int
-  + __init__(provider: str, config: ConfigurationManager, model: ChatModel)
-  + get_sequence_length(text: str): int
-  + get_message_length(message: ChatModelChatCompletion): int
-  + get_total_message_length(messages: List[ChatModelChatCompletion]): int
-  + is_overflow(new_message: ChatModelChatCompletion, messages: List[ChatModelChatCompletion]): bool
+class ChatCompletionMessage {
+    ' Extends TypeDict
+    + role: Literal["assistant", "user", "system", "function"]
+    + content: NotRequired[str]
+    + function_call: NotRequired[str]
+    + function_args: NotRequired[str]
+    + user: NotRequired[str]
 }
+
+abstract class ChatModel {
+    ' Model that generates chat completions
+    - ConfigurationManager _config
+    + ChatModel(config: ConfigurationManager)
+    + ChatModelTextCompletion get_completion(prompt: str)
+    + ChatCompletionMessage get_chat_completion(messages: List[ChatCompletionMessage])
+    + ChatModelEmbedding get_embedding(input: Union[str, List[str]])
+    + ChatModelEncoding get_encoding(text: str)
+}
+
+class JSONTemplate {
+    // Template class for managing JSON sources
+    + JSONTemplate(file_path: str, initial_data: Optional[JSONData])
+    # Path file_path
+    # JSONData data
+    + bool load_json()
+    + bool save_json(data: JSONData)
+    + bool backup_json()
+    + bool make_directory()
+}
+
+class ListTemplate extends JSONTemplate {
+    // Template class for managing sequences of chat completions
+    + ListTemplate(file_path: str, initial_data: Optional[JSONList])
+    # int length
+    + None append(item: JSONMap)
+    + bool insert(index: int, item: JSONMap)
+    + Optional[JSONMap] get(index: int)
+    + bool update(index: int, item: JSONMap)
+    + bool remove(index: int)
+    + Optional[JSONMap] pop(index: int)
+    + None clear()
+}
+
+class ContextWindowManager {
+    // Contains the current contextual sequence of chat completions
+    - int _max_length
+    - ListTemplate _list_template
+    + ContextWindowManager(file_path: str, initial_data: Optional[JSONList])
+    # int max_length
+    # int length
+    # List[ChatCompletionMessage] sequence
+    + None append(message: ChatCompletionMessage)
+    + Optional[ChatCompletionMessage] pop_initial_message()
+    + bool insert(index: int, message: ChatCompletionMessage)
+    + bool remove(index: int)
+    + None clear()
+}
+
+class ContextWindowTokenManager {
+    - str _provider
+    - ConfigurationManager _config
+    - ChatModel _model
+    + ContextWindowManager(provider: str, config: ConfigurationManager, model: ChatModel)
+    + float reserve
+    + int offset
+    + int max_length
+    + int max_tokens
+    + int upper_bound
+    + int reserved_upper_bound
+    + int get_sequence_length(text: str)
+    + int get_message_length(message: ChatCompletionMessage)
+    + int get_total_message_length(messages: List[ChatCompletionMessage])
+    + bool is_overflow(new_message: ChatCompletionMessage, messages: List[ChatCompletionMessage])
+}
+
+class User {
+    // Represents a user interacting with the system
+}
+
+User --> ChatModel : interacts
+
+ChatCompletionMessage <-- ChatModel : generates
+ChatCompletionMessage <-- User : generates
+
+ContextWindowManager "1" o-- "1" ContextWindowTokenManager : uses
+ContextWindowManager --> ChatCompletionMessage : uses
+ContextWindowManager::_list_template o--> ListTemplate : component
+
+ContextWindowTokenManager --> ChatModel : uses
+ContextWindowTokenManager --> ChatCompletionMessage : manages
+ContextWindowTokenManager --> ListTemplate : uses
 
 @enduml
