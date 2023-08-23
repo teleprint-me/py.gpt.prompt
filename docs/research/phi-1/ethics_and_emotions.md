@@ -1,3 +1,5 @@
+# PhiChat
+
 ## Incorporating Moral Philosophy (David Hume's "An Enquiry Concerning the Principles of Morals"):
 
 **Understanding the Text**:

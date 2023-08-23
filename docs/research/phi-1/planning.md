@@ -1,4 +1,4 @@
-# Phi-1
+# PhiChat
 
 ## **Planning**:
 
