@@ -100,14 +100,11 @@ class ChatSessionTokenManager:
         )
 
     @property
-    def upper_limit(self) -> int:
+    def upper_bound(self) -> int:
         """
         The artificial ceiling that guarantees the model's output fits within the defined sequence length.
 
-        The upper_limit property calculates the maximum token limit for the model, ensuring that the model's
-        output always fits within the given sequence length. It achieves this by subtracting the maximum
-        number of tokens the model is allowed to generate (max_tokens) from the maximum sequence length
-        for the given model (max_length).
+        The upper_bound property calculates the maximum token limit for the model, ensuring that the model's output always fits within the given sequence length. It achieves this by subtracting the maximum number of tokens the model is allowed to generate (max_tokens) from the maximum sequence length for the given model (max_length).
 
         Returns:
             int: The token limit representing the artificial ceiling for the model's output length.
@@ -115,20 +112,20 @@ class ChatSessionTokenManager:
         return self.max_length - self.max_tokens
 
     @property
-    def base_limit(self) -> int:
+    def reserved_upper_bound(self) -> int:
         """
-        Calculate the base limit as a percentage of the upper limit for content size management.
+        Calculate the upper bound as a percentage of the reserve for content size management.
 
-        The base_limit property calculates a limit that ensures the model's output, considering
-        the reserved space (based on the reserve property), remains within a certain proportion
-        of the artificial ceiling (upper_limit) that guarantees the model's output fits within
-        the defined sequence length. This calculated limit serves as a threshold for managing the
-        size of content displayed within the chat session.
+        The reserved_upper_bound property calculates a limit that ensures the model's output,
+        considering the reserved space (based on the reserve property), remains within a certain
+        proportion of the artificial ceiling (upper_bound) that guarantees the model's output fits
+        within the defined sequence length. This calculated limit serves as a threshold for managing
+        the size of content displayed within the chat session.
 
         Returns:
-            int: The calculated base limit as a percentage of the upper limit.
+            int: The calculated reserve as a percentage of the upper bound of the sequence length.
         """
-        return int(self.upper_limit * self.reserve)
+        return int(self.upper_bound * self.reserve)
 
     def get_sequence_length(self, text: str) -> int:
         """
@@ -199,4 +196,4 @@ class ChatSessionTokenManager:
         messages_total_token_count = self.get_total_message_length(messages)
         token_count = new_message_token_count + messages_total_token_count
         total_token_count = self.offset + token_count
-        return total_token_count >= self.upper_limit
+        return total_token_count >= self.upper_bound
