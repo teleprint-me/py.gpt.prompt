@@ -69,21 +69,92 @@ While the connections might not yet be fully realized, this exploration marks
 the beginning of a promising pathway, one that could yield profound insights
 into both fields and create opportunities for unprecedented collaboration.
 
-## Exploring Conceptualizations and Terminologies
+## Background and Conceptual Framework
 
-Initially, we employed the concept of compound interest from the realm of
-finance, defined as follows:
+### Mathematical Concepts in Finance and Machine Learning
 
-```
+In the field of finance, concepts like compound interest are central to
+understanding how money grows over time. The equation for calculating the target
+amount with daily compounding can be expressed as:
+
+```plaintext
 periodic_interest_rate = interest_rate / frequency
 growth_rate = pow(periodic_interest_rate, interval)
 target_amount = principal_amount * interval * growth_rate
 ```
 
+In machine learning, similar principles apply, though in the context of model
+training and loss reduction. The goal in both domains is optimization, whether
+it's maximizing financial gain or minimizing predictive error.
+
+### Exploring the Analogy: Graphing the Principal Amount Over Time
+
+The code snippet below illustrates the relationship between the principal amount
+and the number of days, shedding light on how this financial concept translates
+into a machine learning context:
+
+```python
+# Importing the Matplotlib library for plotting
+import matplotlib.pyplot as plt
+
+
+# Redefining the functions and constants, and running the code block for graphing
+def calculate_periodic_interest_rate(interest_rate, frequency):
+    return 1 + (interest_rate / frequency)
+
+
+def calculate_principal_amount(
+    target_amount, interval, periodic_interest_rate
+):
+    return target_amount / (interval * pow(periodic_interest_rate, interval))
+
+
+# Constants for the simulation
+daily_interest_rate = 5 / 100  # 5% daily interest rate
+frequency = 365  # daily compounding
+interval_range = 30  # 30 days
+target_amount_goal = 3_000_000  # Target Amount of 3,000,000 Satoshi's
+
+# Lists to store the results for graphing
+principal_days = []
+principal_satoshis = []
+
+# Calculate the periodic interest rate
+periodic_rate = calculate_periodic_interest_rate(
+    daily_interest_rate, frequency
+)
+
+# Calculate the principal amount needed to reach the target amount for each interval in the range
+for interval in range(1, interval_range + 1):
+    principal_amount = calculate_principal_amount(
+        target_amount_goal, interval, periodic_rate
+    )
+
+    principal_days.append(interval)
+    principal_satoshis.append(principal_amount)
+
+# Displaying the results in a graph
+plt.plot(principal_days, principal_satoshis, marker="o", color="blue")
+plt.title("Principal Amount Needed to Reach 3,000,000 Sats (Daily Trading)")
+plt.xlabel("Days")
+plt.ylabel("Principal Amount (Sats)")
+plt.grid(True)
+plt.show()
+```
+
+The graph reveals a linear relationship between the interval and the target
+amount, providing a foundation for drawing parallels between the two domains.
+
+### Aligning Financial Models with Machine Learning Terminologies
+
+Through the following terminology conversion, we align the financial model of
+compound interest with a machine learning context, unveiling shared patterns and
+structures:
+
 - The `principal_amount` remains constant.
-- The `growth_rate` is also consistent, as the periodic interest rate is fixed
-  and the interval is 1 for daily compounding.
 - The `interval` is the variable, representing the number of days.
+- The `growth_rate` is also consistent, as the `periodic_interest_rate` is fixed
+  and the `interval` is utilized for daily compounding.
 
 Given the constancy of the principal amount and growth rate, the relationship
 between the interval and target amount is linear. Clarifications aside, we can
@@ -121,14 +192,13 @@ interpretation of the frequency parameter.
      which money grows or decays. In machine learning, it governs the rate at
      which the model's weights update during training.
 
-Through these parallels, we establish an analogy between a financial model
-(compound interest) and a machine learning context (training and loss
-reduction). This imaginative mapping unveils shared patterns and structures
-bridging these two domains.
+### Constraints and Limitations
 
-Notably, this analogy is conceptual and exploratory. It exposes intriguing
-connections, although it might not directly correlate with established
-mathematical or machine learning techniques.
+Notably, this analogy is conceptual and exploratory. While it exposes intriguing
+connections between finance and machine learning, it might not directly
+correlate with established mathematical or machine learning techniques. The
+analogy's limitations must be considered, particularly if the intention is to
+apply these insights in practice.
 
 ## Experimental Quantitative Analysis
 
