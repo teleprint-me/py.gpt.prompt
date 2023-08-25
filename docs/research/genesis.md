@@ -161,6 +161,95 @@ We investigated the inverse relationship, focusing on loss calculation:
 
 Equation: `L = D / (E * (1 + R / F)^E)`
 
+**The Loss Function Analogy**
+
+1. **Market Price**: Comparable to an input or parameter value in machine
+   learning used for predictions. In the context of the Value Averaging
+   strategy, it denotes the buying or selling price.
+
+2. **Target Value (Label)**: In machine learning, it's the actual outcome we aim
+   to predict. In the Value Averaging strategy, it signifies the desired
+   investment value at each interval (Current Target).
+
+3. **Current Value (Prediction)**: In Value Averaging, this is the actual
+   investment value at a given time. In machine learning, it corresponds to the
+   model's prediction based on input features (Market Price).
+
+4. **Trade Amount (Loss)**: This draws a parallel to the loss function. In Value
+   Averaging, the Trade Amount represents the difference between the Current
+   Target (Label) and the Current Value (Prediction). In machine learning, this
+   difference mirrors the loss, indicating the deviation between prediction and
+   actual target.
+
+Now, let's explore this concept mathematically:
+
+### Mathematical Representation
+
+In Value Averaging:
+
+- Trade Amount = Current Target - Current Value
+
+In Machine Learning (Loss Function):
+
+- Loss = Target Value (Label) - Prediction
+
+### Equivalent Analogy
+
+- Trade Amount ↔ Loss
+- Current Target ↔ Target Value (Label)
+- Current Value ↔ Prediction
+- Market Price ↔ Input Features
+
+The resemblance between these concepts is intriguing, offering a fresh
+perspective on relationships between financial modeling and machine learning.
+Your thoughtful approach, starting with Mean Squared Error (MSE), is
+commendable. Let's delve into integrating the components of our analogy with the
+concept of MSE.
+
+### Definitions:
+
+- \( A \): Target value, representing the desired future investment value.
+- \( L \): Trade amount or Loss, denoting the difference between target and
+  current value.
+- \( D \): Desired value for each interval (constant or variable).
+- \( E \): Number of intervals.
+- \( R \): Rate of return.
+- \( F \): Frequency of compounding.
+
+### Formulating the Analogy with MSE
+
+In machine learning, MSE calculates the average of squared differences between
+predicted and actual target values. Mathematically:
+
+\[ \text{MSE} = \frac{1}{n}\sum\_{i=1}^{n} (\text{Prediction}\_i -
+\text{Target}\_i)^2 \]
+
+In our analogy, MSE signifies the average of squared differences between
+investment's current value and desired target value over intervals:
+
+\[ \text{MSE} = \frac{1}{E}\sum\_{i=1}^{E} (\text{Current Value}\_i - A_i)^2 \]
+
+Where:
+
+- \(\text{Current Value}\_i\): Investment's actual value at interval \(i\).
+- \(A_i\): Target value at interval \(i\), calculated as \(A_i = L \times E
+  \times (1 + R / F)^i\).
+
+### Application
+
+MSE in this context provides insight into alignment of investment strategy with
+targets. Lower MSE suggests close alignment, while higher MSE indicates
+deviations.
+
+### Further Exploration
+
+We can simulate various investment scenarios, calculating MSE to assess
+strategy's alignment with targets. Exploring how parameters like return rate or
+compounding frequency influence MSE offers an intriguing avenue.
+
+The MSE analogy bridges investment strategies and machine learning concepts,
+enriched by your mathematics and programming background.
+
 **Conclusion**
 
 This imaginative analogy draws parallels between compound interest mathematics,
