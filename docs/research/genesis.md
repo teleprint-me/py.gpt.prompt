@@ -23,6 +23,54 @@ mathematical frameworks across domains.
 
 ## Introduction
 
+In the vast landscape of mathematical modeling, two seemingly disparate fields
+often operate in isolation: finance and machine learning. At a glance, these
+disciplines may appear to have little in common. Finance typically deals with
+the management of money, investments, and risk, while machine learning explores
+algorithms and statistical models to enable computers to perform tasks without
+explicit programming. However, a closer examination reveals intriguing parallels
+that beckon further exploration.
+
+This document embarks on an interdisciplinary journey to uncover the underlying
+connections between financial models and machine learning algorithms. A
+particular point of intrigue lies in the relationship between Empirical Risk
+Minimization (ERM), a principle fundamental to machine learning, and the Value
+Averaging strategy commonly employed in finance.
+
+ERM, an NP-hard problem, involves the search for a model that minimizes the
+average loss on a given dataset. In contrast, the Value Averaging strategy
+introduces a form of linearity within financial planning, a characteristic that
+may at first seem unrelated to ERM. However, the correlation between these
+concepts forms a bridge that connects the complexities of machine learning with
+the principles of financial management.
+
+The analogy, while compelling on a conceptual level, is admittedly rough and
+sparse in its current form. The correlation is primarily based on scalar values,
+and it's in the early stages of development, meaning nothing concrete is
+directly applicable at this moment.
+
+The inspiration for this exploration was sparked by the visual representation of
+the Principal Amount over time, resembling a loss (or risk) function commonly
+encountered in machine learning. Though the analogy may have limitations – for
+instance, machine learning models often work with matrices, contrasting the
+scalar approach in finance – the potential insights derived from bridging these
+domains warrant a detailed investigation.
+
+This document aims to:
+
+- Elucidate the conceptual connections between finance and machine learning.
+- Recognize the constraints and limitations that might hinder direct
+  applicability.
+- Lay the groundwork for potential innovations, with the understanding that the
+  work is exploratory in nature and may lead to novel intersections between
+  these fields.
+
+While the connections might not yet be fully realized, this exploration marks
+the beginning of a promising pathway, one that could yield profound insights
+into both fields and create opportunities for unprecedented collaboration.
+
+## Exploring Conceptualizations and Terminologies
+
 Initially, we employed the concept of compound interest from the realm of
 finance, defined as follows:
 
