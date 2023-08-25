@@ -187,11 +187,15 @@ Now, let's explore this concept mathematically:
 
 In Value Averaging:
 
-- Trade Amount = Current Target - Current Value
+```
+Trade Amount = Current Target - Current Value
+```
 
 In Machine Learning (Loss Function):
 
-- Loss = Target Value (Label) - Prediction
+```
+Loss = Target Value (Label) - Prediction
+```
 
 ### Equivalent Analogy
 
@@ -208,32 +212,35 @@ concept of MSE.
 
 ### Definitions:
 
-- \( A \): Target value, representing the desired future investment value.
-- \( L \): Trade amount or Loss, denoting the difference between target and
-  current value.
-- \( D \): Desired value for each interval (constant or variable).
-- \( E \): Number of intervals.
-- \( R \): Rate of return.
-- \( F \): Frequency of compounding.
+- `A`: Target value, representing the desired future investment value.
+- `L`: Trade amount or Loss, denoting the difference between target and current
+  value.
+- `D`: Desired value for each interval (constant or variable).
+- `E`: Number of intervals.
+- `R`: Rate of return.
+- `F`: Frequency of compounding.
 
 ### Formulating the Analogy with MSE
 
 In machine learning, MSE calculates the average of squared differences between
 predicted and actual target values. Mathematically:
 
-\[ \text{MSE} = \frac{1}{n}\sum\_{i=1}^{n} (\text{Prediction}\_i -
-\text{Target}\_i)^2 \]
+```
+MSE = (1/n) * Σ (Prediction_i - Target_i)^2
+```
 
 In our analogy, MSE signifies the average of squared differences between
 investment's current value and desired target value over intervals:
 
-\[ \text{MSE} = \frac{1}{E}\sum\_{i=1}^{E} (\text{Current Value}\_i - A_i)^2 \]
+```
+MSE = (1/E) * Σ (Current Value_i - A_i)^2
+```
 
 Where:
 
-- \(\text{Current Value}\_i\): Investment's actual value at interval \(i\).
-- \(A_i\): Target value at interval \(i\), calculated as \(A_i = L \times E
-  \times (1 + R / F)^i\).
+- `Current Value_i`: Investment's actual value at interval `i`.
+- `A_i`: Target value at interval `i`, calculated as
+  `A_i = L * E * (1 + R / F)^i`.
 
 ### Application
 
