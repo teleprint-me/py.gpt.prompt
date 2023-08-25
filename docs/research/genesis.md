@@ -140,12 +140,12 @@ domains.
 We adapted the concept of compound interest for a hypothetical machine learning
 scenario:
 
-- `Step Size (S)`: Represents change magnitude per step, linked to learning rate
-  and frequency.
-- `Improvement Rate (I)`: Growth/improvement rate per step, calculated as step
-  size raised to epoch.
-- `Label/Desired Outcome (A)`: Target value, represented as loss _ epoch _
-  improvement rate.
+- `Step Size (S)`: Represents the magnitude of change at each step, related to
+  the learning rate and frequency.
+- `Improvement Rate (I)`: The growth or improvement rate at each step,
+  calculated as the step size raised to the epoch.
+- `Label or Desired Outcome (A)`: The accumulated value or target, represented
+  as the loss times the epoch times the improvement rate.
 
 Equation: `A = L * E * (1 + R / F)^E`
 
@@ -153,11 +153,12 @@ Equation: `A = L * E * (1 + R / F)^E`
 
 We investigated the inverse relationship, focusing on loss calculation:
 
-- `Loss (L)`: Error between predicted and actual values, akin to principal
-  amount.
-- `Epoch (E)`: Complete pass through training data, like interval in compound
-  interest.
-- `Desired Loss (D)`: Minimum loss sought, akin to target amount.
+- `Loss (L)`: The error between predicted and actual values, analogous to the
+  principal amount in finance.
+- `Epoch (E)`: A full pass through the training data, analogous to the interval
+  in compound interest.
+- `Desired Loss (D)`: The minimum loss we aim to achieve, analogous to the
+  target amount.
 
 Equation: `L = D / (E * (1 + R / F)^E)`
 
@@ -205,10 +206,10 @@ Loss = Target Value (Label) - Prediction
 - Market Price ↔ Input Features
 
 The resemblance between these concepts is intriguing, offering a fresh
-perspective on relationships between financial modeling and machine learning.
-Your thoughtful approach, starting with Mean Squared Error (MSE), is
-commendable. Let's delve into integrating the components of our analogy with the
-concept of MSE.
+perspective on the relationships that can be drawn between financial modeling
+and machine learning. A thoughtful approach, beginning with the exploration of
+Mean Squared Error (MSE), leads to a deeper understanding. Let's now explore the
+integration of the components of our analogy with the concept of MSE.
 
 ### Definitions:
 
