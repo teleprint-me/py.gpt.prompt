@@ -1,6 +1,6 @@
-**Genesis**
+# The Genesis Model: Exploring Market Analysis with Generative AI
 
-**Hypothesis**
+## Abstract
 
 Our journey began with an open-minded exploration, driven by curiosity rather
 than a predefined goal. We sought to uncover connections between seemingly
@@ -21,12 +21,14 @@ learning. While our analogy isn't a direct translation of established
 methodologies, it serves as an engaging thought experiment that bridges
 mathematical frameworks across domains.
 
-**Overview**
+## Introduction
 
 Initially, we employed the concept of compound interest from the realm of
 finance, defined as follows:
 
 ```
+periodic_interest_rate = interest_rate / frequency
+growth_rate = pow(periodic_interest_rate, interval)
 target_amount = principal_amount * interval * growth_rate
 ```
 
@@ -80,7 +82,7 @@ Notably, this analogy is conceptual and exploratory. It exposes intriguing
 connections, although it might not directly correlate with established
 mathematical or machine learning techniques.
 
-**Expression**
+## Experimental Quantitative Analysis
 
 By linking the label (target amount) with loss, epoch, learning rate, and
 frequency, we can express the relationship as follows:
@@ -96,7 +98,7 @@ showcases how loss, learning rate, and epoch interact to approach the target.
 While a creative analogy, this may not directly correspond to a specific machine
 learning algorithm or loss function.
 
-**Expressing Loss**
+### Expressing Loss
 
 **Step Size:** Represents change magnitude during each training update, akin to
 the periodic interest rate in finance.
@@ -135,7 +137,7 @@ scenario. While not directly applicable to a standard machine learning
 algorithm, it sheds light on shared mathematical structures and patterns across
 domains.
 
-**Calculate the Label**
+### Calculate the Label
 
 We adapted the concept of compound interest for a hypothetical machine learning
 scenario:
@@ -149,7 +151,7 @@ scenario:
 
 Equation: `A = L * E * (1 + R / F)^E`
 
-**Calculate the Loss**
+### Calculate the Loss
 
 We investigated the inverse relationship, focusing on loss calculation:
 
@@ -162,7 +164,7 @@ We investigated the inverse relationship, focusing on loss calculation:
 
 Equation: `L = D / (E * (1 + R / F)^E)`
 
-**The Loss Function Analogy**
+## The Loss Function Analogy
 
 1. **Market Price**: Comparable to an input or parameter value in machine
    learning used for predictions. In the context of the Value Averaging
@@ -258,7 +260,7 @@ compounding frequency influence MSE offers an intriguing avenue.
 The MSE analogy bridges investment strategies and machine learning concepts,
 enriched by your mathematics and programming background.
 
-**Conclusion**
+## Conclusion
 
 This imaginative analogy draws parallels between compound interest mathematics,
 statistical convergence, and hypothetical loss functions in machine learning.
