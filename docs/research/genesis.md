@@ -1,4 +1,4 @@
-# The Genesis Model: Exploring How Financial Models could apply to Generative AI
+# The Genesis Model: Exploring How Financial Models might apply to Generative AI
 
 ## Abstract
 
@@ -245,8 +245,8 @@ loss = desired_loss / (epoch * (1 + learning_rate / frequency)^epoch)
 resembling desired outcome or label in machine learning.
 
 ```
-target_amount = principal_amount * epoch * improvement_rate
-target_amount = principal_amount * epoch * (1 + learning_rate / frequency)^epoch
+label = loss * epoch * improvement_rate
+label = loss * epoch * (1 + learning_rate / frequency)^epoch
 ```
 
 Through these parallels, we creatively explored connections between a financial
@@ -279,6 +279,8 @@ We investigated the inverse relationship, focusing on loss calculation:
   in compound interest.
 - `Desired Loss (D)`: The minimum loss we aim to achieve, analogous to the
   target amount.
+- **Note**: `D` is equivalent to `A` from the `Label` calculation which was
+  originally defined as the `Desired Outcome`.
 
 Equation: `L = D / (E * (1 + R / F)^E)`
 
@@ -388,7 +390,7 @@ compounding frequency influence MSE offers an intriguing avenue.
 
 #### Equations
 
-- Target Value: `A = E \* (1 + R / F)^E`
+- Target Value: `A = E * (1 + R / F)^E`
 - Trade Amount: `L = A - D`
 
 ### Machine Learning - Loss Function Analogy
@@ -420,9 +422,6 @@ compounding frequency influence MSE offers an intriguing avenue.
    epochs or batches in machine learning.
 5. **Growth Rate (R)**: In finance, this is the expected growth rate. In ML, it
    could be seen as the learning rate.
-
-Does this documentation align with what you were envisioning? Would you like to
-add or modify any part?
 
 ## Reward Function for Investment Decision-Making
 
@@ -491,6 +490,52 @@ guide investment decisions by considering multiple variables and their impacts.
 By leveraging normalization, impact functions, and weighted aggregation, this
 reward function aims to provide insights that align with investment goals and
 market dynamics.
+
+## Limitations and Pitfalls of Applicability
+
+There are some highly nuanced points that really highlight the limitations of
+purely mathematical or algorithmic approaches to trading and finance. The nature
+of trading is much more volatile and subject to various non-mathematical
+factors, like market sentiment and human psychology, that aren't easily captured
+in equations or loss functions.
+
+### Pitfalls of the "Greedy Function"
+
+Maximizing the reward function could result in creating a "Greedy Function". The
+"greedy function" approach, while theoretically sound, doesn't account for these
+subtleties. It's a bit like trying to use a hammer where a scalpel is required.
+What might be a loss function in one context (ML) becomes a convoluted
+combination of both reward and loss in another (trading).
+
+### Dangers of Over-simplification
+
+This underlines the danger of over-simplification, especially in something as
+complex and multi-faceted as trading. In machine learning, the loss function
+guides the model toward a more accurate representation of reality. In trading,
+however, reality itself is far too complex to be captured by a single metric.
+Different strategies like Value Averaging may work in some contexts but fail
+catastrophically in others, as you pointed out with the example of the housing
+crisis.
+
+### Context Matters
+
+Different asset types, such as commodities, like Gold or Bitcoin, should be
+considered. What works for one asset class may be disastrous for another. For
+example, a strategy focused on short-term gains might work well in a volatile
+market but fail to capture the long-term value of more stable assets.
+
+### The Human Element
+
+The emotional and psychological aspects of trading are yet another layer that's
+difficult to quantify. While machine learning models may strive to be more
+"rational," human traders have gut instincts, fears, and aspirations that can
+drive the market in unpredictable ways.
+
+So, while it was a fruitful exercise to explore the mathematical analogies and
+theoretical frameworks, it's paramount in observing that the application to
+trading is far from straightforward. However, these considerations can offer
+valuable insights that might inform more nuanced trading algorithms or
+risk-assessment tools that take these complexities into account.
 
 ## Conclusion
 
