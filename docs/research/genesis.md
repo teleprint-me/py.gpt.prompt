@@ -83,15 +83,15 @@ growth_rate = pow(periodic_interest_rate, interval)
 target_amount = principal_amount * interval * growth_rate
 ```
 
-In machine learning, similar principles apply, though in the context of model
-training and loss reduction. The goal in both domains is optimization, whether
-it's maximizing financial gain or minimizing predictive error.
+In machine learning, similar principles apply but within the context of model
+training and loss reduction. The common goal is optimization, whether that's
+maximizing financial gain or minimizing predictive errors.
 
 ### Exploring the Analogy: Graphing the Principal Amount Over Time
 
 The code snippet below illustrates the relationship between the principal amount
-and the number of days, shedding light on how this financial concept translates
-into a machine learning context:
+and the number of days, aiming to shed light on how this financial concept
+translates into a machine learning context:
 
 ```python
 # Importing the Matplotlib library for plotting
@@ -142,24 +142,36 @@ plt.grid(True)
 plt.show()
 ```
 
-The graph reveals a linear relationship between the interval and the target
-amount, providing a foundation for drawing parallels between the two domains.
+While the graph might initially suggest a linear relationship between the
+interval and the target amount, it's crucial to clarify that this observation is
+a simplification. The equation for calculating the target amount implies a more
+complex, exponential relationship due to the power term
+(`pow(periodic_interest_rate, interval)`).
+
+This simplified interpretation arises from dealing exclusively with scalar
+values. We have deliberately avoided the complexities of vector spaces and
+sequence modeling inherent in advanced machine learning techniques at this stage
+of the discussion.
+
+Given that the frequency parameter plays a role in both financial modeling and
+potentially in machine learning—perhaps as a hyperparameter dictating how often
+a model is updated—elaborating on its role and significance would be beneficial
+in the final document.
 
 ### Aligning Financial Models with Machine Learning Terminologies
 
-Through the following terminology conversion, we align the financial model of
-compound interest with a machine learning context, unveiling shared patterns and
-structures:
+We align the financial model of compound interest with machine learning context,
+elucidating shared patterns and structures through the following terminology
+conversion:
 
 - The `principal_amount` remains constant.
 - The `interval` is the variable, representing the number of days.
-- The `growth_rate` is also consistent, as the `periodic_interest_rate` is fixed
-  and the `interval` is utilized for daily compounding.
+- The `growth_rate` is also constant, as the `periodic_interest_rate` is fixed
+  and the `interval` is utilized for regular compounding.
 
-Given the constancy of the principal amount and growth rate, the relationship
-between the interval and target amount is linear. Clarifications aside, we can
-now proceed with a proper review of our work, considering the accurate
-interpretation of the frequency parameter.
+However, it's essential to note that while these relationships appear
+straightforward, the exponential nature of compound interest suggests a more
+complex relationship.
 
 **Terminology Conversion: Aligning Financial Model with Machine Learning**
 
@@ -194,11 +206,12 @@ interpretation of the frequency parameter.
 
 ### Constraints and Limitations
 
-Notably, this analogy is conceptual and exploratory. While it exposes intriguing
-connections between finance and machine learning, it might not directly
-correlate with established mathematical or machine learning techniques. The
-analogy's limitations must be considered, particularly if the intention is to
-apply these insights in practice.
+This analogy is conceptual and serves as a foundational framework. It
+deliberately employs scalar values to represent financial and machine learning
+concepts, avoiding the complexities of vector spaces and sequence modeling
+inherent in advanced machine learning techniques. These limitations need to be
+acknowledged, particularly if one aims to extend these insights into practical
+applications.
 
 ## Experimental Quantitative Analysis
 
@@ -536,6 +549,30 @@ theoretical frameworks, it's paramount in observing that the application to
 trading is far from straightforward. However, these considerations can offer
 valuable insights that might inform more nuanced trading algorithms or
 risk-assessment tools that take these complexities into account.
+
+## Potential ML Translations from Financial Models:
+
+1. **Adapting Variables**: Adapting financial terms to machine learning can be
+   an abstract but intriguing task. For example, "Current Balance" could be
+   viewed as the "current state" of the machine learning model, including its
+   accuracy, precision, and other performance metrics. "Target Amount" could be
+   translated into a desired accuracy or minimal loss.
+
+2. **Trade Amount as Optimization Target**: This is an exciting idea. In
+   reinforcement learning, the trade amount can be very analogous to the reward
+   gained from an action, serving as an optimization target. Similarly, in
+   supervised learning, it might be used as a part of a custom loss function
+   aiming to maximize this "trade amount" in a prediction task.
+
+3. **Compounding Interest and Exponential Growth**: The formula
+   `A = L * E * (1 + R / F)^E` has an exponential term, which naturally leads to
+   the idea of exponential growth. In machine learning, particularly in
+   long-term sequence predictions or time series analysis, exponential growth
+   factors can be crucial. This formula might be used to better model such data,
+   or even as a custom loss function designed for those specific types of data.
+
+The equations for Label and Loss calculation can be considered as custom loss
+functions that model the task's complexity and change over epochs.
 
 ## Conclusion
 
