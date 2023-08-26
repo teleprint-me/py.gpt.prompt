@@ -1,4 +1,4 @@
-# The Genesis Model: Exploring Market Analysis with Generative AI
+# The Genesis Model: Exploring How Financial Models could apply to Generative AI
 
 ## Abstract
 
@@ -347,14 +347,14 @@ In machine learning, MSE calculates the average of squared differences between
 predicted and actual target values. Mathematically:
 
 ```
-MSE = (1/n) * Σ (Prediction_i - Target_i)^2
+MSE = (1/n) * n_Σ_i=1 (Prediction_i - Target_i)^2
 ```
 
 In our analogy, MSE signifies the average of squared differences between
 investment's current value and desired target value over intervals:
 
 ```
-MSE = (1/E) * Σ (Current Value_i - A_i)^2
+MSE = (1/E) * E_Σ_i=1 (Current Value_i - A_i)^2
 ```
 
 Where:
@@ -375,8 +375,122 @@ We can simulate various investment scenarios, calculating MSE to assess
 strategy's alignment with targets. Exploring how parameters like return rate or
 compounding frequency influence MSE offers an intriguing avenue.
 
-The MSE analogy bridges investment strategies and machine learning concepts,
-enriched by your mathematics and programming background.
+### Financial Modeling - Value Averaging Strategy
+
+#### Variables
+
+- `A`: Target Value (Desired Value)
+- `D`: Current Value (Actualized Value)
+- `L`: Trade Amount
+- `E`: Interval
+- `R`: Growth Rate
+- `F`: Frequency
+
+#### Equations
+
+- Target Value: `A = E \* (1 + R / F)^E`
+- Trade Amount: `L = A - D`
+
+### Machine Learning - Loss Function Analogy
+
+#### Variables
+
+- Market Price: Corresponds to input/parameter value in the initial layer
+- Target Value (Label): `A`
+- Prediction (Current Value): `D`
+- Trade Amount (Loss): `L`
+
+#### Analogy Summary
+
+- The Market Price can be thought of as the input to a machine learning model.
+- The Target Value corresponds to the actual label or desired outcome.
+- The Current Value is akin to the prediction made by the model.
+- The Trade Amount serves as the "loss," representing the difference between the
+  Target and Current Values.
+
+### Cross-Domain Parallels
+
+1. **Target Value (Desired Value)**: In both domains, this represents the
+   "ideal" or "goal" outcome.
+2. **Current Value (Actualized Value)**: Represents the "current state" in both
+   domains.
+3. **Trade Amount**: Serves as the "error" or "deviation" from the desired
+   outcome. Similar to the loss in machine learning.
+4. **Interval (E)**: Time steps in financial modeling, could be analogous to
+   epochs or batches in machine learning.
+5. **Growth Rate (R)**: In finance, this is the expected growth rate. In ML, it
+   could be seen as the learning rate.
+
+Does this documentation align with what you were envisioning? Would you like to
+add or modify any part?
+
+## Reward Function for Investment Decision-Making
+
+In the context of investment decision-making, we aim to create a reward function
+that guides the choice between buying and selling based on various factors such
+as current balance, target amount, and market performance. This reward function
+leverages the concepts of normalization, impact functions, and weighted
+aggregation to provide a comprehensive assessment of the investment decision.
+
+### Variables
+
+1. **Current Balance (B):** The current amount of funds available for
+   investment.
+2. **Target Amount (T):** The desired amount for investment.
+3. **Market Performance (P):** Indicators of the market's performance.
+
+### Steps
+
+1. **Normalize Variables:**
+
+   - Normalize each variable to a common scale to ensure comparability.
+
+2. **Assign Weights:**
+
+   - Assign weights (Wb, Wt, Wp) to each normalized variable to indicate their
+     relative importance.
+
+3. **Impact Functions:**
+
+   - Define impact functions for each normalized variable:
+     - Impact of balance (Ib) = B (normalized value)
+     - Impact of target (It) = T (normalized value)
+     - Impact of market performance (Ip) = P (normalized value)
+
+4. **Combined Impact Score:**
+
+   - Calculate the combined impact score by taking the dot product of normalized
+     variables and their respective weights:
+     - Combined Impact Score = (Wb \* Ib) + (Wt \* It) + (Wp \* Ip)
+
+5. **Normalization Factor:**
+
+   - Choose a normalization factor based on the desired range of reward values.
+
+6. **Normalized Reward Value:**
+
+   - Divide the combined impact score by the normalization factor to obtain the
+     normalized reward value.
+
+7. **Scale to Desired Range:**
+   - Scale the normalized reward value to fit within the desired range:
+     - Scaled Reward = Normalized Reward Value \* (Upper Range - Lower Range) +
+       Lower Range
+
+### Iteration and Refinement
+
+- Experiment with different normalization factors, weights, and impact functions
+  to fine-tune the reward function.
+- Validate the reward function's effectiveness using historical data or
+  simulations.
+- Iterate and adjust the approach based on observed outcomes and real-world
+  investment strategies.
+
+The reward function developed through this approach offers a structured way to
+guide investment decisions by considering multiple variables and their impacts.
+By leveraging normalization, impact functions, and weighted aggregation, this
+reward function aims to provide insights that align with investment goals and
+market dynamics.
 
 ## Conclusion
 
