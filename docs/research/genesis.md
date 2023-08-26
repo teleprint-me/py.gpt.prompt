@@ -166,8 +166,8 @@ conversion:
 
 - The `principal_amount` remains constant.
 - The `interval` is the variable, representing the number of days.
-- The `growth_rate` is also constant, as the `periodic_interest_rate` is fixed
-  and the `interval` is utilized for regular compounding.
+- The `growth_rate` is exponential, as the `periodic_interest_rate` is fixed and
+  the `interval` is utilized for regular compounding.
 
 However, it's essential to note that while these relationships appear
 straightforward, the exponential nature of compound interest suggests a more
@@ -226,8 +226,10 @@ label = loss * epoch * (1 + learning_rate / frequency)^epoch
 Here, the label signifies the desired outcome or target value. This equation
 showcases how loss, learning rate, and epoch interact to approach the target.
 
-While a creative analogy, this may not directly correspond to a specific machine
-learning algorithm or loss function.
+While this serves as a creative analogy for understanding complex interactions
+in machine learning, it's crucial to note that the equation may not directly
+correspond to any specific machine learning algorithm or loss function. Exercise
+caution if attempting to apply this concept directly.
 
 ### Expressing Loss
 
@@ -268,6 +270,16 @@ scenario. While not directly applicable to a standard machine learning
 algorithm, it sheds light on shared mathematical structures and patterns across
 domains.
 
+### Example: A Hypothetical Case Study
+
+To elucidate, consider a simple example where `loss = 0.5`, `epoch = 10`,
+`learning_rate = 0.1`, and `frequency = 100`. Using the equations:
+
+- Improvement Rate: `(1 + 0.1 / 100)^10`
+- Label: `0.5 * 10 * (1 + 0.1 / 100)^10`
+
+The results can offer practical insights into how these variables interact.
+
 ### Calculate the Label
 
 We adapted the concept of compound interest for a hypothetical machine learning
@@ -296,6 +308,112 @@ We investigated the inverse relationship, focusing on loss calculation:
   originally defined as the `Desired Outcome`.
 
 Equation: `L = D / (E * (1 + R / F)^E)`
+
+### Exploring the Analogy: Graphing the Target Amount Over Time
+
+In this section, we graphically represent how the target amount changes with
+respect to different parameters. This offers a visual insight into the
+relationship between loss, epochs, learning rate, and frequency.
+
+```py
+# Importing the Matplotlib library for plotting
+import matplotlib.pyplot as plt
+
+
+# Redefining the functions and running the same code block for graphing
+def calculate_periodic_interest_rate(interest_rate, frequency):
+    return 1 + (interest_rate / frequency)
+
+
+def calculate_growth_rate(periodic_interest_rate, interval):
+    return pow(periodic_interest_rate, interval)
+
+
+def calculate_target_amount(principal_amount, interval, growth_rate):
+    return principal_amount * interval * growth_rate
+
+
+# Constants for the simulation
+daily_principal_amount = 50_000  # 50,000 Sats
+daily_interest_rate = 5 / 100  # 5% daily interest rate
+frequency = 365  # daily compounding
+interval_range = 30  # 30 days
+
+# Lists to store the results for graphing
+refactored_days = []
+refactored_satoshis = []
+
+# Starting with the initial trading amount as the principal
+current_principal = daily_principal_amount
+
+# Calculate the periodic interest rate
+periodic_rate = calculate_periodic_interest_rate(
+    daily_interest_rate, frequency
+)
+
+# Calculate the potential growth of Satoshis for each day in the interval range
+for interval in range(1, interval_range + 1):
+    # Calculating the growth rate
+    growth_rate = calculate_growth_rate(periodic_rate, 1)
+
+    # Calculating the target amount
+    target_amount = calculate_target_amount(current_principal, 1, growth_rate)
+
+    refactored_days.append(interval)
+    refactored_satoshis.append(target_amount)
+
+    # Using the target amount as the new principal for the next day's calculation
+    current_principal = target_amount
+
+# Displaying the results in a graph
+plt.plot(refactored_days, refactored_satoshis, marker="o", color="purple")
+plt.title(
+    "Refactored Potential Growth of 50,000 Sats with Compounding (Daily Trading)"
+)
+plt.xlabel("Days")
+plt.ylabel("Satoshis (Sats)")
+plt.grid(True)
+plt.show()
+```
+
+By updating the `current_principal` to `target_amount` at the end of each loop
+iteration, we're essentially rolling over the calculated target amount to serve
+as the new "principal amount" for the next day's calculation. This is what makes
+it "compound" rather than just "simple" growth. In other words, we're not just
+accumulating based on the original principal amount but also on the gains made
+from prior periods.
+
+Removing this line would make each day's target amount only based on the
+original `daily_principal_amount`, effectively turning it into simple interest,
+where the growth is linear with respect to time.
+
+In a machine learning context, the exponential curve could represent a model
+that rapidly improves its performance, possibly indicating that it's learning
+effectively. On the other hand, the straight line (or absence of an exponential
+curve) might represent a model that is learning, but not at an accelerating
+rate, possibly indicating a need for tuning hyperparameters, modifying the
+architecture, or exploring other strategies for improvement.
+
+**Note:**
+
+1. The graph aims to show the progression of the target amount over time,
+   allowing for better understanding of how each parameter affects the learning
+   process.
+2. Different configurations of learning rate and frequency will yield different
+   curve shapes, highlighting the sensitivity of the model to these parameters.
+3. While insightful, the graph may have limitations in capturing real-world
+   complexities. Caution should be exercised when extrapolating these results to
+   actual machine learning algorithms.
+
+### Further Work
+
+For those interested in extending this framework, some potential directions
+include:
+
+- Experimenting with vector spaces to explore how this analogy holds in
+  multi-dimensional scenarios.
+- Conducting empirical studies that apply these concepts to real-world financial
+  and machine learning models.
 
 ## The Loss Function Analogy
 
