@@ -33,3 +33,14 @@ exception or limitation. No warranties are given. The license may not give you
 all of the permissions necessary for your intended use. For example, other
 rights such as publicity, privacy, or moral rights may limit how you use the
 material.
+
+---
+
+**Disclaimer:** Creative Commons Corporation (“Creative Commons”) is not a law
+firm and does not provide legal services or legal advice. Distribution of
+Creative Commons public licenses does not create a lawyer-client or other
+relationship. Creative Commons makes its licenses and related information
+available on an “as-is” basis. Creative Commons gives no warranties regarding
+its licenses, any material licensed under their terms and conditions, or any
+related information. Creative Commons disclaims all liability for damages
+resulting from their use to the fullest extent possible.
