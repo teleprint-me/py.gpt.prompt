@@ -73,19 +73,24 @@ into both fields and create opportunities for unprecedented collaboration.
 
 ### Mathematical Concepts in Finance and Machine Learning
 
-In the field of finance, concepts like compound interest are central to
-understanding how money grows over time. The equation for calculating the target
-amount with daily compounding can be expressed as:
+In the realm of finance, compound interest serves as a foundational concept,
+crucial for grasping how assets grow over time. For daily compounding, the
+formula for calculating the target amount is:
 
 ```plaintext
 periodic_interest_rate = interest_rate / frequency
-growth_rate = pow(periodic_interest_rate, interval)
-target_amount = principal_amount * interval * growth_rate
+growth_factor = 1 + periodic_interest_rate
+target_amount = principal_amount * pow(growth_factor, interval)
 ```
 
-In machine learning, similar principles apply but within the context of model
-training and loss reduction. The common goal is optimization, whether that's
-maximizing financial gain or minimizing predictive errors.
+This equation is more closely aligned with the corrected formula used in our
+machine learning analogy. It properly accounts for the initial principal amount
+and compounds the growth at each interval.
+
+In machine learning, the overarching goal is similarly based on optimization
+principles. Whether it's maximizing financial return in finance or minimizing
+loss in a machine learning model, the core mathematical concepts remain
+strikingly parallel.
 
 ### Exploring the Analogy: Graphing the Principal Amount Over Time
 
@@ -164,10 +169,10 @@ We align the financial model of compound interest with machine learning context,
 elucidating shared patterns and structures through the following terminology
 conversion:
 
-- The `principal_amount` remains constant.
-- The `interval` is the variable, representing the number of days.
-- The `growth_rate` is exponential, as the `periodic_interest_rate` is fixed and
-  the `interval` is utilized for regular compounding.
+- `Principal Amount`: A constant that sets the scale of the investment.
+- `Interval`: A linear factor that scales with the number of trades or periods.
+- `Growth Rate`: An exponential term that represents the compounded growth over
+  the interval.
 
 However, it's essential to note that while these relationships appear
 straightforward, the exponential nature of compound interest suggests a more
@@ -215,12 +220,13 @@ applications.
 
 ## Experimental Quantitative Analysis
 
-By linking the label (target amount) with loss, epoch, learning rate, and
-frequency, we can express the relationship as follows:
+By linking the label (target amount) with loss (principal amount), epoch
+(interval or step), learning rate (interest rate), and frequency, we can express
+the relationship as follows:
 
 ```
-label = loss * epoch * improvement_rate
-label = loss * epoch * (1 + learning_rate / frequency)^epoch
+target_label = current_loss × improvement_rate
+target_label = current_loss × (1 + learning_rate / frequency)^epoch
 ```
 
 Here, the label signifies the desired outcome or target value. This equation
@@ -244,24 +250,21 @@ step_size = 1 + learning_rate / frequency
 training, resembling the growth rate in finance.
 
 ```
-improvement_rate = step_size^epoch
-improvement_rate = (1 + learning_rate / frequency)^epoch
+improvement_rate = step_size^epoch = (1 + learning_rate / frequency)^epoch
 ```
 
-**Loss (Principal Amount):** The loss function embodies prediction error, akin
-to the principal amount in compound interest.
+**Current Loss (Principal Amount):** The loss function embodies prediction
+error, akin to the principal amount in compound interest.
 
 ```
-loss = desired_loss / (epoch * improvement_rate)
-loss = desired_loss / (epoch * (1 + learning_rate / frequency)^epoch)
+current_loss = target_label__prev_epoch  # label sub prev_epoch
 ```
 
 **Target Amount (Label/Desired Outcome):** Mirrors accumulated value per step,
 resembling desired outcome or label in machine learning.
 
 ```
-label = loss * epoch * improvement_rate
-label = loss * epoch * (1 + learning_rate / frequency)^epoch
+target_label = current_loss × improvement_rate
 ```
 
 Through these parallels, we creatively explored connections between a financial
@@ -272,15 +275,15 @@ domains.
 
 ### Example: A Hypothetical Case Study
 
-To elucidate, consider a simple example where `loss = 0.5`, `epoch = 10`,
+To elucidate, consider a simple example where `loss = 0.5`, `epoch = 100`,
 `learning_rate = 0.1`, and `frequency = 100`. Using the equations:
 
-- Improvement Rate: `(1 + 0.1 / 100)^10`
-- Label: `0.5 * 10 * (1 + 0.1 / 100)^10`
+- Improvement Rate: `(1 + 0.1 / 100)^100`
+- Target Label: `0.5 * (1 + 0.1 / 100)^100`
 
 The results can offer practical insights into how these variables interact.
 
-### Calculate the Label
+### Calculate the Current Label
 
 We adapted the concept of compound interest for a hypothetical machine learning
 scenario:
@@ -289,121 +292,118 @@ scenario:
   the learning rate and frequency.
 - `Improvement Rate (I)`: The growth or improvement rate at each step,
   calculated as the step size raised to the epoch.
-- `Label or Desired Outcome (A)`: The accumulated value or target, represented
-  as the loss times the epoch times the improvement rate.
+- `Target Label or Desired Outcome (T)`: The accumulated value or target at the
+  current epoch, represented as the current loss times the improvement rate.
 
-Equation: `A = L * E * (1 + R / F)^E`
+Equation: `T = L * (1 + R / F)^E`
 
-### Calculate the Loss
+### Calculate the Current Loss
 
 We investigated the inverse relationship, focusing on loss calculation:
 
-- `Loss (L)`: The error between predicted and actual values, analogous to the
-  principal amount in finance.
+- `Current Loss (L)`: The error between predicted and actual values at the
+  current epoch, analogous to the principal amount in finance.
 - `Epoch (E)`: A full pass through the training data, analogous to the interval
   in compound interest.
-- `Desired Loss (D)`: The minimum loss we aim to achieve, analogous to the
-  target amount.
-- **Note**: `D` is equivalent to `A` from the `Label` calculation which was
-  originally defined as the `Desired Outcome`.
+- `Current Label (T)`: The label or outcome at the current epoch, analogous to
+  the current amount in finance.
 
-Equation: `L = D / (E * (1 + R / F)^E)`
+Equation: `L = T / (1 + R / F)^E`
 
 ### Exploring the Analogy: Graphing the Target Amount Over Time
 
-In this section, we graphically represent how the target amount changes with
-respect to different parameters. This offers a visual insight into the
-relationship between loss, epochs, learning rate, and frequency.
+This section employs graphical representation to shed light on how different
+parameters affect the target amount, allowing us to better comprehend the
+relationship between loss, epochs, learning rate, and frequency in a machine
+learning context.
 
-```py
-# Importing the Matplotlib library for plotting
+```python
 import matplotlib.pyplot as plt
 
+def simulate_label(loss, learning_rate, frequency, epochs, corrected_formula=False):
+    epoch_steps = []
+    target_labels = []
+    current_loss = loss
+    periodic_rate = 1 + (learning_rate / frequency)
 
-# Redefining the functions and running the same code block for graphing
-def calculate_periodic_interest_rate(interest_rate, frequency):
-    return 1 + (interest_rate / frequency)
+    for epoch in range(1, epochs + 1):
+        if corrected_formula:
+            improvement_rate = pow(periodic_rate, epoch)
+            label = current_loss * improvement_rate
+            current_loss = label
+        else:
+            improvement_rate = pow(periodic_rate, epoch)
+            label = loss * epoch * improvement_rate
 
+        epoch_steps.append(epoch)
+        target_labels.append(label)
 
-def calculate_growth_rate(periodic_interest_rate, interval):
-    return pow(periodic_interest_rate, interval)
-
-
-def calculate_target_amount(principal_amount, interval, growth_rate):
-    return principal_amount * interval * growth_rate
-
+    return epoch_steps, target_labels
 
 # Constants for the simulation
-daily_principal_amount = 50_000  # 50,000 Sats
-daily_interest_rate = 5 / 100  # 5% daily interest rate
-frequency = 365  # daily compounding
-interval_range = 30  # 30 days
+loss = 0.5
+learning_rate = 0.1
+frequency = 100
+epochs = 100
 
-# Lists to store the results for graphing
-refactored_days = []
-refactored_satoshis = []
+epoch_steps, target_labels = simulate_label(loss, learning_rate, frequency, epochs)
+epoch_steps_corrected, target_labels_corrected = simulate_label(loss, learning_rate, frequency, epochs, True)
 
-# Starting with the initial trading amount as the principal
-current_principal = daily_principal_amount
-
-# Calculate the periodic interest rate
-periodic_rate = calculate_periodic_interest_rate(
-    daily_interest_rate, frequency
-)
-
-# Calculate the potential growth of Satoshis for each day in the interval range
-for interval in range(1, interval_range + 1):
-    # Calculating the growth rate
-    growth_rate = calculate_growth_rate(periodic_rate, 1)
-
-    # Calculating the target amount
-    target_amount = calculate_target_amount(current_principal, 1, growth_rate)
-
-    refactored_days.append(interval)
-    refactored_satoshis.append(target_amount)
-
-    # Using the target amount as the new principal for the next day's calculation
-    current_principal = target_amount
-
-# Displaying the results in a graph
-plt.plot(refactored_days, refactored_satoshis, marker="o", color="purple")
-plt.title(
-    "Refactored Potential Growth of 50,000 Sats with Compounding (Daily Trading)"
-)
-plt.xlabel("Days")
-plt.ylabel("Satoshis (Sats)")
+plt.figure(figsize=(12, 6))
+plt.plot(epoch_steps, target_labels, marker="o", color="green", label="Original Formula")
+plt.plot(epoch_steps_corrected, target_labels_corrected, marker="x", color="orange", label="Corrected Formula")
+plt.title("Comparison of Target Labels: Original vs. Corrected Formula")
+plt.xlabel("Epoch")
+plt.ylabel("Target Label")
 plt.grid(True)
+plt.legend()
 plt.show()
 ```
 
-By updating the `current_principal` to `target_amount` at the end of each loop
-iteration, we're essentially rolling over the calculated target amount to serve
-as the new "principal amount" for the next day's calculation. This is what makes
-it "compound" rather than just "simple" growth. In other words, we're not just
-accumulating based on the original principal amount but also on the gains made
-from prior periods.
+#### Interpretation:
 
-Removing this line would make each day's target amount only based on the
-original `daily_principal_amount`, effectively turning it into simple interest,
-where the growth is linear with respect to time.
+1. **Original Formula (Green)**: The green curve appears linear because it
+   treats each epoch as an isolated event. As a result, it doesn't benefit from
+   the compounding effect of previous epochs. This is akin to calculating
+   interest without reinvesting the returns.
 
-In a machine learning context, the exponential curve could represent a model
-that rapidly improves its performance, possibly indicating that it's learning
-effectively. On the other hand, the straight line (or absence of an exponential
-curve) might represent a model that is learning, but not at an accelerating
-rate, possibly indicating a need for tuning hyperparameters, modifying the
-architecture, or exploring other strategies for improvement.
+2. **Corrected Formula (Orange)**: Contrarily, this curve demonstrates
+   exponential growth. It considers each epoch as an incremental improvement
+   over the last, allowing for a more realistic representation of ongoing
+   learning.
 
-**Note:**
+#### Formula Breakdown:
 
-1. The graph aims to show the progression of the target amount over time,
-   allowing for better understanding of how each parameter affects the learning
-   process.
-2. Different configurations of learning rate and frequency will yield different
-   curve shapes, highlighting the sensitivity of the model to these parameters.
-3. While insightful, the graph may have limitations in capturing real-world
-   complexities. Caution should be exercised when extrapolating these results to
-   actual machine learning algorithms.
+The corrected formula for calculating the label in our machine learning analogy
+is:
+
+```
+label = current_loss * (1 + learning_rate/frequency)^epoch
+```
+
+- `current_loss`: Represents the model's current error or 'principal amount' in
+  financial terms.
+- `learning_rate`: Corresponds to the 'interest rate' and controls the model's
+  learning pace.
+- `frequency`: Analogous to the frequency of interest compounding in finance,
+  this could represent how often the model's loss function is updated during
+  training.
+- `epoch`: Comparable to time intervals in finance, representing iterative steps
+  in the learning process.
+
+The key enhancement in the corrected formula is the carry-over of the label
+value from one epoch to the next, thereby realizing the power of compounding.
+
+#### Insights and Caveats:
+
+- Different combinations of learning rate and frequency result in various curve
+  shapes, emphasizing the model's sensitivity to these hyperparameters.
+- Though insightful, this graph should not be used as a direct map to real-world
+  machine learning algorithms due to the inherent complexities involved.
+
+By borrowing the concept of compounding from finance, this analogy provides a
+different lens through which we can explore the intricate dynamics of machine
+learning algorithms.
 
 ### Potential Applications for Compounded Learning
 
