@@ -517,30 +517,73 @@ financial modeling and machine learning. A closer look at Mean Squared Error
 (MSE) will further deepen our understanding. The upcoming sections will explore
 how these components integrate within the concept of MSE.
 
-### Definitions:
+### Parallel Variables for Loss Function Analogy
 
-- `T (Target Label)`: Represents the desired future investment value.
-- `L (Current Loss)`: Denotes the difference between the target and current
-  value.
-- `D (Desired Interval Value)`: Value aimed for in each interval.
-- `E (Epoch)`: Number of intervals or steps.
-- `R (Learning Rate)`: The rate of adjustments, analogous to the rate of return
-  in finance.
-- `F (Frequency)`: Frequency of compounding or number of batches in machine
-  learning.
+1. **Market Price → Input Layer**
 
-### Formulating the Analogy with MSE (Further Updated):
+   - Finance: \( MP \)
+   - Machine Learning: \( IL \)
+   - The input variable(s)
 
-```markdown
-MSE = (1/E) \* E_Σ_i=1 (Current Value_i - Target Label_i)^2
+2. **Target Value → Target Label**
+
+   - Finance: \( TV \)
+   - Machine Learning: \( TL \)
+   - Represents the desired future investment value.
+
+3. **Current Value → Model Prediction**
+
+   - Finance: \( CV \)
+   - Machine Learning: \( MP \)
+   - Value aimed for in each interval.
+
+4. **Trade Amount → Current Loss**
+
+   - Finance: \( TA \)
+   - Machine Learning: \( CL \)
+   - Denotes the difference between the target and current value.
+
+5. **Order Size → Output Layer**
+
+   - Finance: \( OS \)
+   - Machine Learning: \( OL \)
+   - The output value(s)
+
+6. **Interval → Epoch**
+
+   - Finance (Order Interval): \( OI \)
+   - Machine Learning: \( E \)
+   - Number of intervals or steps.
+
+7. **Rate of Return → Learning Rate**
+
+   - Finance: \( RR \)
+   - Machine Learning: \( LR \)
+   - The rate of adjustments, analogous to the rate of return in finance.
+
+8. **Frequency of Trading → Batch Frequency**
+
+   - Finance: \( FT \)
+   - Machine Learning: \( BF \)
+   - Frequency of compounding or number of batches in machine learning.
+
+9. **Desired Interval Value**
+   - Finance: \( D \)
+   - Machine Learning: \( D \) (optional, could be a constant or a dynamic value
+     based on a function)
+   - Value aimed for in each interval.
+
+### Formulating the Analogy with MSE:
+
+```
+MSE = (1/E) * E_Σ_i=1 (TL_i - CL_i)^2
 ```
 
 Where:
 
-- `Current Value_i (Model Prediction)`: Investment's actual value at interval
-  `i`.
-- `Target Label_i`: Desired value at interval `i`, aligned with
-  `T_i = L * (1 + R / F)^i`.
+- `MP_i (Model Prediction)`: Investment's actual value at interval `i`.
+- `TL_i`: Desired value at interval `i`, aligned with
+  `TL_i = CL * (1 + LR / BF)^i`.
 
 ### Application
 
@@ -553,52 +596,6 @@ indicate a divergence.
 Simulate multiple investment scenarios and calculate MSE to gauge how well the
 strategies align with your goals. This provides interesting avenues for further
 research, such as how learning rate and frequency affect MSE.
-
-### Financial Modeling - Value Averaging Strategy
-
-#### Variables
-
-- `A`: Target Value (Desired Value)
-- `D`: Current Value (Actualized Value)
-- `L`: Trade Amount
-- `E`: Interval
-- `R`: Growth Rate
-- `F`: Frequency
-
-#### Equations
-
-- Target Value: `A = E * (1 + R / F)^E`
-- Trade Amount: `L = A - D`
-
-### Machine Learning - Loss Function Analogy
-
-#### Variables
-
-- Market Price: Corresponds to input/parameter value in the initial layer
-- Target Value (Label): `A`
-- Prediction (Current Value): `D`
-- Trade Amount (Loss): `L`
-
-#### Analogy Summary
-
-- The Market Price can be thought of as the input to a machine learning model.
-- The Target Value corresponds to the actual label or desired outcome.
-- The Current Value is akin to the prediction made by the model.
-- The Trade Amount serves as the "loss," representing the difference between the
-  Target and Current Values.
-
-### Cross-Domain Parallels
-
-1. **Target Value (Desired Value)**: In both domains, this represents the
-   "ideal" or "goal" outcome.
-2. **Current Value (Actualized Value)**: Represents the "current state" in both
-   domains.
-3. **Trade Amount**: Serves as the "error" or "deviation" from the desired
-   outcome. Similar to the loss in machine learning.
-4. **Interval (E)**: Time steps in financial modeling, could be analogous to
-   epochs or batches in machine learning.
-5. **Growth Rate (R)**: In finance, this is the expected growth rate. In ML, it
-   could be seen as the learning rate.
 
 ## Reward Function for Investment Decision-Making
 
