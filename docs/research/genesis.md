@@ -482,76 +482,77 @@ include:
 
 ### Mathematical Representation
 
-Now, let's explore this concept mathematically:
+Let's delve into the mathematical formulations to better elucidate the concept:
 
-In Value Averaging:
+#### In Value Averaging:
+
+The equation below represents the difference between the current target (desired
+investment value) and the current value (actual investment at a given time):
 
 ```
 Trade Amount = Current Target - Current Value
 ```
 
-In Machine Learning (Loss Function):
+#### In Machine Learning (Loss Function):
+
+To align the terminology with our analogy, the loss function can be expressed as
+the difference between the actual target label and the model's prediction:
 
 ```
-Loss = Target Value (Label) - Prediction
+Current Loss = Target Label - Model Prediction
 ```
 
 ### Equivalent Analogy
 
-- Trade Amount ↔ Loss
-- Current Target ↔ Target Value (Label)
-- Current Value ↔ Prediction
+Here we provide the direct correspondences between terms used in Value Averaging
+and Machine Learning:
+
+- Trade Amount ↔ Current Loss
+- Current Target ↔ Target Label
+- Current Value ↔ Model Prediction
 - Market Price ↔ Input Features
 
-The resemblance between these concepts is intriguing, offering a fresh
-perspective on the relationships that can be drawn between financial modeling
-and machine learning. A thoughtful approach, beginning with the exploration of
-Mean Squared Error (MSE), leads to a deeper understanding. Let's now explore the
-integration of the components of our analogy with the concept of MSE.
+These correspondences offer an intriguing perspective on the parallels between
+financial modeling and machine learning. A closer look at Mean Squared Error
+(MSE) will further deepen our understanding. The upcoming sections will explore
+how these components integrate within the concept of MSE.
 
 ### Definitions:
 
-- `A`: Target value, representing the desired future investment value.
-- `L`: Trade amount or Loss, denoting the difference between target and current
+- `T (Target Label)`: Represents the desired future investment value.
+- `L (Current Loss)`: Denotes the difference between the target and current
   value.
-- `D`: Desired value for each interval (constant or variable).
-- `E`: Number of intervals.
-- `R`: Rate of return.
-- `F`: Frequency of compounding.
+- `D (Desired Interval Value)`: Value aimed for in each interval.
+- `E (Epoch)`: Number of intervals or steps.
+- `R (Learning Rate)`: The rate of adjustments, analogous to the rate of return
+  in finance.
+- `F (Frequency)`: Frequency of compounding or number of batches in machine
+  learning.
 
-### Formulating the Analogy with MSE
+### Formulating the Analogy with MSE (Further Updated):
 
-In machine learning, MSE calculates the average of squared differences between
-predicted and actual target values. Mathematically:
-
-```
-MSE = (1/n) * n_Σ_i=1 (Prediction_i - Target_i)^2
-```
-
-In our analogy, MSE signifies the average of squared differences between
-investment's current value and desired target value over intervals:
-
-```
-MSE = (1/E) * E_Σ_i=1 (Current Value_i - A_i)^2
+```markdown
+MSE = (1/E) \* E_Σ_i=1 (Current Value_i - Target Label_i)^2
 ```
 
 Where:
 
-- `Current Value_i`: Investment's actual value at interval `i`.
-- `A_i`: Target value at interval `i`, calculated as
-  `A_i = L * E * (1 + R / F)^i`.
+- `Current Value_i (Model Prediction)`: Investment's actual value at interval
+  `i`.
+- `Target Label_i`: Desired value at interval `i`, aligned with
+  `T_i = L * (1 + R / F)^i`.
 
 ### Application
 
-MSE in this context provides insight into alignment of investment strategy with
-targets. Lower MSE suggests close alignment, while higher MSE indicates
-deviations.
+MSE gives insight into how well your investment strategy aligns with your
+targets over time. Lower MSE values signify better alignment and higher values
+indicate a divergence.
 
 ### Further Exploration
 
-We can simulate various investment scenarios, calculating MSE to assess
-strategy's alignment with targets. Exploring how parameters like return rate or
-compounding frequency influence MSE offers an intriguing avenue.
+Simulate multiple investment scenarios and calculate MSE to gauge how well the
+strategies align with your goals. This provides interesting avenues for further
+research, such as how learning rate and frequency affect MSE.
 
 ### Financial Modeling - Value Averaging Strategy
 
