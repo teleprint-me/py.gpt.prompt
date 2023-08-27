@@ -440,52 +440,45 @@ include:
 
 ## The Loss Function Analogy
 
-1. **Market Price (Input Layer)**: This serves as the input feature in the machine learning
-   analogy. In the context of the Value Averaging strategy, it refers to the
-   current market price at which assets can be bought or sold.
+1. **Market Price (Input Layer)**: This serves as one of the input variables in
+   the machine learning analogy. In Value Averaging, it refers to the current
+   market price for buying or selling assets.
 
-   **In Depth**: This price can fluctuate due to various factors such as market
-   demand, economic indicators, or geopolitical events. Similarly, in machine
-   learning, input features may come from different sources and can be variable.
+   **In Depth**: Just like input layers in neural networks can accept multiple
+   features, the Market Price here can be one of many variables influencing the
+   trading decision.
 
-2. **Target Value (Target Label)**: In machine learning, this is the ground truth or
-   the outcome that the model aims to predict. In the context of Value
-   Averaging, it's the predetermined investment value for a specific time
-   interval, often referred to as the "Current Target."
+2. **Target Value (Target Label)**: This is the ground truth in machine
+   learning—what the model aims to predict. In Value Averaging, it is the
+   predetermined investment value for each interval.
 
-   **In Depth**: This value can be set based on investment goals and risk
-   tolerance, akin to how labels are established in a supervised learning
-   context.
+   **In Depth**: This value is crucial for both the investment strategy and the
+   learning model, as it serves as the comparison metric for determining
+   'success.'
 
-3. **Current Value (Model Prediction)**: In the Value Averaging strategy, this
-   represents the actual investment value at a given interval. In machine
-   learning, it is akin to the model's prediction based on input features
-   (Market Price).
+3. **Current Value (Model Prediction)**: In Value Averaging, this term
+   represents the actual investment value at a specific interval. It is
+   analogous to the model's prediction in machine learning.
 
-   **In Depth**: Just as a model's prediction may not perfectly align with the
-   actual label, the Current Value may deviate from the Target Value,
-   necessitating adjustments.
+   **In Depth**: As models aim to minimize the discrepancy between prediction
+   and label, Value Averaging seeks to minimize the difference between the
+   Current and Target Values.
 
-4. **Trade Amount (Loss)**: This term draws a parallel with the loss function in
-   machine learning. It represents the delta between the Current Target and the
-   Current Value, signifying the amount needed to align the investment with the
-   predetermined strategy.
+4. **Trade Amount (Loss)**: This term could be considered a specialized form of
+   'loss,' distinct from the `current_loss` term discussed earlier. It
+   represents the delta needed to align the Current Value with the Target Value.
 
-   **In Depth**: In machine learning, loss quantifies how far off the model's
-   prediction is from the actual label. In Value Averaging, the Trade Amount
-   serves a similar purpose, indicating how much additional investment or
-   divestment is needed to meet the Target Value.
+   **In Depth**: In the context of the earlier formula for `current_loss`, this
+   Trade Amount serves as a real-time measure of the difference between where
+   the investment currently stands and where it is targeted to be.
 
-5. **Order Size (Output Layer)**: In the context of Value Averaging, this term
-   signifies the amount of the asset to be bought or sold to achieve the Target
-   Value, calculated based on the Market Price and Trade Amount. In machine
-   learning, it can be analogous to the output layer where the final prediction
-   is made.
+5. **Order Size (Output Layer)**: In Value Averaging, the Order Size denotes the
+   quantity of the asset to be bought or sold to align with the Target Value. In
+   machine learning, this is analogous to the output layer.
 
-   **In Depth**: In machine learning, the output layer transforms the model's
-   internal representations into the final prediction. Similarly, the Order Size
-   transforms the strategy into actionable buy or sell orders, thereby becoming
-   the final 'output' of the Value Averaging strategy.
+   **In Depth**: Just like the output layer transforms internal model
+   computations into a final prediction, the Order Size translates the Value
+   Averaging strategy into concrete trading actions.
 
 ### Mathematical Representation
 
