@@ -2,17 +2,26 @@
 # NOTE: SciPy Vulnerability
 # The Python version must be constrained in order to resolve this issue.
 #
+# NOTE: Resolve PyTorch dependency
+# This is the most satisfying solution for now and will default to CPU as a result.
+# poetry source add -p explicit pytorch https://download.pytorch.org/whl/cpu
+# poetry add --source pytorch torch torchvision
+#
 # NOTE: Missing Shared Objects with PyTorch
 # Use `pip install torch` to resolve platform specific issues.
 # The missing shared objects will be installed as a result.
 # https://stackoverflow.com/questions/59158044/poetry-and-pytorch
 # https://github.com/python-poetry/poetry/issues/2247
 # https://pytorch.org/get-started/locally/
-# A workaround for CPU is to use:
+#
+# NOTE: PyTorch Workaround is to manually install using pip
+# CPU:
 # pip3 install torch --index-url https://download.pytorch.org/whl/cpu
-# A workaround for ROCm is to use:
+#
+# ROCm:
 # pip3 install torch --index-url https://download.pytorch.org/whl/rocm5.4.2
-# Nvidia users can proceed as normal. CUDA wheel is default:
+#
+# Nvidia: CUDA wheel is default:
 # pip3 install torch
 #
 [tool.poetry]
@@ -39,7 +48,6 @@ selenium = "^4.10.0"
 pyopencl = "^2023.1.1"
 opencv-python = "^4.8.0.74"
 pytesseract = "^0.3.10"
-torch = "^2.0.1"
 fairscale = "^0.4.13"
 sentencepiece = "^0.1.99"
 nltk = "^3.8.1"
@@ -51,6 +59,8 @@ llama-cpp-python = "^0.1.78"
 tiktoken = "^0.4.0"
 openai = {extras = ["embeddings"], version = "^0.27.8"}
 scipy = "1.10.0"
+gguf = "^0.2.1"
+torch = {version = "^2.0.1+cpu", source = "pytorch"}
 
 [tool.poetry.group.dev.dependencies]
 pre_commit = "^3.3.3"
@@ -66,6 +76,12 @@ mkdocstrings = {version = "^0.22.0", extras = ["python"]}
 mkdocs-material = "^9.1.18"
 ipykernel = "^6.24.0"  # VSCode requires the kernel
 # jupyter = "^1.0.0"  # Only install if you need it
+
+
+[[tool.poetry.source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
 
 [tool.pytest.ini_options]
 markers = [
