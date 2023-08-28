@@ -22,39 +22,45 @@ pip install llama-cpp-python --force-reinstall --upgrade --no-cache-dir
 Note: If you are using Apple Silicon (M1) Mac, make sure you have installed a
 version of Python that supports arm64 architecture.
 
-### Installation with OpenBLAS / cuBLAS / CLBlast / Metal
+### Installation with Hardware Acceleration
 
-llama.cpp supports multiple BLAS backends for faster processing. Use the
+`llama.cpp` supports multiple BLAS backends for faster processing. Use the
 `FORCE_CMAKE=1` environment variable to force the use of `cmake` and install the
 pip package for the desired BLAS backend.
 
-To install with OpenBLAS:
+To install with OpenBLAS, set the `LLAMA_BLAS and LLAMA_BLAS_VENDOR` environment
+variables before installing:
 
 ```bash
-CMAKE_ARGS="-DLLAMA_OPENBLAS=on" FORCE_CMAKE=1 pip install llama-cpp-python
+CMAKE_ARGS="-DLLAMA_BLAS=ON -DLLAMA_BLAS_VENDOR=OpenBLAS" FORCE_CMAKE=1 pip install llama-cpp-python
 ```
 
-To install with cuBLAS:
+To install with cuBLAS, set the `LLAMA_CUBLAS=1` environment variable before
+installing:
 
 ```bash
 CMAKE_ARGS="-DLLAMA_CUBLAS=on" FORCE_CMAKE=1 pip install llama-cpp-python
 ```
 
-NOTE: Use cuBLAS if you have AMD as `llama.cpp` takes care of this for you under
-the hood. It compiles the necessary HIP code using `nvcc`. Reference
-[ggerganov/llama.cpp pull request #1087](https://github.com/ggerganov/llama.cpp/pull/1087)
-for more information.
-
-To install with CLBlast:
+To install with CLBlast, set the `LLAMA_CLBLAST=1` environment variable before
+installing:
 
 ```bash
 CMAKE_ARGS="-DLLAMA_CLBLAST=on" FORCE_CMAKE=1 pip install llama-cpp-python
 ```
 
-To install with Metal (MPS):
+To install with Metal (MPS), set the `LLAMA_METAL=on` environment variable
+before installing:
 
 ```bash
 CMAKE_ARGS="-DLLAMA_METAL=on" FORCE_CMAKE=1 pip install llama-cpp-python
+```
+
+To install with hipBLAS / ROCm support for AMD cards, set the `LLAMA_HIPBLAS=on`
+environment variable before installing:
+
+```bash
+CMAKE_ARGS="-DLLAMA_HIPBLAS=on" FORCE_CMAKE=1 pip install llama-cpp-python
 ```
 
 Detailed MacOS Metal GPU install documentation is available at
