@@ -2,6 +2,51 @@
 
 # scripts/llama_download.sh
 
+# Initialize associative arrays to hold model information
+declare -A llama_shards
+declare -A llama_models
+declare -A code_shards
+declare -A code_models
+
+# Function to populate the llama_shards and llama_models arrays
+populate_llama_models() {
+    llama_shards["7B"]=0
+    llama_models["7B"]="llama-2-7b"
+    llama_shards["7B-chat"]=0
+    llama_models["7B-chat"]="llama-2-7b-chat"
+    llama_shards["13B"]=1
+    llama_models["13B"]="llama-2-13b"
+    llama_shards["13B-chat"]=1
+    llama_models["13B-chat"]="llama-2-13b-chat"
+    llama_shards["70B"]=7
+    llama_models["70B"]="llama-2-70b"
+    llama_shards["70B-chat"]=7
+    llama_models["70B-chat"]="llama-2-70b-chat"
+}
+
+# Function to populate the code_shards and code_models arrays
+populate_code_models() {
+    code_shards["7b"]=0
+    code_models["7b"]="CodeLlama-7b"
+    code_shards["13b"]=1
+    code_models["13b"]="CodeLlama-13b"
+    code_shards["34b"]=3
+    code_models["34b"]="CodeLlama-34b"
+    code_shards["7b-Python"]=0
+    code_models["7b-Python"]="CodeLlama-7b-Python"
+    code_shards["13b-Python"]=1
+    code_models["13b-Python"]="CodeLlama-13b-Python"
+    code_shards["34b-Python"]=3
+    code_models["34b-Python"]="CodeLlama-34b-Python"
+    code_shards["7b-Instruct"]=0
+    code_models["7b-Instruct"]="CodeLlama-7b-Instruct"
+    code_shards["13b-Instruct"]=1
+    code_models["13b-Instruct"]="CodeLlama-13b-Instruct"
+    code_shards["34b-Instruct"]=3
+    code_models["34b-Instruct"]="CodeLlama-34b-Instruct"
+    # Add more code models and their corresponding information here
+}
+
 # Common Functions
 
 get_presigned_url() {
@@ -65,6 +110,10 @@ display_main_menu() {
     echo "3. Quit"
 }
 
+# Call the functions to populate the model arrays
+populate_llama_models
+populate_code_models
+
 # Example of how to call the common functions to set initial variables
 PRESIGNED_URL=$(get_presigned_url)
 echo "Presigned URL: ${PRESIGNED_URL}"
@@ -74,24 +123,36 @@ while :; do
     display_main_menu
     read -r choice
 
-    case $choice in
-    1)
-        LLAMA_MODEL_SIZE=$(get_llama_models)
-        echo "Llama Model Size: ${LLAMA_MODEL_SIZE}"
-        download_model "Llama" "${PRESIGNED_URL}"
-        ;;
-    2)
-        CODE_MODEL_SIZE=$(get_code_models)
-        echo "Code Model Size: ${CODE_MODEL_SIZE}"
-        download_model "Code" "${PRESIGNED_URL}"
-        ;;
-    3)
-        echo "Exiting."
-        exit 0
-        ;;
-    *)
-        echo "Invalid choice. Please try again."
-        ;;
+    case "$choice" in
+        1) # Llama Model
+            selected_models=$(get_llama_models)
+            model_array=("${selected_models//,/ }")
+            for model in "${model_array[@]}"; do
+                if [[ -n "${llama_models[$model]}" ]]; then
+                    download_and_validate "$model"
+                else
+                    echo "Invalid Llama model: $model"
+                fi
+            done
+            ;;
+        2) # Code Model
+            selected_models=$(get_code_models)
+            model_array=("${selected_models//,/ }")
+            for model in "${model_array[@]}"; do
+                if [[ -n "${code_models[$model]}" ]]; then
+                    download_and_validate "$model"
+                else
+                    echo "Invalid Code model: $model"
+                fi
+            done
+            ;;
+        3)
+            echo "Exiting."
+            exit 0
+            ;;
+        *)
+            echo "Invalid choice. Please try again."
+            ;;
     esac
 
     read -rp "Would you like to download another model? [Y/n]: " continue_choice
