@@ -130,14 +130,18 @@ download_model() {
     # Downloading the models
     echo "Downloading selected models..."
     for model in "${model_array[@]}"; do
-        if [[ -n "${code_models[$model]}" ]]; then
-            if [[ "$model_type" = "code_models" ]]; then
-                download_and_validate "$signed_url" "${code_shards[$model]}" "${code_models[$model]}"
-            else
+        if [[ "$model_type" = "llama_models" ]]; then
+            if [[ -n "${llama_models[$model]}" ]]; then
                 download_and_validate "$signed_url" "${llama_shards[$model]}" "${llama_models[$model]}"
+            else
+                echo "Error: Selected invalid Llama model: $model"
             fi
         else
-            echo "Error: Selected invalid model: $model"
+            if [[ -n "${code_models[$model]}" ]]; then
+                download_and_validate "$signed_url" "${code_shards[$model]}" "${code_models[$model]}"
+            else
+                echo "Error: Selected invalid Code model: $model"
+            fi
         fi
     done
 }
