@@ -47,25 +47,6 @@ populate_code_models() {
     # Add more code models and their corresponding information here
 }
 
-# Common Functions
-
-get_presigned_url() {
-    read -rp "Enter the URL from email: " PRESIGNED_URL
-    echo "${PRESIGNED_URL}"
-}
-
-get_target_folder() {
-    read -rp "Enter the target folder to download the files to (default: ./models): " TARGET_FOLDER
-    if [[ -z "${TARGET_FOLDER}" ]]; then
-        TARGET_FOLDER="./models"
-    fi
-    mkdir -p "${TARGET_FOLDER}" || {
-        echo "Could not create target folder! Exiting."
-        exit 1
-    }
-    echo "${TARGET_FOLDER}"
-}
-
 get_llama_models() {
     local LLAMA_MODELS="7B,13B,70B,7B-chat,13B-chat,70B-chat"
     read -rp "Enter the list of llama models to download without spaces (${LLAMA_MODELS}), or press Enter for all: " LLAMA_MODEL_SIZE
@@ -84,22 +65,81 @@ get_code_models() {
     echo "${CODE_MODEL_SIZE}"
 }
 
+get_presigned_url() {
+    read -rp "Enter the URL from email: " PRESIGNED_URL
+    echo "${PRESIGNED_URL}"
+}
+
+get_target_folder() {
+    read -rp "Enter the target folder to download the files to (default: ./models): " TARGET_FOLDER
+    if [[ -z "${TARGET_FOLDER}" ]]; then
+        TARGET_FOLDER="./models"
+    fi
+    mkdir -p "${TARGET_FOLDER}" || {
+        echo "Could not create target folder! Exiting."
+        exit 1
+    }
+    echo "${TARGET_FOLDER}"
+}
+
+# Function to download and validate a model
+download_and_validate() {
+    local signed_url=$1
+    local model_shards=$2
+    local model_path=$3
+
+    mkdir -p "${TARGET_FOLDER}/${model_path}"
+
+    for shard in $(seq -f "0%g" 0 ${model_shards})
+    do
+        local consolidated_path="${TARGET_FOLDER}/${model_path}/consolidated.${shard}.pth"
+        if [ ! -f "${consolidated_path}" ]; then
+            echo "Downloading ${model_path} shard ${shard}..."
+            wget "${signed_url/'*'/"${model_path}/consolidated.${shard}.pth"}" -O "${consolidated_path}"
+        else
+            echo "${model_path}/consolidated.${shard}.pth already exists, skipping download."
+        fi
+    done
+
+    wget "${signed_url/'*'/"${model_path}/params.json"}" -O "${TARGET_FOLDER}/${model_path}/params.json"
+    wget "${signed_url/'*'/"${model_path}/checklist.chk"}" -O "${TARGET_FOLDER}/${model_path}/checklist.chk"
+    echo "Checking checksums"
+    (cd "${TARGET_FOLDER}/${model_path}" && md5sum -c checklist.chk)
+
+    echo "Downloading tokenizer for ${model_path}"
+    wget "${signed_url/'*'/"tokenizer.model"}" -O "${TARGET_FOLDER}/${model_path}/tokenizer.model"
+    wget "${signed_url/'*'/"tokenizer_checklist.chk"}" -O "${TARGET_FOLDER}/${model_path}/tokenizer_checklist.chk"
+    echo "Checking tokenizer checksum"
+    (cd "${TARGET_FOLDER}/${model_path}" && md5sum -c tokenizer_checklist.chk)
+}
+
 # Function for downloading models
 download_model() {
-    model_type=$1
-    signed_url=$2
+    local signed_url=$1
+    local selected_models=$2  # Store the selected models as a string
+    local model_type=$3
 
-    if [[ -z "$model_type" || -z "$signed_url" ]]; then
-        echo "Missing arguments to download_model function."
+    if [[ -z "$signed_url" || -z "$selected_models" ]]; then
+        echo "Missing arguments for download_model function."
         exit 1
     fi
 
-    # Downloading the model
-    echo "Downloading $model_type model..."
-    curl -O "$signed_url" || {
-        echo "Download failed! Exiting."
-        exit 1
-    }
+    # Convert the comma-separated list into an array-like structure
+    IFS=',' read -ra model_array <<< "$selected_models"
+
+    # Downloading the models
+    echo "Downloading selected models..."
+    for model in "${model_array[@]}"; do
+        if [[ -n "${code_models[$model]}" ]]; then
+            if [[ "$model_type" = "code_models" ]]; then
+                download_and_validate "$signed_url" "${code_shards[$model]}" "${code_models[$model]}"
+            else
+                download_and_validate "$signed_url" "${llama_shards[$model]}" "${llama_models[$model]}"
+            fi
+        else
+            echo "Error: Selected invalid model: $model"
+        fi
+    done
 }
 
 # Function for displaying the main menu
@@ -114,9 +154,9 @@ display_main_menu() {
 populate_llama_models
 populate_code_models
 
-# Example of how to call the common functions to set initial variables
+# Set initial constants
 PRESIGNED_URL=$(get_presigned_url)
-echo "Presigned URL: ${PRESIGNED_URL}"
+TARGET_FOLDER=$(get_target_folder)
 
 # Main Script Loop for User Interaction
 while :; do
@@ -126,25 +166,11 @@ while :; do
     case "$choice" in
         1) # Llama Model
             selected_models=$(get_llama_models)
-            model_array=("${selected_models//,/ }")
-            for model in "${model_array[@]}"; do
-                if [[ -n "${llama_models[$model]}" ]]; then
-                    download_and_validate "$model"
-                else
-                    echo "Invalid Llama model: $model"
-                fi
-            done
+            download_model "$PRESIGNED_URL" "$selected_models" "llama_models"
             ;;
         2) # Code Model
             selected_models=$(get_code_models)
-            model_array=("${selected_models//,/ }")
-            for model in "${model_array[@]}"; do
-                if [[ -n "${code_models[$model]}" ]]; then
-                    download_and_validate "$model"
-                else
-                    echo "Invalid Code model: $model"
-                fi
-            done
+            download_model "$PRESIGNED_URL" "$selected_models" "code_models"
             ;;
         3)
             echo "Exiting."
