@@ -26,7 +26,7 @@ SOFTWARE.
 NOTE:
     - This is a modified script of the original example provided by Andrei Betlen.
     - I modified the original and built this script as a result alongside OpenAI's GPT-4 model(s).
-    - GGML Quantization is being deprecated in favor of GGUF Quantization.
+    - GGML Quantization is now deprecated in favor of GGUF Quantization.
     - It is imperative that this script be treated simply as a prototype to experiment with.
 
 Source: https://github.com/abetlen/llama-cpp-python/blob/main/examples/low_level_api/quantize.py
@@ -37,7 +37,9 @@ import click
 from llama_cpp import (
     LLAMA_FTYPE_MOSTLY_F16,
     LLAMA_FTYPE_MOSTLY_Q4_0,
+    LLAMA_FTYPE_MOSTLY_Q4_1,
     LLAMA_FTYPE_MOSTLY_Q5_0,
+    LLAMA_FTYPE_MOSTLY_Q5_1,
     LLAMA_FTYPE_MOSTLY_Q8_0,
     llama_model_quantize,
     llama_model_quantize_default_params,
@@ -45,7 +47,7 @@ from llama_cpp import (
 
 from pygptprompt import logging
 
-QUANTIZATION_TYPE_KEYS = ["f16", "q8_0", "q5_0", "q4_0"]
+QUANTIZATION_TYPE_KEYS = ["f16", "q8_0", "q5_1", "q5_0", "q4_1", "q4_0"]
 
 
 # Mapping between user-friendly quantization type and the expected integer value
@@ -53,7 +55,9 @@ def get_quantization_type(quant_type_str):
     mapping = {
         QUANTIZATION_TYPE_KEYS[0]: LLAMA_FTYPE_MOSTLY_F16,
         QUANTIZATION_TYPE_KEYS[1]: LLAMA_FTYPE_MOSTLY_Q8_0,
+        QUANTIZATION_TYPE_KEYS[2]: LLAMA_FTYPE_MOSTLY_Q5_1,
         QUANTIZATION_TYPE_KEYS[2]: LLAMA_FTYPE_MOSTLY_Q5_0,
+        QUANTIZATION_TYPE_KEYS[3]: LLAMA_FTYPE_MOSTLY_Q4_1,
         QUANTIZATION_TYPE_KEYS[3]: LLAMA_FTYPE_MOSTLY_Q4_0,
     }
     return mapping.get(
