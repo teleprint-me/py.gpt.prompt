@@ -8,14 +8,17 @@ import click
 from chromadb import API, PersistentClient, Settings
 from chromadb.api.models.Collection import Collection
 from chromadb.api.types import Documents, QueryResult
-from llama_cpp import ChatCompletionMessage
 from prompt_toolkit import prompt as input
 
 from pygptprompt import logging
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.factory import FunctionFactory
 from pygptprompt.model.factory import ChatModelFactory
-from pygptprompt.pattern.model import ChatModel, ChatModelEmbeddingFunction
+from pygptprompt.pattern.model import (
+    ChatModel,
+    ChatModelChatCompletion,
+    ChatModelEmbeddingFunction,
+)
 
 
 @click.command()
@@ -61,7 +64,7 @@ def main(config_path, prompt, chat, embed, provider, path_database):
         sys.exit(1)
 
     session_name: str = "test"
-    collection_name: str = "test"
+    collection_name: str = session_name
 
     config: ConfigurationManager = ConfigurationManager(config_path)
 
@@ -79,12 +82,12 @@ def main(config_path, prompt, chat, embed, provider, path_database):
         settings=Settings(anonymized_telemetry=False),
     )
 
-    system_prompt = ChatCompletionMessage(
+    system_prompt = ChatModelChatCompletion(
         role=config.get_value(f"{provider}.system_prompt.role"),
         content=config.get_value(f"{provider}.system_prompt.content"),
     )
 
-    messages: List[ChatCompletionMessage] = [system_prompt]
+    messages: List[ChatModelChatCompletion] = [system_prompt]
 
     try:
         print(system_prompt.get("role"))
@@ -92,10 +95,10 @@ def main(config_path, prompt, chat, embed, provider, path_database):
         print()
 
         if prompt:
-            user_prompt = ChatCompletionMessage(role="user", content=prompt)
+            user_prompt = ChatModelChatCompletion(role="user", content=prompt)
             messages.append(user_prompt)
             print("assistant")
-            message: ChatCompletionMessage = chat_model.get_chat_completion(
+            message: ChatModelChatCompletion = chat_model.get_chat_completion(
                 messages=messages,
             )
             messages.append(message)
@@ -109,18 +112,18 @@ def main(config_path, prompt, chat, embed, provider, path_database):
                     )
                 except (EOFError, KeyboardInterrupt):
                     break
-                user_message = ChatCompletionMessage(role="user", content=text_input)
+                user_message = ChatModelChatCompletion(role="user", content=text_input)
                 messages.append(user_message)
 
                 print()
                 print("assistant")
-                message: ChatCompletionMessage = chat_model.get_chat_completion(
+                message: ChatModelChatCompletion = chat_model.get_chat_completion(
                     messages=messages,
                 )
 
                 if message["role"] == "function":
                     # Query the function from the factory and execute it
-                    result: ChatCompletionMessage = function_factory.execute_function(
+                    result: ChatModelChatCompletion = function_factory.execute_function(
                         message
                     )
                     # Skip to user prompt if result is None
@@ -130,7 +133,7 @@ def main(config_path, prompt, chat, embed, provider, path_database):
                         )
                         continue
 
-                    message: ChatCompletionMessage = function_factory.query_function(
+                    message: ChatModelChatCompletion = function_factory.query_function(
                         chat_model=chat_model, result=result, messages=messages
                     )
 
@@ -152,18 +155,18 @@ def main(config_path, prompt, chat, embed, provider, path_database):
                     )
                 except (EOFError, KeyboardInterrupt):
                     break
-                user_message = ChatCompletionMessage(role="user", content=text_input)
+                user_message = ChatModelChatCompletion(role="user", content=text_input)
                 messages.append(user_message)
 
                 print()
                 print("assistant")
-                message: ChatCompletionMessage = chat_model.get_chat_completion(
+                message: ChatModelChatCompletion = chat_model.get_chat_completion(
                     messages=messages,
                 )
 
                 if message["role"] == "function":
                     # Query the function from the factory and execute it
-                    result: ChatCompletionMessage = function_factory.execute_function(
+                    result: ChatModelChatCompletion = function_factory.execute_function(
                         message
                     )
                     # Skip to user prompt if result is None
@@ -173,7 +176,7 @@ def main(config_path, prompt, chat, embed, provider, path_database):
                         )
                         continue
 
-                    message: ChatCompletionMessage = function_factory.query_function(
+                    message: ChatModelChatCompletion = function_factory.query_function(
                         chat_model=chat_model, result=result, messages=messages
                     )
 
