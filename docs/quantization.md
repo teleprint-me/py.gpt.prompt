@@ -70,6 +70,11 @@ To configure your model for use, modify the JSON configuration file located at
        "local": "models/ehartford/Samantha-1.11-CodeLlama-34b/Samantha-1.11-CodeLlama-34b.GGUF.q4_1.bin",
        // Other properties...
      }
+     // Other properties...
+    "system_prompt": {
+      "role": "system",
+      "content": "My name is Samantha. I am a helpful assistant."
+    }
    }
    ```
 
@@ -78,9 +83,14 @@ To configure your model for use, modify the JSON configuration file located at
 
    - Update `"local"` to point to the path of your local model file.
 
-4. Save the changes to the `config.sample.json` file.
+4. Update the `content` key under the `system_prompt` section to specify the
+   models orientation.
 
-5. You may also need to adjust other properties or configurations within the
+   - Update `"content"` to the desired system prompt message content.
+
+5. Save the changes to the `config.sample.json` file.
+
+6. You may also need to adjust other properties or configurations within the
    JSON file as required for your use case. Be sure to follow any specific
    instructions related to your project or setup.
 
@@ -136,7 +146,7 @@ steps:
 
    ```
    user
-   > What is the weather like today?
+   > Hello! What's your name?
    ```
 
    Samantha will respond to your questions and prompts based on the configured
