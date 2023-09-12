@@ -73,11 +73,10 @@ To configure your model for use, modify the JSON configuration file located at
    }
    ```
 
-3. Update the `repo_id` and `filename` properties under the `model` section to
-   match your specific model's repository ID and filename. For example:
+3. Update the `local` key under the `model` section to specify the path of your
+   local model file. For example:
 
-   - Update `"repo_id"` to the repository ID of your desired model.
-   - Update `"filename"` to the filename of your desired model.
+   - Update `"local"` to point to the path of your local model file.
 
 4. Save the changes to the `config.sample.json` file.
 
