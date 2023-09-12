@@ -64,8 +64,9 @@
   "llama_cpp": {
     "provider": "llama_cpp",
     "model": {
-      "repo_id": "TheBloke/Llama-2-7B-Chat-GGML",
-      "filename": "llama-2-7b-chat.ggmlv3.q5_1.bin",
+      "repo_id": "teleprint-me/llama-2-7b-chat-GGUF",
+      "filename": "llama-2-7b-chat.GGUF.q5_0.bin",
+      "local": "models/llama-2/llama-2-7b-chat/llama-2-7b-chat.GGUF.q4_0.bin",
       "n_ctx": 4096,
       "n_parts": -1,
       "seed": 1337,

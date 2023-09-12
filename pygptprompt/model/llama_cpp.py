@@ -49,7 +49,7 @@ class LlamaCppModel(ChatModel):
             "llama_cpp.model.filename", "llama-2-7b-chat.ggmlv3.q5_1.bin"
         )
         self.cache_dir = Path(Path.home(), ".cache", "huggingface", "hub")
-        self.model_path = self._download_model()
+        self.model_path = self._discover_model()
         self.model = Llama(
             model_path=self.model_path,
             n_ctx=config.get_value("llama_cpp.model.n_ctx", 4096),
@@ -75,6 +75,28 @@ class LlamaCppModel(ChatModel):
             rope_freq_base=config.get_value("llama_cpp.model.rope_freq_base", 10000.0),
             rope_freq_scale=config.get_value("llama_cpp.model.rope_freq_scale", 1.0),
         )
+
+    def _discover_model(self) -> str:
+        """
+        Discovers the model path based on configuration or downloads it if necessary.
+
+        Returns:
+            str: The path to the model to be used.
+        """
+        local_model_path = self.config.get_value("llama_cpp.model.local")
+
+        # Check if a local model path is provided and is valid
+        if local_model_path:
+            if Path(local_model_path).exists():
+                logging.info(f"Using local model at {local_model_path}")
+                return local_model_path
+            else:
+                logging.warning(
+                    f"Local model path {local_model_path} does not exist. Falling back to downloading the model."
+                )
+
+        # Download the model
+        return self._download_model()
 
     def _download_model(self) -> str:
         """
