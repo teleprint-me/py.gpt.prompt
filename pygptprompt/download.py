@@ -16,46 +16,38 @@ from huggingface_hub.utils import (
 from pygptprompt import logging
 
 
+def download_files(repo_id, local_dir, file_names):
+    for file_name in file_names:
+        model_path = hf_hub_download(
+            repo_id=repo_id,
+            filename=file_name,
+            local_dir=local_dir,
+            resume_download=True,
+        )
+        logging.info(f"Downloaded {file_name} to {model_path}")
+
+
 def download_model(repo_id, local_dir) -> str:
-    """
-    Download the model file to a custom directory path.
-
-    Returns:
-        str: The path to the downloaded model file.
-    """
     logging.info(f"Using {repo_id} to download model data.")
-    max_retries = 3
     retries = 0
+    max_retries = 3
 
-    while retries < max_retries:
-        try:
-            metadata = model_info(repo_id)
-            file_names = [x.rfilename for x in metadata.siblings]
-            for file_name in file_names:
-                model_path = hf_hub_download(
-                    repo_id=repo_id,
-                    filename=file_name,
-                    local_dir=local_dir,
-                    resume_download=True,
-                )
-                logging.info(f"Downloaded {file_name} to {model_path}")
-        except (EntryNotFoundError, RepositoryNotFoundError) as e:
-            logging.error(f"Error downloading model: {e}")
-            sys.exit(1)
-        except LocalEntryNotFoundError as e:
-            logging.error(f"Error accessing model: {e}")
-            if HfApi().is_online():
-                logging.info("Retrying download...")
-                retries += 1
-            else:
-                logging.error("Network is not available. Cannot retry download.")
-                sys.exit(1)
-        except Exception as e:
-            logging.error(f"Error downloading model: {e}")
-            sys.exit(1)
-
-    logging.error("Max retries exceeded. Failed to download the model.")
-    sys.exit(1)
+    try:
+        metadata = model_info(repo_id)
+        file_names = [x.rfilename for x in metadata.siblings]
+        download_files(repo_id, local_dir, file_names)
+    except (EntryNotFoundError, RepositoryNotFoundError) as e:
+        logging.error(f"Error downloading model: {e}")
+        sys.exit(1)
+    except LocalEntryNotFoundError as e:
+        logging.error(f"Error accessing model: {e}")
+        while retries < max_retries and HfApi().is_online():
+            logging.info("Retrying download...")
+            retries += 1
+            download_files(repo_id, local_dir, file_names)
+    except Exception as e:
+        logging.error(f"Error downloading model: {e}")
+        sys.exit(1)
 
 
 @click.command()
