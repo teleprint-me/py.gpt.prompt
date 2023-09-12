@@ -31,7 +31,6 @@ def download_model(repo_id, local_dir) -> str:
         try:
             metadata = model_info(repo_id)
             file_names = [x.rfilename for x in metadata.siblings]
-
             for file_name in file_names:
                 model_path = hf_hub_download(
                     repo_id=repo_id,
@@ -40,9 +39,7 @@ def download_model(repo_id, local_dir) -> str:
                     resume_download=True,
                 )
                 logging.info(f"Downloaded {file_name} to {model_path}")
-
         except (EntryNotFoundError, RepositoryNotFoundError) as e:
-            logging.error(f"Error downloading {file_name}: {e}")
             logging.error(f"Error downloading model: {e}")
             sys.exit(1)
         except LocalEntryNotFoundError as e:
