@@ -1,7 +1,10 @@
 """
 pygptprompt/config/manager.py
 """
+import logging
 import os
+from logging import Logger
+from pathlib import Path
 from typing import Any, Optional
 
 import dotenv
@@ -125,3 +128,26 @@ class ConfigurationManager(Singleton):
             raise ValueError(f"EnvironmentError: Failed to find `{variable}`")
 
         return value
+
+    def get_logger(self, key: str, logger_name: str, level: str = "DEBUG") -> Logger:
+        # Use cache path from config or fallback to '/tmp' or another path
+        default_path = self.get_value("app.path.cache", "/tmp/pygptprompt/logs")
+
+        log_file_path = self.evaluate_path(
+            f"{key}.path",
+            str(Path(default_path) / key),
+        )
+
+        log_level = self.get_value(f"{key}.level", level)
+
+        logger = logging.getLogger(logger_name)
+
+        if not logger.handlers:
+            handler = logging.FileHandler(log_file_path, "a")
+            formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
+            logger.setLevel(log_level)
+
+        return logger
