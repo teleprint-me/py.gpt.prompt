@@ -3,15 +3,14 @@ pygptprompt/chat.py
 """
 import sys
 from datetime import datetime
+from logging import Logger
 from typing import List
 
 import click
 from chromadb import API, PersistentClient, Settings
 from chromadb.api.models.Collection import Collection
-from chromadb.api.types import Documents, QueryResult
 from prompt_toolkit import prompt as input
 
-from pygptprompt import logging
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.factory import FunctionFactory
 from pygptprompt.model.factory import ChatModelFactory
@@ -72,6 +71,7 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
     session_name: str = session_name
 
     config: ConfigurationManager = ConfigurationManager(config_path)
+    logger: Logger = config.get_logger("app.log.general", "Chat", "DEBUG")
 
     function_factory = FunctionFactory(config)
     model_factory: ChatModelFactory = ChatModelFactory(config)
@@ -91,12 +91,12 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
         collection: Collection = chroma_client.create_collection(
             name=session_name, embedding_function=embedding_function
         )
-        logging.info(f"Created collection {session_name}")
+        logger.info(f"Created collection {session_name}")
     except ValueError:
         collection: Collection = chroma_client.get_collection(
             name=session_name, embedding_function=embedding_function
         )
-        logging.info(f"Loaded collection {session_name}")
+        logger.info(f"Loaded collection {session_name}")
 
     system_prompt = ChatModelChatCompletion(
         role=config.get_value(f"{provider}.system_prompt.role"),
@@ -120,53 +120,9 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
             messages.append(message)
 
         elif chat:
-            while True:
-                try:
-                    print("user")
-                    text_input = input(
-                        "> ", multiline=True, wrap_lines=True, prompt_continuation=". "
-                    )
-                except (EOFError, KeyboardInterrupt):
-                    break
-                user_message = ChatModelChatCompletion(role="user", content=text_input)
-                messages.append(user_message)
-
-                print()
-                print("assistant")
-                message: ChatModelChatCompletion = chat_model.get_chat_completion(
-                    messages=messages,
-                )
-
-                if message["role"] == "function":
-                    # Query the function from the factory and execute it
-                    result: ChatModelChatCompletion = function_factory.execute_function(
-                        message
-                    )
-                    # Skip to user prompt if result is None
-                    if result is None:
-                        logging.error(
-                            f"Function {function_factory.function_name} did not return a result."
-                        )
-                        continue
-
-                    message: ChatModelChatCompletion = function_factory.query_function(
-                        chat_model=chat_model, result=result, messages=messages
-                    )
-
-                    if message is not None:
-                        messages.append(message)
-                    else:
-                        logging.error("Failed to generate a response message.")
-                        continue
-
-                print()
-                messages.append(message)
-
-        elif embed:
             # Extract the common logic to a function
             def add_message_to_db(collection, session_name, message):
                 unique_id = f"{session_name}_{datetime.utcnow().isoformat()}"
-
                 collection.add(
                     documents=[message["content"]],
                     metadatas=[{"role": message["role"]}],
@@ -184,10 +140,14 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
                     break
                 user_message = ChatModelChatCompletion(role="user", content=text_input)
                 messages.append(user_message)
-                add_message_to_db(collection, session_name, chat_model, user_message)
-                print()  # Add padding to output
+
+                if embed:
+                    add_message_to_db(
+                        collection, session_name, chat_model, user_message
+                    )
 
                 # Manage assistant message
+                print()  # Add padding to output
                 print("assistant")
                 message: ChatModelChatCompletion = chat_model.get_chat_completion(
                     messages=messages,
@@ -200,7 +160,7 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
                     )
                     # Skip to user prompt if result is None
                     if result is None:
-                        logging.error(
+                        logger.error(
                             f"Function {function_factory.function_name} did not return a result."
                         )
                         continue
@@ -212,18 +172,19 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
                     if message is not None:
                         messages.append(message)
                     else:
-                        logging.error("Failed to generate a response message.")
+                        logger.error("Failed to generate a response message.")
                         continue
 
-                print()  # Add padding to output
                 messages.append(message)
-                add_message_to_db(collection, session_name, chat_model, message)
+                if embed:
+                    add_message_to_db(collection, session_name, chat_model, message)
 
+                print()  # Add padding to output
                 print(f"Heartbeat: {chroma_client.heartbeat()}")
                 print(f"Collections: {collection.count()}")
                 print()  # Add padding to output
     except Exception as e:
-        logging.error(f"Error generating response: {e}")
+        logger.error(f"Error generating response: {e}")
         sys.exit(1)
 
 
