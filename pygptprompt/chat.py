@@ -163,7 +163,20 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
                 messages.append(message)
 
         elif embed:
+            # Extract the common logic to a function
+            def add_message_to_db(collection, session_name, chat_model, message):
+                unique_id = f"{session_name}_{datetime.utcnow().isoformat()}"
+                embeddings = chat_model.get_embedding(message["content"])
+
+                collection.add(
+                    embeddings=[embeddings],
+                    documents=[message["content"]],
+                    metadatas=[{"role": message["role"]}],
+                    ids=[unique_id],
+                )
+
             while True:
+                # Manage user message
                 try:
                     print("user")
                     text_input = input(
@@ -173,25 +186,14 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
                     break
                 user_message = ChatModelChatCompletion(role="user", content=text_input)
                 messages.append(user_message)
+                add_message_to_db(collection, session_name, chat_model, user_message)
+                print()  # Add padding to output
 
-                print()
+                # Manage assistant message
                 print("assistant")
                 message: ChatModelChatCompletion = chat_model.get_chat_completion(
                     messages=messages,
                 )
-
-                if message["role"] in ["assistant", "user"]:
-                    # Generate unique ID and embeddings
-                    unique_id = f"{session_name}_{datetime.utcnow().isoformat()}"
-                    embeddings = chat_model.get_embedding(message["content"])
-
-                    # Add to ChromaDB
-                    collection.add(
-                        embeddings=[embeddings],
-                        documents=[message["content"]],
-                        metadatas=[{"role": message["role"]}],
-                        ids=[unique_id],
-                    )
 
                 if message["role"] == "function":
                     # Query the function from the factory and execute it
@@ -215,8 +217,9 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
                         logging.error("Failed to generate a response message.")
                         continue
 
-                print()
+                print()  # Add padding to output
                 messages.append(message)
+                add_message_to_db(collection, session_name, chat_model, message)
 
         else:
             print("Nothing to do.")
