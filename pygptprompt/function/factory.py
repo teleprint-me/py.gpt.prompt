@@ -7,6 +7,7 @@ from typing import Any, Callable, List, Optional
 
 from pygptprompt import logging
 from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.function.query_chroma import query_chroma_collection
 from pygptprompt.function.weather import get_current_weather
 from pygptprompt.pattern.model import ChatModel, ChatModelChatCompletion
 
@@ -22,6 +23,7 @@ class FunctionFactory:
         self.config = config
         self.functions: dict[str, object] = {
             "get_current_weather": get_current_weather,
+            "query_chroma_collection": query_chroma_collection
             # Add more functions here as needed
         }
         self.function_name: str = ""

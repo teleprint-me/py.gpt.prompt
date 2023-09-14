@@ -164,12 +164,10 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
 
         elif embed:
             # Extract the common logic to a function
-            def add_message_to_db(collection, session_name, chat_model, message):
+            def add_message_to_db(collection, session_name, message):
                 unique_id = f"{session_name}_{datetime.utcnow().isoformat()}"
-                embeddings = chat_model.get_embedding(message["content"])
 
                 collection.add(
-                    embeddings=[embeddings],
                     documents=[message["content"]],
                     metadatas=[{"role": message["role"]}],
                     ids=[unique_id],
@@ -221,8 +219,9 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
                 messages.append(message)
                 add_message_to_db(collection, session_name, chat_model, message)
 
-        else:
-            print("Nothing to do.")
+                print(f"Heartbeat: {chroma_client.heartbeat()}")
+                print(f"Collections: {collection.count()}")
+                print()  # Add padding to output
     except Exception as e:
         logging.error(f"Error generating response: {e}")
         sys.exit(1)

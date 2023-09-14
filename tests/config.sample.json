@@ -66,8 +66,8 @@
     "model": {
       "repo_id": "teleprint-me/llama-2-7b-chat-GGUF",
       "filename": "llama-2-7b-chat.GGUF.q5_0.bin",
-      "local": "models/llama-2/llama-2-7b-chat/llama-2-7b-chat.GGUF.q4_0.bin",
-      "n_ctx": 4096,
+      "local": "models/ehartford/Samantha-1.11-CodeLlama-34b/Samantha-1.11-CodeLlama-34b.GGUF.q4_1.bin",
+      "n_ctx": 16385,
       "n_parts": -1,
       "seed": 1337,
       "f16_kv": true,
@@ -89,7 +89,7 @@
       "verbose": false
     },
     "chat_completions": {
-      "max_tokens": 1024,
+      "max_tokens": 2048,
       "temperature": 0.8,
       "top_p": 0.95,
       "top_k": 40,
@@ -98,12 +98,12 @@
     },
     "context": {
       "reserve": 0.2,
-      "length": 4096,
-      "offset": 512
+      "length": 16385,
+      "offset": 1024
     },
     "system_prompt": {
       "role": "system",
-      "content": "My name is Llama. I am a helpful assistant."
+      "content": "My name is Samantha. I am a helpful assistant."
     }
   },
   "openai": {
@@ -111,7 +111,7 @@
     "chat_completions": {
       "model": "gpt-3.5-turbo",
       "temperature": 0.0,
-      "max_tokens": 1024,
+      "max_tokens": 2048,
       "top_p": 0.95,
       "n": 1,
       "stop": [],
@@ -125,7 +125,7 @@
     "context": {
       "reserve": 0.2,
       "length": 16384,
-      "offset": 512
+      "offset": 1024
     },
     "system_prompt": {
       "role": "system",
@@ -140,6 +140,11 @@
         "name": "get_current_weather",
         "description": "Get the current weather in a given location",
         "prompt": "How should I dress for this kind of weather?"
+      },
+      {
+        "name": "query_chroma_collection",
+        "description": "Query Chroma collection based on given parameters",
+        "prompt": "Find documents related to the topic"
       }
     ],
     "definitions": [
@@ -156,6 +161,28 @@
             "unit": { "type": "string", "enum": ["metric", "uscs"] }
           },
           "required": ["location"]
+        }
+      },
+      {
+        "name": "query_chroma_collection",
+        "description": "Query Chroma collection based on given parameters",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query_text": {
+              "type": "string",
+              "description": "Text to query the Chroma collection"
+            },
+            "metadata_filter": {
+              "type": "object",
+              "description": "Metadata fields to filter the query"
+            },
+            "n_results": {
+              "type": "integer",
+              "description": "Number of results to retrieve"
+            }
+          },
+          "required": ["query_text"]
         }
       }
     ]
