@@ -3,9 +3,9 @@ pygptprompt/function/factory.py
 """
 import copy
 import json
+import logging
 from typing import Any, Callable, List, Optional
 
-from pygptprompt import logging
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.query_chroma import query_chroma_collection
 from pygptprompt.function.weather import get_current_weather
@@ -30,6 +30,8 @@ class FunctionFactory:
         self.function_args: dict[str, Any] = {}
         self.function: Optional[Callable] = None
 
+        self.logger = config.get_logger("app.log.shadow", "FunctionFactory", "DEBUG")
+
     def get_function_args(self, message: ChatModelChatCompletion) -> dict[str, Any]:
         """
         Extract and return the function arguments from the message.
@@ -42,14 +44,14 @@ class FunctionFactory:
         """
         function_args = message.get("function_args")
         if function_args is None:
-            logging.error(f"Function arguments is None: {self.function_name}")
+            self.logger.error(f"Function arguments is None: {self.function_name}")
             return {}
 
         try:
             self.function_args = json.loads(function_args)
             return self.function_args
         except json.JSONDecodeError:
-            logging.error(f"Invalid function arguments: {function_args}")
+            self.logger.error(f"Invalid function arguments: {function_args}")
             return {}
 
     def get_function(self, message: ChatModelChatCompletion) -> Optional[object]:
@@ -91,20 +93,24 @@ class FunctionFactory:
         # Get the function from the factory
         function = self.get_function(message)
         if function is None:
-            logging.error(f"Function {message['function_call']} not found.")
+            self.logger.error(f"Function {message['function_call']} not found.")
             return None
 
         # Extract the function arguments
         function_args = self.get_function_args(message)
         if not function_args:
-            logging.error(f"Invalid function arguments for {message['function_call']}.")
+            self.logger.error(
+                f"Invalid function arguments for {message['function_call']}."
+            )
             return None
 
         try:
             # Call the function
             result = function(**function_args)
         except Exception as e:
-            logging.error(f"Error executing function {message['function_call']}: {e}")
+            self.logger.error(
+                f"Error executing function {message['function_call']}: {e}"
+            )
             return None
 
         # Return a new ChatModelChatCompletion with the result
@@ -143,12 +149,24 @@ class FunctionFactory:
                 prompt_template = template.get("prompt", "")
 
         if not prompt_template:
-            logging.error(
+            self.logger.error(
                 f"Failed to retrieve prompt template for {self.function_name}"
             )
             return None
 
+        # NOTE: Using the "user" role here is a pragmatic decision,
+        # as neither "system" nor "assistant" roles fit this specific use-case.
         prompt_message = ChatModelChatCompletion(role="user", content=prompt_template)
+        # NOTE: Ensure the prompt message is appended to shadow messages.
         shadow_messages.append(prompt_message)
+
+        # Log the shadow context
+        if self.logger.getEffectiveLevel() == logging.DEBUG:
+            for casting in shadow_messages:
+                self.logger.debug(f"role: {casting['role']}")
+                self.logger.debug(f"content: {casting['content']}")
+
         message = model.get_chat_completions(messages=shadow_messages)
+        self.logger.info(f"Chat completion message: {message}")
+
         return message
