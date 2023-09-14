@@ -2,10 +2,21 @@
   "app": {
     "provider": "app",
     "path": {
+      "test": "/tmp",
       "local": "${HOME}/.local/share/pygptprompt",
       "cache": "${HOME}/.cache/pygptprompt",
       "config": "${HOME}/.config/pygptprompt",
-      "test": "/tmp"
+      "logs": "${HOME}/.local/share/pygptprompt/logs"
+    },
+    "log": {
+      "general": {
+        "level": "INFO",
+        "path": "${HOME}/.local/share/pygptprompt/logs/general.log"
+      },
+      "shadow": {
+        "level": "DEBUG",
+        "path": "${HOME}/.local/share/pygptprompt/logs/shadow.log"
+      }
     },
     "access": {
       "confirm": false,
@@ -143,7 +154,7 @@
       },
       {
         "name": "query_chroma_collection",
-        "description": "Query Chroma collection based on given parameters",
+        "description": "Query Chroma vector database collection based on given parameters",
         "prompt": "Find documents related to the topic"
       }
     ],
@@ -165,7 +176,7 @@
       },
       {
         "name": "query_chroma_collection",
-        "description": "Query Chroma collection based on given parameters",
+        "description": "Query Chroma vector database collection based on given parameters",
         "parameters": {
           "type": "object",
           "properties": {
