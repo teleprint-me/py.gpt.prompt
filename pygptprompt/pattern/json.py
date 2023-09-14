@@ -9,10 +9,11 @@ REFERENCE:
     https://docs.python.org/3/library/exceptions.html
 """
 import json
+import logging
+import sys
+from logging import Logger
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-
-from pygptprompt import logging
 
 # NOTE:
 # List[Dict[str, Any]] uses a data type value of Any,
@@ -47,7 +48,12 @@ class JSONTemplate:
         _data (Optional[JSONData]): The internal JSON data structure. May be None if not loaded.
     """
 
-    def __init__(self, file_path: str, initial_data: Optional[JSONData] = None):
+    def __init__(
+        self,
+        file_path: str,
+        initial_data: Optional[JSONData] = None,
+        logger: Optional[Logger] = None,
+    ):
         """
         Initialize a JSONTemplate instance.
 
@@ -58,6 +64,16 @@ class JSONTemplate:
         self._file_path = Path(file_path)
         self._data: Optional[JSONData] = initial_data
 
+        if logger:
+            self.logger = logger
+        else:
+            self.logger = logging.getLogger(__name__)
+            handler = logging.StreamHandler(stream=sys.stdout)
+            formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+            self.logger.setLevel("INFO")
+
         # Test for initialization data
         if initial_data is None:
             # Read the JSON data into memory
@@ -65,9 +81,9 @@ class JSONTemplate:
             if not loaded:
                 raise ValueError("Failed to load JSON into memory")
             else:
-                logging.info("JSON successfully loaded into memory")
+                self.logger.info("JSON successfully loaded into memory")
         else:
-            logging.info("JSON successfully initialized into memory")
+            self.logger.info("JSON successfully initialized into memory")
 
     @property
     def file_path(self) -> Path:
@@ -101,10 +117,10 @@ class JSONTemplate:
                 self._data = json.load(file)
             return True
         except DecodeError as e:
-            logging.error(f"Error loading JSON from {self._file_path}: {e}")
+            self.logger.error(f"Error loading JSON from {self._file_path}: {e}")
             return False
 
-    def save_json(self, data: JSONData) -> bool:
+    def save_json(self, data: Optional[JSONData] = None) -> bool:
         """
         Save JSON data to the file.
 
@@ -116,10 +132,13 @@ class JSONTemplate:
         """
         try:
             with self._file_path.open("w") as file:
-                json.dump(data, file, indent=4)
+                if data is not None:
+                    json.dump(data, file, indent=4)
+                else:
+                    json.dump(self._data, file, indent=4)
             return True
         except EncodeError as e:
-            logging.error(f"Error saving JSON to {self._file_path}: {e}")
+            self.logger.error(f"Error saving JSON to {self._file_path}: {e}")
             return False
 
     def backup_json(self) -> bool:
@@ -137,7 +156,7 @@ class JSONTemplate:
                 json.dump(json.load(original_file), backup_file, indent=4)
             return True
         except JSONError as e:
-            logging.error(f"Error backing up JSON as {backup_path}: {e}")
+            self.logger.error(f"Error backing up JSON as {backup_path}: {e}")
             return False
 
     def make_directory(self) -> bool:
@@ -151,5 +170,5 @@ class JSONTemplate:
             self._file_path.parent.mkdir(parents=True, exist_ok=True)
             return True
         except Exception as e:
-            logging.error(f"Error creating path for {self._file_path}: {e}")
+            self.logger.error(f"Error creating path for {self._file_path}: {e}")
             return False
