@@ -2,6 +2,7 @@
 pygptprompt/chat.py
 """
 import sys
+from datetime import datetime
 from typing import List
 
 import click
@@ -22,6 +23,11 @@ from pygptprompt.pattern.model import (
 
 
 @click.command()
+@click.argument(
+    "session_name",
+    type=click.STRING,
+    default="default",
+)
 @click.argument(
     "config_path",
     type=click.Path(exists=True),
@@ -55,7 +61,7 @@ from pygptprompt.pattern.model import (
     default="database",
     help="The path the embeddings are written to.",
 )
-def main(config_path, prompt, chat, embed, provider, path_database):
+def main(session_name, config_path, prompt, chat, embed, provider, path_database):
     if not (bool(prompt) ^ chat):
         print(
             "Use either --prompt or --chat, but not both.",
@@ -63,8 +69,7 @@ def main(config_path, prompt, chat, embed, provider, path_database):
         )
         sys.exit(1)
 
-    session_name: str = "test"
-    collection_name: str = session_name
+    session_name: str = session_name
 
     config: ConfigurationManager = ConfigurationManager(config_path)
 
@@ -81,6 +86,17 @@ def main(config_path, prompt, chat, embed, provider, path_database):
         path=path_database,
         settings=Settings(anonymized_telemetry=False),
     )
+
+    try:
+        collection: Collection = chroma_client.create_collection(
+            name=session_name, embedding_function=embedding_function
+        )
+        logging.info(f"Created collection {session_name}")
+    except ValueError:
+        collection: Collection = chroma_client.get_collection(
+            name=session_name, embedding_function=embedding_function
+        )
+        logging.info(f"Loaded collection {session_name}")
 
     system_prompt = ChatModelChatCompletion(
         role=config.get_value(f"{provider}.system_prompt.role"),
@@ -163,6 +179,19 @@ def main(config_path, prompt, chat, embed, provider, path_database):
                 message: ChatModelChatCompletion = chat_model.get_chat_completion(
                     messages=messages,
                 )
+
+                if message["role"] in ["assistant", "user"]:
+                    # Generate unique ID and embeddings
+                    unique_id = f"{session_name}_{datetime.utcnow().isoformat()}"
+                    embeddings = chat_model.get_embedding(message["content"])
+
+                    # Add to ChromaDB
+                    collection.add(
+                        embeddings=[embeddings],
+                        documents=[message["content"]],
+                        metadatas=[{"role": message["role"]}],
+                        ids=[unique_id],
+                    )
 
                 if message["role"] == "function":
                     # Query the function from the factory and execute it
