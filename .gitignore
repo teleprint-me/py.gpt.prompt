@@ -4,6 +4,9 @@
 /source
 /models
 /database
+/local
+/logs
+/config.json
 
 /docs/assets/*
 !/docs/assets/*.gif
