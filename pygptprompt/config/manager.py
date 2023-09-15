@@ -19,7 +19,12 @@ class ConfigurationManager(Singleton):
     Singleton class for managing configuration data.
     """
 
-    def __init__(self, file_path: str, initial_data: Optional[JSONMap] = None):
+    def __init__(
+        self,
+        file_path: str,
+        initial_data: Optional[JSONMap] = None,
+        logger: Optional[Logger] = None,
+    ):
         """
         Initialize the ConfigurationManager instance.
 
@@ -31,8 +36,9 @@ class ConfigurationManager(Singleton):
 
         # Initialize the Configuration map
         self._map_template = MappingTemplate(
-            file_path=file_path, initial_data=initial_data
+            file_path=file_path, initial_data=initial_data, logger=logger
         )
+        self._map_template.load_json()
 
     def load(self) -> bool:
         """
