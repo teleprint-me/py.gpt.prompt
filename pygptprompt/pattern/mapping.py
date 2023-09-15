@@ -1,6 +1,7 @@
 """
 pygptprompt/pattern/mapping.py
 """
+from logging import Logger
 from typing import Any, Optional
 
 from pygptprompt.pattern.json import JSONMap, JSONTemplate
@@ -10,23 +11,30 @@ class MappingTemplate(JSONTemplate):
     """
     A template class for creating and managing a mapping of key-value pairs.
 
-    Args:
-        initial_data (Optional[JSONMap]): Optional initial data to populate the mapping.
-
     Attributes:
-        _file_path (Path): The file path of the JSON file.
-        _data (JSONMap): The underlying data structure for storing the key-value pairs.
+        _file_path (Path): A path-like object pointing to the JSON source file.
+        _data (Optional[JSONData]): The internal JSON data structure. May be None if not loaded.
+        _logger (Optional[Logger]): Optional logger for error-handling.
     """
 
-    def __init__(self, file_path: str, initial_data: Optional[JSONMap] = None):
+    def __init__(
+        self,
+        file_path: str,
+        initial_data: Optional[JSONMap] = None,
+        logger: Optional[Logger] = None,
+    ):
         """
-        Initialize a MappingTemplate instance.
+        Initializes the MappingTemplate.
 
         Args:
-            file_path (str): The path to the JSON file that stores the list.
-            initial_data (Optional[JSONMap]): Optional initial data to populate the map.
+            file_path (str): The path to the JSON file.
+            initial_data (Optional[JSONMap]): Optional initial data to populate the mapping.
+            logger (Optional[Logger]): Optional logger for error-handling.
         """
-        super(MappingTemplate, self).__init__(file_path, initial_data)
+        super(MappingTemplate, self).__init__(file_path, initial_data, logger)
+
+        if initial_data is None:
+            self._data = {}
 
     @property
     def keys(self) -> list[str]:
