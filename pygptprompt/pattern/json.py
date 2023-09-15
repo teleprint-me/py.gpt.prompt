@@ -46,6 +46,7 @@ class JSONTemplate:
     Properties:
         _file_path (Path): A path-like object pointing to the JSON source file.
         _data (Optional[JSONData]): The internal JSON data structure. May be None if not loaded.
+        _logger (Optional[Logger]): Optional logger for error-handling.
     """
 
     def __init__(
@@ -60,30 +61,28 @@ class JSONTemplate:
         Parameters:
             file_path (str): The path to the JSON file.
             initial_data (Optional[JSONData]): The initial data. Defaults to None.
+            logger (Optional[Logger]): Optional logger for error-handling.
         """
         self._file_path = Path(file_path)
         self._data: Optional[JSONData] = initial_data
 
         if logger:
-            self.logger = logger
+            self._logger = logger
         else:
-            self.logger = logging.getLogger(__name__)
-            handler = logging.StreamHandler(stream=sys.stdout)
-            formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-            handler.setFormatter(formatter)
-            self.logger.addHandler(handler)
-            self.logger.setLevel("INFO")
+            self._logger = logging.getLogger(__name__)
+
+            if not self._logger.hasHandlers():
+                handler = logging.StreamHandler(stream=sys.stdout)
+                formatter = logging.Formatter(
+                    "%(asctime)s - %(levelname)s - %(message)s"
+                )
+                handler.setFormatter(formatter)
+                self._logger.addHandler(handler)
+                self._logger.setLevel(logging.INFO)
 
         # Test for initialization data
-        if initial_data is None:
-            # Read the JSON data into memory
-            loaded = self.load_json()
-            if not loaded:
-                raise ValueError("Failed to load JSON into memory")
-            else:
-                self.logger.info("JSON successfully loaded into memory")
-        else:
-            self.logger.info("JSON successfully initialized into memory")
+        if initial_data is not None:
+            self._logger.info("JSON successfully initialized into memory")
 
     @property
     def file_path(self) -> Path:
@@ -106,44 +105,51 @@ class JSONTemplate:
         return self._data
 
     def load_json(self) -> bool:
-        """
-        Load JSON data from the file into the _data attribute.
+        """Load JSON data from the file into the _data attribute.
 
         Returns:
-            bool: True if the JSON data was loaded successfully, False on error.
+            bool: True if the JSON data was loaded successfully, False otherwise.
         """
         try:
             with self._file_path.open("r") as file:
                 self._data = json.load(file)
+            self._logger.info(f"JSON successfully loaded from {self._file_path}")
             return True
         except DecodeError as e:
-            self.logger.error(f"Error loading JSON from {self._file_path}: {e}")
+            self._logger.error(f"Error loading JSON from {self._file_path}: {e}")
             return False
 
-    def save_json(self, data: Optional[JSONData] = None) -> bool:
-        """
-        Save JSON data to the file.
+    def save_json(self, data: Optional[JSONData] = None, indent: int = 4) -> bool:
+        """Save JSON data to the file.
+
+        If data is provided, it updates the _data attribute as well.
 
         Parameters:
-            data (JSONData): The data to be saved.
+            data (Optional[JSONData]): The data to be saved. Defaults to None.
+            indent (int): The indentation level for the JSON output. Defaults to 4.
 
         Returns:
-            bool: True if successful, False otherwise.
+            bool: True if the JSON data was saved successfully, False otherwise.
         """
         try:
             with self._file_path.open("w") as file:
                 if data is not None:
-                    json.dump(data, file, indent=4)
+                    json.dump(data, file, indent=indent)
+                    self._data = data  # Update the _data attribute if data is provided
                 else:
-                    json.dump(self._data, file, indent=4)
+                    json.dump(self._data, file, indent=indent)
+
+            self._logger.info(f"JSON successfully saved to {self._file_path}")
             return True
         except EncodeError as e:
-            self.logger.error(f"Error saving JSON to {self._file_path}: {e}")
+            self._logger.error(f"Error saving JSON to {self._file_path}: {e}")
             return False
 
-    def backup_json(self) -> bool:
-        """
-        Create a backup of the JSON file.
+    def backup_json(self, indent: int = 4) -> bool:
+        """Create a backup of the JSON file.
+
+        Parameters:
+            indent (int): The indentation level for the JSON output. Defaults to 4.
 
         Returns:
             bool: True if successful, False otherwise.
@@ -153,22 +159,23 @@ class JSONTemplate:
             with self._file_path.open("r") as original_file, backup_path.open(
                 "w"
             ) as backup_file:
-                json.dump(json.load(original_file), backup_file, indent=4)
+                json.dump(json.load(original_file), backup_file, indent=indent)
+            self._logger.info(f"JSON successfully backed up to {backup_path}")
             return True
         except JSONError as e:
-            self.logger.error(f"Error backing up JSON as {backup_path}: {e}")
+            self._logger.error(f"Error backing up JSON as {backup_path}: {e}")
             return False
 
     def make_directory(self) -> bool:
-        """
-        Create the directory for the JSON file.
+        """Create the directory for the JSON file.
 
         Returns:
             bool: True if successful, False otherwise.
         """
         try:
             self._file_path.parent.mkdir(parents=True, exist_ok=True)
+            self._logger.info(f"Successfully created path for {self._file_path}")
             return True
-        except Exception as e:
-            self.logger.error(f"Error creating path for {self._file_path}: {e}")
+        except (PermissionError, FileExistsError) as e:
+            self._logger.error(f"Error creating path for {self._file_path}: {e}")
             return False
