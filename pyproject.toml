@@ -55,12 +55,14 @@ spacy = "^3.6.1"
 python-poppler = "^0.4.1"
 huggingface_hub = "^0.16.4"
 chromadb = "^0.4.6"
-llama-cpp-python = "^0.1.78"
+llama-cpp-python = "^0.2.6"
 tiktoken = "^0.4.0"
 openai = {extras = ["embeddings"], version = "^0.27.8"}
 scipy = "1.10.0"
 gguf = "^0.2.1"
 torch = {version = "^2.0.1+cpu", source = "pytorch"}
+rich = "^13.5.2"
+inquirer = "^3.1.3"
 
 [tool.poetry.group.dev.dependencies]
 pre_commit = "^3.3.3"
