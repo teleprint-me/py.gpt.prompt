@@ -4,7 +4,6 @@ pygptprompt/chat.py
 import sys
 from datetime import datetime
 from logging import Logger
-from typing import List
 
 import click
 from chromadb import API, PersistentClient, Settings
@@ -14,6 +13,7 @@ from prompt_toolkit import prompt as input
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.factory import FunctionFactory
 from pygptprompt.model.factory import ChatModelFactory
+from pygptprompt.pattern.list import ListTemplate
 from pygptprompt.pattern.model import (
     ChatModel,
     ChatModelChatCompletion,
@@ -98,12 +98,38 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
         )
         logger.info(f"Loaded collection {session_name}")
 
+    def initialize_list_template(
+        file_path: str,
+        system_prompt: ChatModelChatCompletion,
+        session_name: str,
+        logger: Logger,
+    ) -> ListTemplate:
+        list_template = ListTemplate(file_path=file_path)
+        list_template.make_directory()
+
+        if list_template.load_json():
+            logger.info(f"Continuing previous session {session_name} from {file_path}")
+        else:
+            logger.info(f"Starting new session {session_name} for {file_path}")
+            list_template.append(system_prompt)
+
+        return list_template
+
+    # Initialize ListTemplates for Context and Transcript
     system_prompt = ChatModelChatCompletion(
         role=config.get_value(f"{provider}.system_prompt.role"),
         content=config.get_value(f"{provider}.system_prompt.content"),
     )
 
-    messages: List[ChatModelChatCompletion] = [system_prompt]
+    context_manager_path = config.get_value("app.path.local") + "/context.json"
+    transcript_manager_path = config.get_value("app.path.local") + "/transcript.json"
+
+    context_window = initialize_list_template(
+        context_manager_path, system_prompt, "context", logger
+    )
+    transcript = initialize_list_template(
+        transcript_manager_path, system_prompt, "transcript", logger
+    )
 
     try:
         print(system_prompt.get("role"))
@@ -111,13 +137,27 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
         print()
 
         if prompt:
+            # Create a ChatModelChatCompletion object for the user's prompt
             user_prompt = ChatModelChatCompletion(role="user", content=prompt)
-            messages.append(user_prompt)
-            print("assistant")
-            message: ChatModelChatCompletion = chat_model.get_chat_completion(
-                messages=messages,
+
+            # Log and add to context and transcript
+            logger.info(f"User Prompt: {user_prompt.content}")
+            context_window.append(user_prompt)
+            transcript.append(user_prompt)
+
+            # Get assistant's response
+            assistant_message = chat_model.get_chat_completion(
+                messages=context_window.data
             )
-            messages.append(message)
+
+            # Log and add to context and transcript
+            logger.info(f"Assistant Message: {assistant_message.content}")
+
+            context_window.append(assistant_message)
+            context_window.save_from_chat_completions()
+
+            transcript.append(assistant_message)
+            transcript.save_from_chat_completions()
 
         elif chat:
             # Extract the common logic to a function
@@ -138,25 +178,28 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
                     )
                 except (EOFError, KeyboardInterrupt):
                     break
+
                 user_message = ChatModelChatCompletion(role="user", content=text_input)
-                messages.append(user_message)
+                context_window.append(user_message)
+                transcript.append(user_message)
 
                 if embed:
-                    add_message_to_db(
-                        collection, session_name, chat_model, user_message
-                    )
+                    add_message_to_db(collection, session_name, user_message)
+
+                # NOTE: We don't want to duplicate user queries, so we skip saving state here.
 
                 # Manage assistant message
                 print()  # Add padding to output
                 print("assistant")
-                message: ChatModelChatCompletion = chat_model.get_chat_completion(
-                    messages=messages,
+
+                assistant_message = chat_model.get_chat_completion(
+                    messages=context_window.data
                 )
 
-                if message["role"] == "function":
+                if assistant_message["role"] == "function":
                     # Query the function from the factory and execute it
                     result: ChatModelChatCompletion = function_factory.execute_function(
-                        message
+                        assistant_message
                     )
                     # Skip to user prompt if result is None
                     if result is None:
@@ -166,18 +209,25 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
                         continue
 
                     message: ChatModelChatCompletion = function_factory.query_function(
-                        chat_model=chat_model, result=result, messages=messages
+                        chat_model=chat_model,
+                        result=result,
+                        messages=context_window.data,
                     )
 
                     if message is not None:
-                        messages.append(message)
+                        context_window.append(message)
                     else:
                         logger.error("Failed to generate a response message.")
                         continue
 
-                messages.append(message)
+                context_window.append(assistant_message)
+                transcript.append(assistant_message)
+
                 if embed:
-                    add_message_to_db(collection, session_name, chat_model, message)
+                    add_message_to_db(collection, session_name, assistant_message)
+
+                context_window.save_from_chat_completions()
+                transcript.save_from_chat_completions()
 
                 print()  # Add padding to output
                 print(f"Heartbeat: {chroma_client.heartbeat()}")
