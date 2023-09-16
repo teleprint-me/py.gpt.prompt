@@ -1,64 +1,86 @@
 # Quickstart Guide
 
-## Starting the Chat Interface
+## PyGPTPrompt: Prototype Phase
 
-To get started with the chat interface, execute the following command:
+This project is currently in its prototype phase. Some features are still under
+development or may be temporarily disabled. Your patience and feedback are
+highly appreciated.
+
+## Launching the Chat Interface
+
+To initiate a chat session, run the following command:
 
 ```sh
-python -m pygptprompt.chat --chat [SESSION_NAME] [CONFIG_PATH]
+python -m pygptprompt.chat [SESSION_NAME] [CONFIG_PATH]
 ```
 
-This command initializes a chat session using the specified session name and
-configuration file path. If you omit either, the system will resort to defaults
-or prompts.
+This command will initialize a chat session, taking into account the session
+name and configuration file path you provide. If omitted, defaults or prompts
+will apply.
 
-### Note:
+### Important:
 
-As of this pre-release, IRC-like commands are temporarily disabled. However, GPT
-model function calling is fully supported.
+In this pre-release, IRC-like commands are not available. Nevertheless, GPT
+model function calling is fully enabled.
 
-## Available Commands and Options
+## Commands and Options
 
-Within the chat interface, you can call GPT model functions for various tasks.
-Although IRC-like commands are disabled, you can still interact robustly with
-the model.
+The chat interface supports various GPT model functions. Although IRC-like
+commands are currently unavailable, robust interactions are still possible,
+including the ability to recall past information.
 
-To specify a different configuration file located outside of the current working
-directory, use the `--config` option:
+### Basic Usage
+
+To specify both the session name and configuration file path, enter them as
+arguments:
 
 ```sh
-python -m pygptprompt.chat --config /path/to/config.json
+python -m pygptprompt.chat your_session_name /your/config/path.json
 ```
 
-## Additional Command Line Options
+### Advanced Features
 
-These command-line options offer a customized experience:
+#### Enhanced Memory Capabilities
 
-- `--prompt TEXT`: Initial model prompt.
-- `--embed`: Utilize the chroma vector database.
-- `--provider TEXT`: Choose the model provider ('openai' for GPT models and
-  'llama_cpp' for Llama models).
-- `--path_database TEXT`: Specify the path for storing embeddings.
-
-Run `python -m pygptprompt.chat --help` to see all available options.
-
-## Keybindings
-
-The following default keybindings facilitate interaction:
-
-- `Ctrl-C`, `Ctrl-D`: Exit the application.
-- `Return`: Insert a newline.
-- `Alt-Return` (Win & Linux) / `Option-Return` (Mac OS X): Submit a message.
-- `Up/Down arrow keys`: Navigate command history.
-- `Ctrl-Shift-V`: Paste from clipboard.
-- `Tab`: Auto-complete for commands and arguments is in development.
-
-## Example Session
-
-Here's an example session for your reference:
+Use the `--embed` flag to activate GPT model memory features:
 
 ```sh
-(.venv) git:(main | Δ) λ python -m pygptprompt.chat --chat dev tests/config.dev.json
+python -m pygptprompt.chat [SESSION_NAME] [CONFIG_PATH] --embed
+```
+
+## Additional CLI Options
+
+Customize your experience with these additional command-line options:
+
+- `--prompt TEXT`: Set an initial prompt.
+- `--embed`: Activate chroma vector database.
+- `--provider TEXT`: Choose between 'openai' and 'llama_cpp' as the model
+  provider.
+- `--path_database TEXT`: Define the path for embedding storage.
+
+For a complete list, run:
+
+```sh
+python -m pygptprompt.chat --help
+```
+
+## Key Shortcuts
+
+Here are default key shortcuts for easier interaction:
+
+- `Ctrl-C`, `Ctrl-D`: Exit the app.
+- `Return`: Add a new line.
+- `Alt-Return` (Win & Linux) / `Option-Return` (Mac): Submit a message.
+- `Up/Down Arrows`: Navigate command history.
+- `Ctrl-Shift-V`: Paste content.
+- `Tab`: Command and argument auto-complete (under development).
+
+## Example Interaction
+
+Here's a quick example to guide you through:
+
+```sh
+(.venv) git:(main | Δ) λ python -m pygptprompt.chat your_session_name /your/config/path.json
 system
-Your name is GPT. You are a pair programming assistant. For further information, use model function calls...
+You are now chatting with GPT. For advanced capabilities, use model function calls.
 ```
