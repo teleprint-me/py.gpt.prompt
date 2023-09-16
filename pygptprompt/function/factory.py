@@ -7,7 +7,7 @@ import logging
 from typing import Any, Callable, List, Optional
 
 from pygptprompt.config.manager import ConfigurationManager
-from pygptprompt.function.query_chroma import query_chroma_collection
+from pygptprompt.function.chroma import query_chroma_collection
 from pygptprompt.function.weather import get_current_weather
 from pygptprompt.pattern.model import ChatModel, ChatModelChatCompletion
 
