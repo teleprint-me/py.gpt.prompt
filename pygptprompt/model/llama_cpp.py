@@ -3,7 +3,7 @@ pygptprompt/model/llama_cpp.py
 """
 import sys
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Union
+from typing import Any, Dict, Iterator, List, Tuple, Union
 
 from huggingface_hub import hf_hub_download
 from huggingface_hub.hf_api import HfApi
@@ -18,10 +18,11 @@ from pygptprompt import logging
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.pattern.model import (
     ChatModel,
-    ChatModelChatCompletion,
     ChatModelEmbedding,
     ChatModelEncoding,
+    ChatModelResponse,
     ChatModelTextCompletion,
+    DeltaContent,
 )
 
 
@@ -137,34 +138,113 @@ class LlamaCppModel(ChatModel):
         logging.error("Max retries exceeded. Failed to download the model.")
         sys.exit(1)
 
-    def _stream_chat_completion(
-        self, response_generator: Iterator[ChatCompletionChunk]
-    ) -> ChatModelChatCompletion:
+    def _extract_content(self, delta: DeltaContent, content: str) -> str:
         """
-        Process the stream of chat completion chunks and return the generated message.
+        Extracts content from the given delta and appends it to the existing content.
 
         Args:
-            response_generator (Iterator[ChatCompletionChunk]): The chat completion chunk stream.
+            delta (DeltaContent): The delta object containing new content.
+            content (str): The existing content.
 
         Returns:
-            ChatModelChatCompletion (Dict[LiteralString, str]): The model's response as a message.
+            str: The updated content after appending the new token.
         """
+        if delta and "content" in delta and delta["content"]:
+            token = delta["content"]
+            print(token, end="")
+            sys.stdout.flush()
+            content += token
+        return content
+
+    def _extract_function_call(
+        self,
+        delta: DeltaContent,
+        function_call_name: str,
+        function_call_args: str,
+    ) -> Tuple[str, str]:
+        """
+        Extracts function call information from the given delta and updates the function call name and arguments.
+
+        Args:
+            delta (DeltaContent): The delta object containing function call information.
+            function_call_name (str): The existing function call name.
+            function_call_args (str): The existing function call arguments.
+
+        Returns:
+            Tuple[str, str]: A tuple containing the updated function call name and arguments.
+        """
+        if delta and "function_call" in delta and delta["function_call"]:
+            function_call = delta["function_call"]
+            if not function_call_name:
+                function_call_name = function_call.get("name", "")
+            function_call_args += str(function_call.get("arguments", ""))
+        return function_call_name, function_call_args
+
+    def _handle_finish_reason(
+        self,
+        finish_reason: str,
+        function_call_name: str,
+        function_call_args: str,
+        content: str,
+    ) -> ChatModelResponse:
+        """
+        Handles the finish reason and returns an ChatModelResponse.
+
+        Args:
+            finish_reason (str): The finish reason from the response.
+            function_call_name (str): The function call name.
+            function_call_args (str): The function call arguments.
+            content (str): The generated content.
+
+        Returns:
+            ChatModelResponse (Dict[LiteralString, str]): The model's response as a message.
+        """
+        if finish_reason:
+            if finish_reason == "function_call":
+                return ChatModelResponse(
+                    role="function",
+                    function_call=function_call_name,
+                    function_args=function_call_args,
+                )
+            elif finish_reason == "stop":
+                print()  # Add newline to model output
+                sys.stdout.flush()
+                return ChatModelResponse(role="assistant", content=content)
+            else:
+                # Handle unexpected finish_reason
+                raise ValueError(f"Warning: Unexpected finish_reason '{finish_reason}'")
+
+    def _stream_chat_completion(
+        self, response_generator: Iterator[ChatCompletionChunk]
+    ) -> ChatModelResponse:
+        """
+        Streams the chat completion response and handles the content and function call information.
+
+        Args:
+            response_generator (Iterator[ChatCompletionChunk]): An iterator of ChatCompletionChunk objects.
+
+        Returns:
+            ChatModelResponse (Dict[LiteralString, str]): The model's response as a message.
+        """
+        function_call_name = None
+        function_call_args = ""
         content = ""
 
-        for stream in response_generator:
-            try:
-                token = stream["choices"][0]["delta"]["content"]
-                if token:
-                    print(token, end="")
-                    sys.stdout.flush()
-                    content += token
-            except KeyError:
-                continue
+        for chunk in response_generator:
+            delta = chunk["choices"][0]["delta"]
 
-        print()  # Add newline to model output
-        sys.stdout.flush()
+            content = self._extract_content(delta, content)
+            function_call_name, function_call_args = self._extract_function_call(
+                delta, function_call_name, function_call_args
+            )
 
-        return ChatModelChatCompletion(role="assistant", content=content)
+            finish_reason = chunk["choices"][0]["finish_reason"]
+            message = self._handle_finish_reason(
+                finish_reason, function_call_name, function_call_args, content
+            )
+
+            if message:
+                return message
 
     def get_completion(self, prompt: str) -> ChatModelTextCompletion:
         """
@@ -176,16 +256,16 @@ class LlamaCppModel(ChatModel):
         raise NotImplementedError
 
     def get_chat_completion(
-        self, messages: List[ChatModelChatCompletion]
-    ) -> ChatModelChatCompletion:
+        self, messages: List[ChatModelResponse]
+    ) -> ChatModelResponse:
         """
         Generate chat completions using the Llama language model.
 
         Args:
-            messages (List[ChatModelChatCompletion]): List of chat completion messages.
+            messages (List[ChatModelResponse]): List of chat completion messages.
 
         Returns:
-            ChatModelChatCompletion (Dict[LiteralString, str]): The model's response as a message.
+            ChatModelResponse (Dict[LiteralString, str]): The model's response as a message.
 
         Raises:
             ValueError: If the 'messages' argument is empty or None.
@@ -196,6 +276,8 @@ class LlamaCppModel(ChatModel):
         try:
             response = self.model.create_chat_completion(
                 messages=messages,
+                functions=self.config.get_value("function.definitions", []),
+                function_call=self.config.get_value("function.call", "auto"),
                 max_tokens=self.config.get_value(
                     "llama_cpp.chat_completions.max_tokens", 1024
                 ),
@@ -213,7 +295,7 @@ class LlamaCppModel(ChatModel):
             return self._stream_chat_completion(response)
         except Exception as e:
             logging.error(f"Error generating chat completions: {e}")
-            return ChatModelChatCompletion(role="system", content=str(e))
+            return ChatModelResponse(role="assistant", content=str(e))
 
     def get_embedding(self, input: Union[str, List[str]]) -> ChatModelEmbedding:
         """
