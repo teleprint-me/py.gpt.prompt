@@ -78,7 +78,7 @@ class JSONTemplate:
                 )
                 handler.setFormatter(formatter)
                 self._logger.addHandler(handler)
-                self._logger.setLevel(logging.INFO)
+                self._logger.setLevel(logging.DEBUG)
 
         # Test for initialization data
         if initial_data is not None:
@@ -139,7 +139,7 @@ class JSONTemplate:
                 else:
                     json.dump(self._data, file, indent=indent)
 
-            self._logger.info(f"JSON successfully saved to {self._file_path}")
+            self._logger.debug(f"JSON successfully saved to {self._file_path}")
             return True
         except EncodeError as e:
             self._logger.error(f"Error saving JSON to {self._file_path}: {e}")
@@ -160,7 +160,7 @@ class JSONTemplate:
                 "w"
             ) as backup_file:
                 json.dump(json.load(original_file), backup_file, indent=indent)
-            self._logger.info(f"JSON successfully backed up to {backup_path}")
+            self._logger.debug(f"JSON successfully backed up to {backup_path}")
             return True
         except JSONError as e:
             self._logger.error(f"Error backing up JSON as {backup_path}: {e}")
@@ -174,7 +174,7 @@ class JSONTemplate:
         """
         try:
             self._file_path.parent.mkdir(parents=True, exist_ok=True)
-            self._logger.info(f"Successfully created path for {self._file_path}")
+            self._logger.debug(f"Successfully created path for {self._file_path}")
             return True
         except (PermissionError, FileExistsError) as e:
             self._logger.error(f"Error creating path for {self._file_path}: {e}")
