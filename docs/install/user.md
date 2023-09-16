@@ -1,19 +1,33 @@
 ## User Installation
 
-It's important to use a virtual environment to isolate the dependencies of
-PyGPTPrompt from other Python projects on your system. Here's how to set up a
-virtual environment using `pipx` and `poetry`:
+### Use as Application
 
-1. Install `pipx` and `poetry`:
+PyGPTPrompt offers a suite of CLI tools for a range of operations including OCR,
+PDF-to-Text conversions, model conversions to GGUF, and model quantization to a
+specified bit depth, and much more!
+
+To use PyGPTPrompt as a standalone suite, install it using:
+
+```sh
+pip install --user --upgrade git+https://github.com/teleprint-me/py.gpt.prompt.git
+```
+
+### Use in Development
+
+To ensure that the dependencies for PyGPTPrompt don't interfere with other
+Python projects on your system, it's recommended to use a virtual environment.
+Below are instructions using `pipx` and `poetry`:
+
+1. **Install `pipx` and `poetry`**:
 
    ```sh
-   # pipx runs each package in isolation.
-   # Learn more at https://github.com/pipxproject/pipx
    pip install --user --upgrade pipx
    pipx install poetry
    ```
 
-   Alternatively, you can install PyGPTPrompt using `virtualenv`:
+   - Learn more about [pipX](https://pypa.github.io/pipx/).
+
+   _Alternatively, use `virtualenv`_:
 
    ```sh
    virtualenv .venv
@@ -22,9 +36,9 @@ virtual environment using `pipx` and `poetry`:
    pip freeze > requirements.txt
    ```
 
-   Then skip step 2 and continue from step 3 if you opted for `virtualenv`.
+   Skip to step 3 if you opt for `virtualenv`.
 
-2. Create, activate, and install using `poetry`:
+2. **Initialize, Activate, and Install using `poetry`**:
 
    ```sh
    poetry init  # follow the prompts
@@ -32,16 +46,21 @@ virtual environment using `pipx` and `poetry`:
    poetry add git+https://github.com/teleprint-me/py.gpt.prompt.git
    ```
 
-3. Setup `git` and your `.gitignore`
+   - More details available in the
+     [Poetry docs](https://python-poetry.org/docs/).
+
+3. **Setup `git` and `.gitignore`**:
 
    ```sh
    git init
    curl https://raw.githubusercontent.com/github/gitignore/main/Python.gitignore -o .gitignore
-   git add .gitignore  # add /sessions and /storage if they're local
+   git add .gitignore  # Optionally add /sessions and /storage if they're local
    git commit -s -m "Initial commit" .gitignore
    ```
 
-4. [Obtain an API key](https://platform.openai.com/account/api-keys) from the
+4. **Setup OpenAI API Key**:
+
+   [Obtain an API key](https://platform.openai.com/account/api-keys) from the
    [Official OpenAI Platform](https://platform.openai.com/docs/introduction/overview)
    and set it as an environment variable:
 
@@ -49,12 +68,16 @@ virtual environment using `pipx` and `poetry`:
    echo "OPENAI_API_KEY='API_KEY_GOES_HERE'" > .env
    ```
 
-5. Set up your configuration by downloading the sample configuration file and
-   modifying it to suit your needs:
+   ⚠️ **Warning**: Never commit `.env` files to public repositories.
+
+5. **Download and Edit Configuration File**:
 
    ```sh
    curl https://raw.githubusercontent.com/teleprint-me/py.gpt.prompt/main/tests/config.sample.json -o config.json
    ```
 
-These instructions should help end users set up a virtual environment, install
-PyGPTPrompt, and configure the application to work with the OpenAI API.
+### Summary
+
+These instructions should provide end-users with a comprehensive guide for
+setting up a virtual environment, installing PyGPTPrompt, and configuring it to
+work with the OpenAI API.
