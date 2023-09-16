@@ -2,29 +2,41 @@
 pygptprompt/pattern/list.py
 """
 from copy import deepcopy
+from logging import Logger
 from typing import Optional
 
 from pygptprompt.pattern.json import JSONList, JSONMap, JSONTemplate
+from pygptprompt.pattern.model import ChatModelChatCompletion
 
 
 class ListTemplate(JSONTemplate):
     """
     A template class for managing a list of dictionaries in JSON files.
 
-    Properties:
-        _file_path (Path): The file path of the JSON file.
-        _data (JSONList): The underlying data structure for storing dictionaries. Uses initial_data if not None, otherwise loads JSON data from file_path. Raises an error if no data is given.
+    Attributes:
+        _file_path (Path): A path-like object pointing to the JSON source file.
+        _data (Optional[JSONData]): The internal JSON data structure. May be None if not loaded.
+        _logger (Optional[Logger]): Optional logger for error-handling.
     """
 
-    def __init__(self, file_path: str, initial_data: Optional[JSONList] = None):
+    def __init__(
+        self,
+        file_path: str,
+        initial_data: Optional[JSONList] = None,
+        logger: Optional[Logger] = None,
+    ):
         """
-        Initialize a ListTemplate instance.
+        Initializes the ListTemplate.
 
         Args:
             file_path (str): The path to the JSON file that stores the list.
             initial_data (Optional[JSONList]): Optional initial data to populate the list.
+            logger (Optional[Logger]): Optional logger for error-handling.
         """
-        super(ListTemplate, self).__init__(file_path, deepcopy(initial_data))
+        super(ListTemplate, self).__init__(file_path, deepcopy(initial_data), logger)
+
+        if initial_data is None:
+            self._data = []
 
     @property
     def length(self) -> int:
@@ -35,6 +47,30 @@ class ListTemplate(JSONTemplate):
     def data(self) -> Optional[JSONList]:
         """Return a copy of the internal data list or None if empty."""
         return deepcopy(self._data) if self._data else None
+
+    def load_to_chat_completions(self) -> bool:
+        """
+        Load JSON data from the file into the _data attribute.
+
+        Returns:
+            bool: True if the JSON data was loaded successfully, False on error.
+        """
+        if self.load_json():
+            self._data = [ChatModelChatCompletion(**element) for element in self._data]
+            return True
+        return False
+
+    def save_from_chat_completions(self) -> bool:
+        """
+        Save the _data attribute to the JSON file.
+
+        Returns:
+            bool: True if the JSON data was saved successfully, False on error.
+        """
+        if self._data:
+            data = [dict(element) for element in self._data]
+            return self.save_json(data)
+        return False
 
     def append(self, item: JSONMap) -> None:
         """
