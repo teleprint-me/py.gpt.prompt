@@ -15,10 +15,11 @@ from pygptprompt import logging
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.pattern.model import (
     ChatModel,
-    ChatModelChatCompletion,
     ChatModelEmbedding,
     ChatModelEncoding,
+    ChatModelResponse,
     ChatModelTextCompletion,
+    DeltaContent,
 )
 
 
@@ -43,12 +44,12 @@ class OpenAIModel(ChatModel):
         self.config = config
         openai.api_key = config.get_environment()
 
-    def _extract_content(self, delta: dict, content: str) -> str:
+    def _extract_content(self, delta: DeltaContent, content: str) -> str:
         """
         Extracts content from the given delta and appends it to the existing content.
 
         Args:
-            delta (dict): The delta object containing new content.
+            delta (DeltaContent): The delta object containing new content.
             content (str): The existing content.
 
         Returns:
@@ -63,7 +64,7 @@ class OpenAIModel(ChatModel):
 
     def _extract_function_call(
         self,
-        delta: dict,
+        delta: DeltaContent,
         function_call_name: str,
         function_call_args: str,
     ) -> Tuple[str, str]:
@@ -71,7 +72,7 @@ class OpenAIModel(ChatModel):
         Extracts function call information from the given delta and updates the function call name and arguments.
 
         Args:
-            delta (dict): The delta object containing function call information.
+            delta (DeltaContent): The delta object containing function call information.
             function_call_name (str): The existing function call name.
             function_call_args (str): The existing function call arguments.
 
@@ -91,9 +92,9 @@ class OpenAIModel(ChatModel):
         function_call_name: str,
         function_call_args: str,
         content: str,
-    ) -> ChatModelChatCompletion:
+    ) -> ChatModelResponse:
         """
-        Handles the finish reason and returns an ChatModelChatCompletion.
+        Handles the finish reason and returns an ChatModelResponse.
 
         Args:
             finish_reason (str): The finish reason from the response.
@@ -102,11 +103,11 @@ class OpenAIModel(ChatModel):
             content (str): The generated content.
 
         Returns:
-            ChatModelChatCompletion (Dict[LiteralString, str]): The model's response as a message.
+            ChatModelResponse (Dict[LiteralString, str]): The model's response as a message.
         """
         if finish_reason:
             if finish_reason == "function_call":
-                return ChatModelChatCompletion(
+                return ChatModelResponse(
                     role="function",
                     function_call=function_call_name,
                     function_args=function_call_args,
@@ -114,14 +115,14 @@ class OpenAIModel(ChatModel):
             elif finish_reason == "stop":
                 print()  # Add newline to model output
                 sys.stdout.flush()
-                return ChatModelChatCompletion(role="assistant", content=content)
+                return ChatModelResponse(role="assistant", content=content)
             else:
                 # Handle unexpected finish_reason
                 raise ValueError(f"Warning: Unexpected finish_reason '{finish_reason}'")
 
     def _stream_chat_completion(
         self, response_generator: Iterator[ChatCompletionChunk]
-    ) -> ChatModelChatCompletion:
+    ) -> ChatModelResponse:
         """
         Streams the chat completion response and handles the content and function call information.
 
@@ -129,7 +130,7 @@ class OpenAIModel(ChatModel):
             response_generator (Iterator[ChatCompletionChunk]): An iterator of ChatCompletionChunk objects.
 
         Returns:
-            ChatModelChatCompletion (Dict[LiteralString, str]): The model's response as a message.
+            ChatModelResponse (Dict[LiteralString, str]): The model's response as a message.
         """
         function_call_name = None
         function_call_args = ""
@@ -162,16 +163,16 @@ class OpenAIModel(ChatModel):
 
     def get_chat_completion(
         self,
-        messages: List[ChatModelChatCompletion],
-    ) -> ChatModelChatCompletion:
+        messages: List[ChatModelResponse],
+    ) -> ChatModelResponse:
         """
         Generate chat completions using the OpenAI language models.
 
         Args:
-            messages (List[ChatModelChatCompletion]): The list of chat completion messages.
+            messages (List[ChatModelResponse]): The list of chat completion messages.
 
         Returns:
-            ChatModelChatCompletion (Dict[LiteralString, str]): The model's response as a message.
+            ChatModelResponse (Dict[LiteralString, str]): The model's response as a message.
 
         Raises:
             ValueError: If `messages` argument is empty or `None`.
@@ -211,7 +212,7 @@ class OpenAIModel(ChatModel):
             return self._stream_chat_completion(response)
         except Exception as e:
             logging.error(f"Error generating chat completions: {e}")
-            return ChatModelChatCompletion(role="system", content=str(e))
+            return ChatModelResponse(role="system", content=str(e))
 
     def get_embedding(self, input: Union[str, List[str]]) -> ChatModelEmbedding:
         """
