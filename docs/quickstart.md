@@ -84,3 +84,38 @@ Here's a quick example to guide you through:
 system
 My name is ChatGPT. I am a helpful assistant. I will only use the functions I have been provided with.
 ```
+
+## Additional Tools and Functionalities
+
+PyGPTPrompt comes packed with a variety of specialized tools and
+functionalities, each residing in its own dedicated module or package:
+
+### Modules
+
+- `chat.py`: The primary interface for interactive chat sessions.
+- `convert.py`: Converts compatible Hugging Face models to GGUF (Georgi Gerganov
+  Unified Format) for `llama.cpp` support.
+- `download.py`: A utility for manually downloading selected models from Hugging
+  Face.
+- `embed.py`: Manages vector-based embeddings in the vector database for model
+  memory recall.
+- `llama.py`: An example script from Facebook Research Labs, intended for future
+  integration to support non-quantized, full-sized models.
+- `ocr.py`: Converts images to text via Optical Character Recognition.
+- `pdf.py`: Transforms PDFs into textual data.
+- `quantize.py`: Provides quantization for converting HF models to GGUF format.
+
+### Packages
+
+- `function`: Enables custom function calls for GPT models. (Support for Llama
+  models is under development.)
+- `model`: A factory module for managing different types of models.
+
+**Future Developments**:
+
+- Uploading and fine-tuning features (`upload.py` and `finetune.py`) are in the
+  roadmap and will be added in upcoming releases. They are currently represented
+  as uncommitted stub files.
+
+Feel free to explore these modules to maximize the utility you derive from
+PyGPTPrompt.
