@@ -5,13 +5,17 @@ faster processing.
 
 ### Installation from PyPI (recommended)
 
-Install from PyPI (requires a C compiler):
+Install from PyPI (requires a c compiler):
 
 ```bash
 pip install llama-cpp-python
 ```
 
-If you have previously installed llama-cpp-python through pip and want to
+The above command will attempt to install the package and build `llama.cpp` from
+source. This is the recommended installation method as it ensures that
+`llama.cpp` is built with the available optimizations for your system.
+
+If you have previously installed `llama-cpp-python` through pip and want to
 upgrade your version or rebuild the package with different compiler options,
 please add the following flags to ensure that the package is rebuilt correctly:
 
@@ -20,56 +24,61 @@ pip install llama-cpp-python --force-reinstall --upgrade --no-cache-dir
 ```
 
 Note: If you are using Apple Silicon (M1) Mac, make sure you have installed a
-version of Python that supports arm64 architecture.
+version of Python that supports arm64 architecture. For example:
+
+```
+wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh
+bash Miniforge3-MacOSX-arm64.sh
+```
+
+Otherwise, while installing it will build the llama.ccp x86 version which will
+be 10x slower on Apple Silicon (M1) Mac.
 
 ### Installation with Hardware Acceleration
 
-`llama.cpp` supports multiple BLAS backends for faster processing. Use the
-`FORCE_CMAKE=1` environment variable to force the use of `cmake` and install the
-pip package for the desired BLAS backend.
+`llama.cpp` supports multiple BLAS backends for faster processing.
 
 To install with OpenBLAS, set the `LLAMA_BLAS and LLAMA_BLAS_VENDOR` environment
 variables before installing:
 
 ```bash
-CMAKE_ARGS="-DLLAMA_BLAS=ON -DLLAMA_BLAS_VENDOR=OpenBLAS" FORCE_CMAKE=1 pip install llama-cpp-python
+CMAKE_ARGS="-DLLAMA_BLAS=ON -DLLAMA_BLAS_VENDOR=OpenBLAS" pip install llama-cpp-python
 ```
 
 To install with cuBLAS, set the `LLAMA_CUBLAS=1` environment variable before
 installing:
 
 ```bash
-CMAKE_ARGS="-DLLAMA_CUBLAS=on" FORCE_CMAKE=1 pip install llama-cpp-python
+CMAKE_ARGS="-DLLAMA_CUBLAS=on" pip install llama-cpp-python
 ```
 
 To install with CLBlast, set the `LLAMA_CLBLAST=1` environment variable before
 installing:
 
 ```bash
-CMAKE_ARGS="-DLLAMA_CLBLAST=on" FORCE_CMAKE=1 pip install llama-cpp-python
+CMAKE_ARGS="-DLLAMA_CLBLAST=on" pip install llama-cpp-python
 ```
 
 To install with Metal (MPS), set the `LLAMA_METAL=on` environment variable
 before installing:
 
 ```bash
-CMAKE_ARGS="-DLLAMA_METAL=on" FORCE_CMAKE=1 pip install llama-cpp-python
+CMAKE_ARGS="-DLLAMA_METAL=on" pip install llama-cpp-python
 ```
 
 To install with hipBLAS / ROCm support for AMD cards, set the `LLAMA_HIPBLAS=on`
 environment variable before installing:
 
 ```bash
+CMAKE_ARGS="-DLLAMA_HIPBLAS=on" pip install llama-cpp-python
+```
+
+```bash
 CMAKE_ARGS="-DLLAMA_HIPBLAS=on" FORCE_CMAKE=1 pip install llama-cpp-python
 ```
 
-Detailed MacOS Metal GPU install documentation is available at
-[docs/install/macos.md](https://llama-cpp-python.readthedocs.io/en/latest/install/macos/).
-
-### Special Notes for AMD
-
-Step-by-step instructions that omit the noise to make it clearer for users and
-repository maintainers:
+To install with hipBLAS / ROCm support for AMD cards, set the `LLAMA_HIPBLAS=on`
+environment variable before installing:
 
 **Building llama.cpp for AMD GPU**
 
