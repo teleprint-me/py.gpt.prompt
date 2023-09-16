@@ -93,7 +93,7 @@ functionalities, each residing in its own dedicated module or package:
 ### Modules
 
 - `chat.py`: The primary interface for interactive chat sessions.
-- `convert.py`: Converts compatible Hugging Face models to GGUF (Georgi Gerganov
+- `convert.py`: Converts compatible Hugging Face models to [GGUF](https://github.com/philpax/ggml/blob/gguf-spec/docs/gguf.md) (Georgi Gerganov
   Unified Format) for `llama.cpp` support.
 - `download.py`: A utility for manually downloading selected models from Hugging
   Face.
