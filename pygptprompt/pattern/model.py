@@ -3,17 +3,7 @@ pygptprompt/pattern/model.py
 """
 
 from abc import ABC, abstractmethod
-from typing import (
-    Any,
-    Dict,
-    List,
-    Literal,
-    NotRequired,
-    Optional,
-    Protocol,
-    TypedDict,
-    Union,
-)
+from typing import Any, Dict, List, Literal, NotRequired, Protocol, TypedDict, Union
 
 # Represents a vector in the chat model,
 # which could be either a list of integers or floats.
@@ -44,8 +34,8 @@ class DeltaContent(TypedDict, total=False):
         - function_call (Optional[Dict[str, Any]]): Information about a function call.
     """
 
-    content: str
-    function_call: Optional[Dict[str, Any]]
+    content: NotRequired[str]
+    function_call: NotRequired[Dict[str, Any]]
 
 
 class ChatCompletionMessage(TypedDict):
