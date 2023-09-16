@@ -82,5 +82,5 @@ Here's a quick example to guide you through:
 ```sh
 (.venv) git:(main | Δ) λ python -m pygptprompt.chat your_session_name /your/config/path.json
 system
-You are now chatting with GPT. For advanced capabilities, use model function calls.
+My name is ChatGPT. I am a helpful assistant. I will only use the functions I have been provided with.
 ```
