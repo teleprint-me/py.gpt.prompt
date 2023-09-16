@@ -2,6 +2,7 @@
 pygptprompt/chat.py
 """
 import sys
+import traceback
 from datetime import datetime
 from logging import Logger
 
@@ -91,12 +92,12 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
         collection: Collection = chroma_client.create_collection(
             name=session_name, embedding_function=embedding_function
         )
-        logger.info(f"Created collection {session_name}")
+        logger.debug(f"Created collection {session_name}")
     except ValueError:
         collection: Collection = chroma_client.get_collection(
             name=session_name, embedding_function=embedding_function
         )
-        logger.info(f"Loaded collection {session_name}")
+        logger.debug(f"Loaded collection {session_name}")
 
     def initialize_list_template(
         file_path: str,
@@ -108,9 +109,9 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
         list_template.make_directory()
 
         if list_template.load_json():
-            logger.info(f"Continuing previous session {session_name} from {file_path}")
+            logger.debug(f"Continuing previous session {session_name} from {file_path}")
         else:
-            logger.info(f"Starting new session {session_name} for {file_path}")
+            logger.debug(f"Starting new session {session_name} for {file_path}")
             list_template.append(system_prompt)
 
         return list_template
@@ -141,24 +142,26 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
             user_prompt = ChatModelResponse(role="user", content=prompt)
 
             # Log and add to context and transcript
-            logger.info(f"User Prompt: {user_prompt.content}")
+            logger.debug(f"User Prompt: {user_prompt['content']}")
             context_window.append(user_prompt)
             transcript.append(user_prompt)
 
             # Get assistant's response
+            print("assistant")
             assistant_message = chat_model.get_chat_completion(
                 messages=context_window.data
             )
 
             # Log and add to context and transcript
-            logger.info(f"Assistant Message: {assistant_message.content}")
+            logger.debug(f"Assistant Message: {assistant_message['content']}")
 
             context_window.append(assistant_message)
             context_window.save_from_chat_completions()
 
             transcript.append(assistant_message)
             transcript.save_from_chat_completions()
-
+            print()
+            print(f"Collections: {collection.count()}")
         elif chat:
             # Extract the common logic to a function
             def add_message_to_db(collection, session_name, message):
@@ -234,7 +237,9 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
                 print(f"Collections: {collection.count()}")
                 print()  # Add padding to output
     except Exception as e:
+        print()  # Add padding to output
         logger.error(f"Error generating response: {e}")
+        traceback.print_exc()
         sys.exit(1)
 
 
