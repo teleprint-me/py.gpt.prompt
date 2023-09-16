@@ -3,56 +3,61 @@
 The package can be installed using [Poetry](https://python-poetry.org/), a
 Python dependency management and packaging tool. Follow these steps:
 
-1. Clone the repository:
+1. **Clone the Repository**:
 
    ```sh
    git clone https://github.com/teleprint-me/py.gpt.prompt.git
    ```
 
-2. Navigate into the project directory:
+2. **Navigate into the Project Directory**:
 
    ```sh
    cd py.gpt.prompt
    ```
 
-3. Install Poetry using pipX:
+3. **Install Poetry Using pipX**:
 
    ```sh
-   # Learn more: https://pypa.github.io/pipx/
    pip install --user --upgrade pipx
-   # pipx runs each package in isolation.
    pipx install poetry
    ```
 
-3. Install the dependencies using Poetry:
+   - Learn more about [pipX](https://pypa.github.io/pipx/).
+
+4. **Install Dependencies Using Poetry**:
 
    ```sh
-   # Streamlines virtual environment for easy deployment.
-   # Learn more at https://python-poetry.org/docs/
    poetry install
    ```
 
-4. Update the dependencies using Poetry:
+   - More details available in the
+     [Poetry docs](https://python-poetry.org/docs/).
+
+5. **Update Dependencies Using Poetry**:
 
    ```sh
-   # updates the poetry lock and installs latest packages
    poetry update
    ```
 
-4. Activate the environment.
+6. **Activate the Environment**:
 
    ```sh
    poetry shell
    ```
 
-5. Setup your API Key.
+7. **Setup Your API Key**:
 
    ```sh
    echo "OPENAI_API_KEY='API_KEY_GOES_HERE'" > .env
    ```
 
-6. Setup your configuration.
+   ⚠️ **Warning**: Never commit `.env` files to public repositories.
 
+8. **Setup Your Configuration**:
    ```sh
    cp tests/config.dev.json config.json
    ```
+
+### Troubleshooting
+
+- If you encounter XYZ issue, try doing ABC.
