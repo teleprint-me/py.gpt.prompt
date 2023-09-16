@@ -11,7 +11,6 @@ import openai
 from llama_cpp import ChatCompletionChunk
 from tiktoken import Encoding, encoding_for_model
 
-from pygptprompt import logging
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.pattern.model import (
     ChatModel,

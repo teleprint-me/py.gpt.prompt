@@ -14,7 +14,6 @@ from huggingface_hub.utils import (
 )
 from llama_cpp import ChatCompletionChunk, Llama
 
-from pygptprompt import logging
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.pattern.model import (
     ChatModel,
