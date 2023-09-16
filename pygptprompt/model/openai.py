@@ -212,7 +212,7 @@ class OpenAIModel(ChatModel):
             return self._stream_chat_completion(response)
         except Exception as e:
             logging.error(f"Error generating chat completions: {e}")
-            return ChatModelResponse(role="system", content=str(e))
+            return ChatModelResponse(role="assistant", content=str(e))
 
     def get_embedding(self, input: Union[str, List[str]]) -> ChatModelEmbedding:
         """
