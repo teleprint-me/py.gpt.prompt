@@ -1,69 +1,64 @@
 # Quickstart Guide
 
-The PyGPTPrompt package provides a command-line interface (CLI) for interacting
-with the GPT model. You can start the prompt interface by running the followin g
-command:
+## Starting the Chat Interface
+
+To get started with the chat interface, execute the following command:
 
 ```sh
-python -m pygptprompt.main
+python -m pygptprompt.chat --chat [SESSION_NAME] [CONFIG_PATH]
 ```
 
-Within the prompt interface, you can issue various commands and options to
-interact with the GPT model. To view a list of available commands and options,
-use the `/help` command.
+This command initializes a chat session using the specified session name and
+configuration file path. If you omit either, the system will resort to defaults
+or prompts.
 
-If your configuration file is not located in the current working directory, you
-can specify its location using the `--config` option. For example:
+### Note:
+
+As of this pre-release, IRC-like commands are temporarily disabled. However, GPT
+model function calling is fully supported.
+
+## Available Commands and Options
+
+Within the chat interface, you can call GPT model functions for various tasks.
+Although IRC-like commands are disabled, you can still interact robustly with
+the model.
+
+To specify a different configuration file located outside of the current working
+directory, use the `--config` option:
 
 ```sh
-python -m pygptprompt.main --config /path/to/config.json
+python -m pygptprompt.chat --config /path/to/config.json
 ```
 
-This ensures that the application knows where to find your configuration file.
+## Additional Command Line Options
 
-### Keybindings
+These command-line options offer a customized experience:
 
-PyGPTPrompt comes with default keybindings that you can use to interact with the
-application. Here's a brief overview of the available keybindings:
+- `--prompt TEXT`: Initial model prompt.
+- `--embed`: Utilize the chroma vector database.
+- `--provider TEXT`: Choose the model provider ('openai' for GPT models and
+  'llama_cpp' for Llama models).
+- `--path_database TEXT`: Specify the path for storing embeddings.
 
-- `Ctrl-C`: Exits the application.
-- `Ctrl-D`: Exits the application.
-- `Return`: Enters a newline.
-- `Alt-Return`: Submits a message (Win & Linux).
-- `Option-Return`: Submits a message (Mac OS X).
-- `Up/Down arrow keys`: Navigates through command history.
-- `Ctrl-Shift-V`: Pastes from the system clipboard.
-- `Tab`: Auto-completes commands and arguments. (TODO)
+Run `python -m pygptprompt.chat --help` to see all available options.
+
+## Keybindings
+
+The following default keybindings facilitate interaction:
+
+- `Ctrl-C`, `Ctrl-D`: Exit the application.
+- `Return`: Insert a newline.
+- `Alt-Return` (Win & Linux) / `Option-Return` (Mac OS X): Submit a message.
+- `Up/Down arrow keys`: Navigate command history.
+- `Ctrl-Shift-V`: Paste from clipboard.
+- `Tab`: Auto-complete for commands and arguments is in development.
 
 ## Example Session
 
-Here is an actual transcript of a session using the application:
+Here's an example session for your reference:
 
 ```sh
-(py-gpt-prompt-py3.11) ➜  py.gpt.prompt git:(main) ✗ python main.py
-Enter a name for the session: test
-```
-
-### Session: test
-
-```sh
+(.venv) git:(main | Δ) λ python -m pygptprompt.chat --chat dev tests/config.dev.json
 system
-Your name is GPT. You are a pair programming assistant. You have access to special commands. Use `/help` for more information...
-
-user
-Hello!
-
-assistant
-Hello! How can I assist you today?
-
-user
-We need to test the command system. Let's start with /help...
-
-...[conversation continues]...
-
-user
-/git status
-
-assistant
-It looks like you ran the `/git status` command. The output shows that you have made changes to some files and those changes are yet to be committed. Additionally, it also suggests that your local branch is ahead of the 'origin/main' branch by one commit. Please consider committing your changes by running the `git commit` command and push them to the remote branch using `git push`, if you haven't already.
+Your name is GPT. You are a pair programming assistant. For further information, use model function calls...
 ```
