@@ -15,14 +15,28 @@ Python dependency management and packaging tool. Follow these steps:
    cd py.gpt.prompt
    ```
 
+3. Install Poetry using pipX:
+
+   ```sh
+   # Learn more: https://pypa.github.io/pipx/
+   pip install --user --upgrade pipx
+   # pipx runs each package in isolation.
+   pipx install poetry
+   ```
+
 3. Install the dependencies using Poetry:
 
    ```sh
-   # pipx runs each package in isolation.
-   # Learn more at https://github.com/pipxproject/pipx
-   pip install --user --upgrade pipx
-   pipx install poetry
+   # Streamlines virtual environment for easy deployment.
+   # Learn more at https://python-poetry.org/docs/
    poetry install
+   ```
+
+4. Update the dependencies using Poetry:
+
+   ```sh
+   # updates the poetry lock and installs latest packages
+   poetry update
    ```
 
 4. Activate the environment.
@@ -40,5 +54,5 @@ Python dependency management and packaging tool. Follow these steps:
 6. Setup your configuration.
 
    ```sh
-   cp tests/config.example.json config.json
+   cp tests/config.dev.json config.json
    ```
