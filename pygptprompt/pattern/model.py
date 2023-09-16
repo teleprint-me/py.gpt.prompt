@@ -1,25 +1,61 @@
 """
 pygptprompt/pattern/model.py
 """
-from abc import ABC, abstractmethod
-from typing import List, Literal, NotRequired, Protocol, TypedDict, Union
 
+from abc import ABC, abstractmethod
+from typing import (
+    Any,
+    Dict,
+    List,
+    Literal,
+    NotRequired,
+    Optional,
+    Protocol,
+    TypedDict,
+    Union,
+)
+
+# Represents a vector in the chat model,
+# which could be either a list of integers or floats.
 ChatModelVector = Union[List[int], List[float]]
+
+# Alias for a vector encoding in the chat model.
 ChatModelEncoding = ChatModelVector
+
+# Represents an embedding as a list of ChatModelVectors.
 ChatModelEmbedding = List[ChatModelVector]
+
+# Represents a document or string in the chat model.
 ChatModelDocument = str
+
+# Represents a list of documents or strings in the chat model.
 ChatModelDocuments = List[ChatModelDocument]
+
+# Represents a text completion in the chat model.
 ChatModelTextCompletion = str
+
+
+class DeltaContent(TypedDict, total=False):
+    """
+    Represents the delta content which may contain either actual content or a function call.
+
+    Attributes:
+        - content (str): The text content.
+        - function_call (Optional[Dict[str, Any]]): Information about a function call.
+    """
+
+    content: str
+    function_call: Optional[Dict[str, Any]]
 
 
 class ChatCompletionMessage(TypedDict):
     """
-    Base chat completion message class.
+    Represents a single completion message from the chat model.
 
     Attributes:
-        role (Literal["assistant", "user", "system"]): The role of the message.
-        content (str): The content of the message.
-        user (NotRequired[str]): The user associated with the message (optional).
+        - role (Literal): The role of the message (either 'assistant', 'user', or 'system').
+        - content (str): The content of the message.
+        - user (NotRequired[str]): The user who originated this message, if applicable.
     """
 
     role: Literal["assistant", "user", "system"]
@@ -27,19 +63,16 @@ class ChatCompletionMessage(TypedDict):
     user: NotRequired[str]
 
 
-class ChatModelChatCompletion(ChatCompletionMessage):
+class ChatModelResponse(ChatCompletionMessage):
     """
-    Extended chat completion message with additional role options.
-
-    Inherits:
-        ChatCompletionMessage: Base chat completion message class.
+    Extends ChatCompletionMessage to include optional function calls and their arguments.
 
     Attributes:
-        role (Literal["assistant", "user", "system", "function"]): The role of the message.
-        content (str): The content of the message.
-        function_call (NotRequired[str]): The function call associated with the message (optional).
-        function_args (NotRequired[str]): The function arguments associated with the message (optional).
-        user (NotRequired[str]): The user associated with the message (optional).
+        - role (Literal): The role of the message. It can be 'assistant', 'user', 'system', or 'function'.
+        - content (NotRequired[str]): The content of the message.
+        - function_call (NotRequired[str]): The function being called, if applicable.
+        - function_args (NotRequired[str]): The arguments for the function call, if applicable.
+        - user (NotRequired[str]): The user who originated this message, if applicable.
     """
 
     role: Literal["assistant", "user", "system", "function"]
@@ -85,16 +118,16 @@ class ChatModel(ABC):
 
     @abstractmethod
     def get_chat_completion(
-        self, messages: List[ChatModelChatCompletion]
-    ) -> ChatModelChatCompletion:
+        self, messages: List[ChatModelResponse]
+    ) -> ChatModelResponse:
         """
         Get a text completion for a conversation based on the provided messages.
 
         Args:
-            messages (List[ChatModelChatCompletion]): The list of ChatModelChatCompletion objects representing the conversation.
+            messages (List[ChatModelResponse]): The list of ChatModelResponse objects representing the conversation.
 
         Returns:
-            ChatModelChatCompletion (Dict[LiteralString, str]): The text completion for the conversation.
+            ChatModelResponse (Dict[LiteralString, str]): The text completion for the conversation.
         """
         raise NotImplementedError
 
