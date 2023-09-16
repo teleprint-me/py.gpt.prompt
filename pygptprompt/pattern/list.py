@@ -6,7 +6,7 @@ from logging import Logger
 from typing import Optional
 
 from pygptprompt.pattern.json import JSONList, JSONMap, JSONTemplate
-from pygptprompt.pattern.model import ChatModelChatCompletion
+from pygptprompt.pattern.model import ChatModelResponse
 
 
 class ListTemplate(JSONTemplate):
@@ -56,7 +56,7 @@ class ListTemplate(JSONTemplate):
             bool: True if the JSON data was loaded successfully, False on error.
         """
         if self.load_json():
-            self._data = [ChatModelChatCompletion(**element) for element in self._data]
+            self._data = [ChatModelResponse(**element) for element in self._data]
             return True
         return False
 

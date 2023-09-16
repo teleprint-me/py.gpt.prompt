@@ -6,9 +6,9 @@ import pytest
 from pygptprompt.model.llama_cpp import LlamaCppModel
 from pygptprompt.pattern.model import (
     ChatModel,
-    ChatModelChatCompletion,
     ChatModelEmbedding,
     ChatModelEncoding,
+    ChatModelResponse,
 )
 
 
@@ -20,9 +20,9 @@ class TestLlamaCppAPI:
     def test_get_chat_completion(
         self,
         llama_cpp_model: LlamaCppModel,
-        messages: list[ChatModelChatCompletion],
+        messages: list[ChatModelResponse],
     ):
-        message: ChatModelChatCompletion = llama_cpp_model.get_chat_completion(
+        message: ChatModelResponse = llama_cpp_model.get_chat_completion(
             messages=messages
         )
 

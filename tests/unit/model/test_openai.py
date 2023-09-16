@@ -9,9 +9,9 @@ import pytest
 from pygptprompt.model.openai import OpenAIModel
 from pygptprompt.pattern.model import (
     ChatModel,
-    ChatModelChatCompletion,
     ChatModelEmbedding,
     ChatModelEncoding,
+    ChatModelResponse,
 )
 
 
@@ -23,9 +23,9 @@ class TestOpenAI:
     def test_get_chat_completion(
         self,
         openai_model: OpenAIModel,
-        chat_completion: List[ChatModelChatCompletion],
+        chat_completion: List[ChatModelResponse],
     ):
-        message: ChatModelChatCompletion = openai_model.get_chat_completion(
+        message: ChatModelResponse = openai_model.get_chat_completion(
             messages=chat_completion,
         )
 
@@ -40,11 +40,11 @@ class TestOpenAI:
     def test_get_chat_completion_function(
         self,
         openai_model: OpenAIModel,
-        function_completion: List[ChatModelChatCompletion],
+        function_completion: List[ChatModelResponse],
         mock_weather_callback: object,
     ):
         # Call the get_chat_completions method
-        assistant_message: ChatModelChatCompletion = openai_model.get_chat_completion(
+        assistant_message: ChatModelResponse = openai_model.get_chat_completion(
             messages=function_completion
         )
 

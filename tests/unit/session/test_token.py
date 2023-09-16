@@ -5,7 +5,7 @@ from typing import List
 
 import pytest
 
-from pygptprompt.pattern.types import ChatModelChatCompletion
+from pygptprompt.pattern.types import ChatModelResponse
 from pygptprompt.session.token import ChatSessionTokenManager
 
 
@@ -46,7 +46,7 @@ class TestChatSessionTokenManager:
     def test_get_message_length_with_fixture(
         self,
         chat_session_token_manager: ChatSessionTokenManager,
-        message: ChatModelChatCompletion,
+        message: ChatModelResponse,
     ):
         length = chat_session_token_manager.get_message_length(message)
         assert isinstance(length, int)
@@ -54,7 +54,7 @@ class TestChatSessionTokenManager:
     def test_get_total_message_length_with_fixture(
         self,
         chat_session_token_manager: ChatSessionTokenManager,
-        messages: List[ChatModelChatCompletion],
+        messages: List[ChatModelResponse],
     ):
         total_length = chat_session_token_manager.get_total_message_length(messages)
         assert isinstance(total_length, int)
@@ -62,8 +62,8 @@ class TestChatSessionTokenManager:
     def test_is_overflow_with_fixture(
         self,
         chat_session_token_manager: ChatSessionTokenManager,
-        message: ChatModelChatCompletion,
-        messages: List[ChatModelChatCompletion],
+        message: ChatModelResponse,
+        messages: List[ChatModelResponse],
     ):
         overflow = chat_session_token_manager.is_overflow(message, messages)
         assert isinstance(overflow, bool)

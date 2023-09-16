@@ -1,14 +1,11 @@
 """
-"There are only two hard things in Computer Science: cache invalidation and naming things."
-    - Phil Karlton
-
 pygptprompt/session/token.py
 """
 from typing import List
 
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.pattern.model import ChatModel
-from pygptprompt.pattern.types import ChatModelChatCompletion
+from pygptprompt.pattern.types import ChatModelResponse
 
 
 class ChatSessionTokenManager:
@@ -139,12 +136,12 @@ class ChatSessionTokenManager:
         """
         return len(self._model.get_encoding(text=text))
 
-    def get_message_length(self, message: ChatModelChatCompletion) -> int:
+    def get_message_length(self, message: ChatModelResponse) -> int:
         """
         Returns the number of tokens in a given message.
 
         Args:
-            message (ChatModelChatCompletion): The message to process.
+            message (ChatModelResponse): The message to process.
 
         Returns:
             int: The number of tokens in the message.
@@ -159,13 +156,13 @@ class ChatSessionTokenManager:
 
     def get_total_message_length(
         self,
-        messages: List[ChatModelChatCompletion],
+        messages: List[ChatModelResponse],
     ) -> int:
         """
         Returns the total number of tokens in a list of chat messages.
 
         Args:
-            messages (List[ChatModelChatCompletion]): The list of messages.
+            messages (List[ChatModelResponse]): The list of messages.
 
         Returns:
             int: The total number of tokens in the list of messages.
@@ -179,15 +176,15 @@ class ChatSessionTokenManager:
 
     def is_overflow(
         self,
-        new_message: ChatModelChatCompletion,
-        messages: List[ChatModelChatCompletion],
+        new_message: ChatModelResponse,
+        messages: List[ChatModelResponse],
     ) -> bool:
         """
         Check if adding a new message will cause the sequence to overflow.
 
         Args:
-            new_message (ChatModelChatCompletion): The new message to be added.
-            messages (List[ChatModelChatCompletion]): The existing list of messages.
+            new_message (ChatModelResponse): The new message to be added.
+            messages (List[ChatModelResponse]): The existing list of messages.
 
         Returns:
             bool: True if the sequence will overflow, False otherwise.

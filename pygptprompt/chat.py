@@ -16,8 +16,8 @@ from pygptprompt.model.factory import ChatModelFactory
 from pygptprompt.pattern.list import ListTemplate
 from pygptprompt.pattern.model import (
     ChatModel,
-    ChatModelChatCompletion,
     ChatModelEmbeddingFunction,
+    ChatModelResponse,
 )
 
 
@@ -100,7 +100,7 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
 
     def initialize_list_template(
         file_path: str,
-        system_prompt: ChatModelChatCompletion,
+        system_prompt: ChatModelResponse,
         session_name: str,
         logger: Logger,
     ) -> ListTemplate:
@@ -116,7 +116,7 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
         return list_template
 
     # Initialize ListTemplates for Context and Transcript
-    system_prompt = ChatModelChatCompletion(
+    system_prompt = ChatModelResponse(
         role=config.get_value(f"{provider}.system_prompt.role"),
         content=config.get_value(f"{provider}.system_prompt.content"),
     )
@@ -137,8 +137,8 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
         print()
 
         if prompt:
-            # Create a ChatModelChatCompletion object for the user's prompt
-            user_prompt = ChatModelChatCompletion(role="user", content=prompt)
+            # Create a ChatModelResponse object for the user's prompt
+            user_prompt = ChatModelResponse(role="user", content=prompt)
 
             # Log and add to context and transcript
             logger.info(f"User Prompt: {user_prompt.content}")
@@ -179,7 +179,7 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
                 except (EOFError, KeyboardInterrupt):
                     break
 
-                user_message = ChatModelChatCompletion(role="user", content=text_input)
+                user_message = ChatModelResponse(role="user", content=text_input)
                 context_window.append(user_message)
                 transcript.append(user_message)
 
@@ -198,7 +198,7 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
 
                 if assistant_message["role"] == "function":
                     # Query the function from the factory and execute it
-                    result: ChatModelChatCompletion = function_factory.execute_function(
+                    result: ChatModelResponse = function_factory.execute_function(
                         assistant_message
                     )
                     # Skip to user prompt if result is None
@@ -208,7 +208,7 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
                         )
                         continue
 
-                    message: ChatModelChatCompletion = function_factory.query_function(
+                    message: ChatModelResponse = function_factory.query_function(
                         chat_model=chat_model,
                         result=result,
                         messages=context_window.data,

@@ -4,7 +4,7 @@ tests/unit/pattern/list.py
 from typing import List
 
 from pygptprompt.pattern.list import ListTemplate
-from pygptprompt.pattern.model import ChatModelChatCompletion
+from pygptprompt.pattern.model import ChatModelResponse
 
 
 class TestListTemplate:
@@ -17,7 +17,7 @@ class TestListTemplate:
     def test_append(
         self,
         list_template: ListTemplate,
-        message: ChatModelChatCompletion,
+        message: ChatModelResponse,
     ):
         initial_length = list_template.length
         list_template.append(message)
@@ -27,7 +27,7 @@ class TestListTemplate:
     def test_insert(
         self,
         list_template: ListTemplate,
-        message: ChatModelChatCompletion,
+        message: ChatModelResponse,
     ):
         initial_length = list_template.length
         index = 1

@@ -15,7 +15,7 @@ from pygptprompt.model.openai import OpenAIModel
 from pygptprompt.pattern.json import JSONTemplate
 from pygptprompt.pattern.list import ListTemplate
 from pygptprompt.pattern.mapping import MappingTemplate
-from pygptprompt.pattern.model import ChatModel, ChatModelChatCompletion
+from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 
 # from pygptprompt.session.model import SessionModel
 # from pygptprompt.session.policy import SessionPolicy
@@ -62,21 +62,19 @@ def embedding_input() -> Union[str, List[str]]:
 
 
 @pytest.fixture(scope="module")
-def message() -> ChatModelChatCompletion:
-    return ChatModelChatCompletion(
+def message() -> ChatModelResponse:
+    return ChatModelResponse(
         role="user",
         content="How many cards are there in a single deck of cards?",
     )
 
 
 @pytest.fixture(scope="module")
-def messages() -> List[ChatModelChatCompletion]:
+def messages() -> List[ChatModelResponse]:
     return [
-        ChatModelChatCompletion(role="system", content="You are a helpful assistant."),
-        ChatModelChatCompletion(
-            role="user", content="Who won the world series in 2020?"
-        ),
-        ChatModelChatCompletion(
+        ChatModelResponse(role="system", content="You are a helpful assistant."),
+        ChatModelResponse(role="user", content="Who won the world series in 2020?"),
+        ChatModelResponse(
             role="assistant",
             content="The Los Angeles Dodgers won the World Series in 2020.",
         ),
@@ -84,10 +82,10 @@ def messages() -> List[ChatModelChatCompletion]:
 
 
 @pytest.fixture(scope="module")
-def chat_completion() -> List[ChatModelChatCompletion]:
+def chat_completion() -> List[ChatModelResponse]:
     return [
-        ChatModelChatCompletion(role="system", content="You are a helpful assistant."),
-        ChatModelChatCompletion(
+        ChatModelResponse(role="system", content="You are a helpful assistant."),
+        ChatModelResponse(
             role="user",
             content="Translate the following English text to French: 'The quick brown fox jumped over the lazy dog.'",
         ),
@@ -95,10 +93,10 @@ def chat_completion() -> List[ChatModelChatCompletion]:
 
 
 @pytest.fixture(scope="module")
-def function_completion() -> List[ChatModelChatCompletion]:
+def function_completion() -> List[ChatModelResponse]:
     return [
-        ChatModelChatCompletion(role="system", content="You are a helpful assistant."),
-        ChatModelChatCompletion(
+        ChatModelResponse(role="system", content="You are a helpful assistant."),
+        ChatModelResponse(
             role="user", content="What's the weather like in San Francisco, CA?"
         ),
     ]
@@ -174,7 +172,7 @@ def json_template_nested(
 @pytest.fixture
 def temp_json_list(
     temp_json_path,
-    messages: List[ChatModelChatCompletion],
+    messages: List[ChatModelResponse],
 ):
     # Ensure the directory exists
     os.makedirs(os.path.dirname(temp_json_path), exist_ok=True)
@@ -192,7 +190,7 @@ def temp_json_list(
 @pytest.fixture(scope="function")
 def list_template(
     temp_json_path: str,
-    messages: List[ChatModelChatCompletion],
+    messages: List[ChatModelResponse],
 ) -> ListTemplate:
     return ListTemplate(temp_json_path, messages)
 
