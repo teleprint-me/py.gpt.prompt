@@ -19,27 +19,27 @@ class TestChatSessionTokenManager:
         assert isinstance(token_manager._config, ConfigurationManager)
         assert isinstance(token_manager._model, ChatModel)
 
-    def test_calculate_reserve_in_range(self, token_manager: ChatSessionTokenManager):
+    def test_reserve_in_range(self, token_manager: ChatSessionTokenManager):
         """
-        Test that the calculated reserve is within the valid range [0, 1].
+        Test that the reserve is within the valid range [0, 1].
         """
         assert 0 <= token_manager.reserve <= 1
 
-    def test_calculate_offset(self, token_manager: ChatSessionTokenManager):
+    def test_offset(self, token_manager: ChatSessionTokenManager):
         """
-        Test the calculation of token offset within a sequence.
+        Test that the token offset is set and valid.
         """
         assert isinstance(token_manager.offset, int)
 
-    def test_calculate_max_length(self, token_manager: ChatSessionTokenManager):
+    def test_max_sequence(self, token_manager: ChatSessionTokenManager):
         """
-        Test the calculation of the maximum sequence length for the model.
+        Test that the maximum number of tokens is set and valid.
         """
-        assert isinstance(token_manager.max_length, int)
+        assert isinstance(token_manager.max_sequence, int)
 
-    def test_calculate_max_tokens(self, token_manager: ChatSessionTokenManager):
+    def test_max_tokens(self, token_manager: ChatSessionTokenManager):
         """
-        Test the calculation of the maximum sequence length allowed for model output.
+        Test that the maximum sequence length is set and valid.
         """
         assert isinstance(token_manager.max_tokens, int)
 
@@ -50,11 +50,11 @@ class TestChatSessionTokenManager:
         assert isinstance(token_manager.upper_bound, int)
 
     @pytest.mark.parametrize("reserve", [0.1, 0.5, 0.9])
-    def test_set_reserve_setting(
+    def test_calculate_reserved_upper_bound(
         self, token_manager: ChatSessionTokenManager, reserve: float
     ):
         """
-        Test setting and calculating the reserve value.
+        Test calculating the reserved upper bound value for content size management.
         """
         token_manager._config.set_value("llama_cpp.context.reserve", reserve)
         assert isinstance(token_manager.reserve, float)

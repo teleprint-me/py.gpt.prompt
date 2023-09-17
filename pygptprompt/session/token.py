@@ -68,7 +68,7 @@ class ChatSessionTokenManager:
         return self._config.get_value(f"{self._provider}.context.offset", default=256)
 
     @property
-    def max_length(self) -> int:
+    def max_sequence(self) -> int:
         """
         An integer value representing the maximum sequence length for the given model.
 
@@ -105,7 +105,7 @@ class ChatSessionTokenManager:
         Returns:
             int: The token limit representing the artificial ceiling for the model's output length.
         """
-        return self.max_length - self.max_tokens
+        return self.max_sequence - self.max_tokens
 
     @property
     def reserved_upper_bound(self) -> int:
