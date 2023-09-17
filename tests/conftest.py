@@ -16,10 +16,10 @@ from pygptprompt.pattern.json import JSONTemplate
 from pygptprompt.pattern.list import ListTemplate
 from pygptprompt.pattern.mapping import MappingTemplate
 from pygptprompt.pattern.model import ChatModel, ChatModelResponse
+from pygptprompt.session.token import ChatSessionTokenManager
 
 # from pygptprompt.session.model import SessionModel
 # from pygptprompt.session.policy import SessionPolicy
-# from pygptprompt.session.token import ChatSessionTokenManager
 
 
 def pytest_addoption(parser):
@@ -227,7 +227,7 @@ def map_template(
 def config_file_path() -> str:
     if os.path.exists("config.json"):
         return "config.json"
-    return "tests/config.sample.json"
+    return "tests/config.dev.json"
 
 
 @pytest.fixture(scope="module")
@@ -255,13 +255,15 @@ def chat_model(chat_model_factory: ChatModelFactory) -> ChatModel:
     return chat_model_factory.create_model(provider="llama_cpp")
 
 
-# @pytest.fixture(scope="module")
-# def chat_session_token_manager(
-#     config: ConfigurationManager, chat_model: ChatModel
-# ) -> ChatSessionTokenManager:
-#     return ChatSessionTokenManager(
-#         provider="llama_cpp", config=config, model=chat_model
-#     )
+@pytest.fixture(scope="module")
+def token_manager(
+    config: ConfigurationManager, chat_model: ChatModel
+) -> ChatSessionTokenManager:
+    return ChatSessionTokenManager(
+        provider="llama_cpp",
+        config=config,
+        chat_model=chat_model,
+    )
 
 
 # @pytest.fixture(scope="module")
