@@ -41,6 +41,7 @@ class OpenAIModel(ChatModel):
             config (ConfigurationManager): The configuration manager instance.
         """
         self.config = config
+        self.logger = config.get_logger("app.log.general", "OpenAIModel", "DEBUG")
         openai.api_key = config.get_environment()
 
     def _extract_content(self, delta: DeltaContent, content: str) -> str:
@@ -54,6 +55,9 @@ class OpenAIModel(ChatModel):
         Returns:
             str: The updated content after appending the new token.
         """
+        self.logger.debug("Entering _extract_content method.")
+        self.logger.debug(f"Initial delta: {delta}, content: {content}")
+
         if delta and "content" in delta and delta["content"]:
             token = delta["content"]
             print(token, end="")
@@ -78,6 +82,13 @@ class OpenAIModel(ChatModel):
         Returns:
             Tuple[str, str]: A tuple containing the updated function call name and arguments.
         """
+        self.logger.debug("Entering _extract_function_call method.")
+        self.logger.debug(
+            f"Initial delta: {delta}, "
+            f"function_call_name: {function_call_name}, "
+            f"function_call_args: {function_call_args}, "
+        )
+
         if delta and "function_call" in delta and delta["function_call"]:
             function_call = delta["function_call"]
             if not function_call_name:
@@ -104,6 +115,14 @@ class OpenAIModel(ChatModel):
         Returns:
             ChatModelResponse (Dict[LiteralString, str]): The model's response as a message.
         """
+        self.logger.debug("Entering _handle_finish_reason method.")
+        self.logger.debug(
+            f"Initial finish_reason: {finish_reason}, "
+            f"function_call_name: {function_call_name}, "
+            f"function_call_args: {function_call_args}, "
+            f"content: {content}"
+        )
+
         if finish_reason:
             if finish_reason == "function_call":
                 return ChatModelResponse(
@@ -135,21 +154,49 @@ class OpenAIModel(ChatModel):
         function_call_args = ""
         content = ""
 
-        for chunk in response_generator:
-            delta = chunk["choices"][0]["delta"]
+        self.logger.debug("Entering _stream_chat_completion method.")
+        self.logger.debug(
+            f"Initial function_call_name: {function_call_name}, function_call_args: {function_call_args}, content: {content}"
+        )
 
+        for chunk in response_generator:
+            self.logger.debug(f"Processing chunk: {chunk}")
+
+            delta = chunk["choices"][0]["delta"]
             content = self._extract_content(delta, content)
             function_call_name, function_call_args = self._extract_function_call(
                 delta, function_call_name, function_call_args
             )
 
-            finish_reason = chunk["choices"][0]["finish_reason"]
-            message = self._handle_finish_reason(
-                finish_reason, function_call_name, function_call_args, content
+            self.logger.debug(f"Extracted delta: {delta}")
+            self.logger.debug(f"Current content: {content}")
+            self.logger.debug(
+                f"Current function_call_name: {function_call_name}, function_call_args: {function_call_args}"
             )
 
-            if message:
+            finish_reason = chunk["choices"][0]["finish_reason"]
+            self.logger.debug(f"Finish reason: {finish_reason}")
+
+            message = self._handle_finish_reason(
+                finish_reason,
+                function_call_name,
+                function_call_args,
+                content,
+            )
+
+            self.logger.debug(f"Generated message: {message}")
+
+            if message:  # NOTE: Exit early if a finish reason is given.
+                self.logger.debug(f"Returning message: {message}")
                 return message
+
+        # NOTE: The finish reason should be present.
+        # If the finish reason vanishes, then something unexpected happened.
+        self.logger.debug(f"Generated content: {content}")
+        self.logger.debug("Exiting _stream_chat_completion without a finish_reason.")
+        # NOTE: There is no message, but content is always generated.
+        # Return the generated content even though no finish reason was given.
+        return ChatModelResponse(role="assistant", content=content)
 
     def get_completion(self, prompt: str) -> ChatModelTextCompletion:
         """
@@ -210,7 +257,7 @@ class OpenAIModel(ChatModel):
             )
             return self._stream_chat_completion(response)
         except Exception as e:
-            logging.error(f"Error generating chat completions: {e}")
+            self.logger.error(f"Error generating chat completions: {e}")
             return ChatModelResponse(role="assistant", content=str(e))
 
     def get_embedding(self, input: Union[str, List[str]]) -> ChatModelEmbedding:
@@ -244,7 +291,7 @@ class OpenAIModel(ChatModel):
             # Return Embedding Vectors as List[float]
             return [result["embedding"] for result in sorted_embeddings]
         except Exception as e:
-            logging.error(f"Error generating embeddings: {e}")
+            self.logger.error(f"Error generating embeddings: {e}")
             return []
 
     def get_encoding(self, text: str) -> ChatModelEncoding:
@@ -268,4 +315,5 @@ class OpenAIModel(ChatModel):
                 "openai.chat_completions.model", "gpt-3.5-turbo"
             )
         )
+
         return encoding.encode(text=text)
