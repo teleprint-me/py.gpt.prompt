@@ -41,7 +41,7 @@ class TestConfigurationManager:
 
     def test_evaluate_path_app_path_test(self, config: ConfigurationManager):
         path = config.evaluate_path("app.path.test", "/default/path")
-        assert path == "/tmp"
+        assert path == "tests/tmp"
 
     def test_evaluate_path_app_path_local(
         self, config: ConfigurationManager, monkeypatch
@@ -50,7 +50,7 @@ class TestConfigurationManager:
         monkeypatch.setenv("HOME", "/home/testuser")
 
         path = config.evaluate_path("app.path.local", "/default/path")
-        assert path == "/home/testuser/.local/share/pygptprompt"
+        assert path == "local"
 
     @pytest.mark.private
     def test_openai_api_key(self, config: ConfigurationManager):
