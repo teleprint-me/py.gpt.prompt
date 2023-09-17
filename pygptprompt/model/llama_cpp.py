@@ -89,10 +89,10 @@ class LlamaCppModel(ChatModel):
         # Check if a local model path is provided and is valid
         if local_model_path:
             if Path(local_model_path).exists():
-                logging.info(f"Using local model at {local_model_path}")
+                self.logger.info(f"Using local model at {local_model_path}")
                 return local_model_path
             else:
-                logging.warning(
+                self.logger.warning(
                     f"Local model path {local_model_path} does not exist. Falling back to downloading the model."
                 )
 
@@ -106,7 +106,7 @@ class LlamaCppModel(ChatModel):
         Returns:
             str: The path to the downloaded model file.
         """
-        logging.info(f"Using {self.repo_id} to load {self.filename}")
+        self.logger.info(f"Using {self.repo_id} to load {self.filename}")
         max_retries = 3
         retries = 0
 
@@ -118,24 +118,28 @@ class LlamaCppModel(ChatModel):
                     cache_dir=self.cache_dir,
                     resume_download=True,
                 )
-                logging.info(f"Using {model_path} to load {self.filename} into memory")
+                self.logger.info(
+                    f"Using {model_path} to load {self.filename} into memory"
+                )
                 return model_path
             except (EntryNotFoundError, RepositoryNotFoundError) as e:
-                logging.error(f"Error downloading model: {e}")
+                self.logger.error(f"Error downloading model: {e}")
                 sys.exit(1)
             except LocalEntryNotFoundError as e:
-                logging.error(f"Error accessing model: {e}")
+                self.logger.error(f"Error accessing model: {e}")
                 if HfApi().is_online():
-                    logging.info("Retrying download...")
+                    self.logger.info("Retrying download...")
                     retries += 1
                 else:
-                    logging.error("Network is not available. Cannot retry download.")
+                    self.logger.error(
+                        "Network is not available. Cannot retry download."
+                    )
                     sys.exit(1)
             except Exception as e:
-                logging.error(f"Error downloading model: {e}")
+                self.logger.error(f"Error downloading model: {e}")
                 sys.exit(1)
 
-        logging.error("Max retries exceeded. Failed to download the model.")
+        self.logger.error("Max retries exceeded. Failed to download the model.")
         sys.exit(1)
 
     def _extract_content(self, delta: DeltaContent, content: str) -> str:
@@ -342,7 +346,7 @@ class LlamaCppModel(ChatModel):
             )
             return self._stream_chat_completion(response)
         except Exception as e:
-            logging.error(f"Error generating chat completions: {e}")
+            self.logger.error(f"Error generating chat completions: {e}")
             return ChatModelResponse(role="assistant", content=str(e))
 
     def get_embedding(self, input: Union[str, List[str]]) -> ChatModelEmbedding:
@@ -370,7 +374,7 @@ class LlamaCppModel(ChatModel):
             # Return Embedding Vectors as List[float]
             return [result["embedding"] for result in sorted_embeddings]
         except Exception as e:
-            logging.error(f"Error generating embeddings: {e}")
+            self.logger.error(f"Error generating embeddings: {e}")
             return []
 
     def get_encoding(self, text: str) -> ChatModelEncoding:
