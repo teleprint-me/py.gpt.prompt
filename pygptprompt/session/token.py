@@ -4,25 +4,24 @@ pygptprompt/session/token.py
 from typing import List
 
 from pygptprompt.config.manager import ConfigurationManager
-from pygptprompt.pattern.model import ChatModel
-from pygptprompt.pattern.types import ChatModelResponse
+from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 
 
 class ChatSessionTokenManager:
     """
     A helper class for managing tokens within a chat session.
 
-    Args:
-        provider (str): The provider or source of the chat session.
-        config (ConfigurationManager): The configuration manager for chat settings.
-        model (ChatModel): The chat model used for processing messages.
+    Attributes:
+        _provider (str): The provider or source of the chat session.
+        _config (ConfigurationManager): The configuration manager for chat settings.
+        _model (ChatModel): The chat model used for processing messages.
     """
 
     def __init__(
         self,
         provider: str,
         config: ConfigurationManager,
-        model: ChatModel,
+        chat_model: ChatModel,
     ):
         """
         Initializes the ChatSessionTokenManager.
@@ -30,11 +29,11 @@ class ChatSessionTokenManager:
         Args:
             provider (str): The provider or source of the chat session.
             config (ConfigurationManager): The configuration manager for chat settings.
-            model (ChatModel): The chat model used for processing messages.
+            chat_model (ChatModel): The chat model used for processing messages.
         """
         self._provider = provider
         self._config = config
-        self._model = model
+        self._model = chat_model
 
     @property
     def reserve(self) -> float:
@@ -124,7 +123,7 @@ class ChatSessionTokenManager:
         """
         return int(self.upper_bound * self.reserve)
 
-    def get_sequence_length(self, text: str) -> int:
+    def calculate_text_sequence_length(self, text: str) -> int:
         """
         Count the number of tokens within the given text sequence.
 
@@ -136,7 +135,7 @@ class ChatSessionTokenManager:
         """
         return len(self._model.get_encoding(text=text))
 
-    def get_message_length(self, message: ChatModelResponse) -> int:
+    def calculate_chat_message_length(self, message: ChatModelResponse) -> int:
         """
         Returns the number of tokens in a given message.
 
@@ -152,9 +151,9 @@ class ChatSessionTokenManager:
             if value is not None:
                 sequence += " " + key + " " + value
 
-        return self.get_sequence_length(sequence.strip())
+        return self.calculate_text_sequence_length(sequence.strip())
 
-    def get_total_message_length(
+    def calculate_chat_sequence_length(
         self,
         messages: List[ChatModelResponse],
     ) -> int:
@@ -170,11 +169,11 @@ class ChatSessionTokenManager:
         total_tokens: int = 0
 
         for message in messages:
-            total_tokens += self.get_message_length(message)
+            total_tokens += self.calculate_chat_message_length(message)
 
         return total_tokens
 
-    def is_overflow(
+    def causes_chat_sequence_overflow(
         self,
         new_message: ChatModelResponse,
         messages: List[ChatModelResponse],
@@ -189,8 +188,8 @@ class ChatSessionTokenManager:
         Returns:
             bool: True if the sequence will overflow, False otherwise.
         """
-        new_message_token_count = self.get_message_length(new_message)
-        messages_total_token_count = self.get_total_message_length(messages)
+        new_message_token_count = self.calculate_chat_message_length(new_message)
+        messages_total_token_count = self.calculate_chat_sequence_length(messages)
         token_count = new_message_token_count + messages_total_token_count
         total_token_count = self.offset + token_count
         return total_token_count >= self.upper_bound
