@@ -10,7 +10,7 @@ from pygptprompt.session.queue import SessionQueue
 from pygptprompt.session.token import SessionToken
 
 
-class SessionContext:
+class SessionManager:
     def __init__(self, config_path: Optional[str] = None):
         # Session defaults to `./sessions` (defined in config)
         self.session: SessionQueue = SessionQueue(config_path)
