@@ -118,26 +118,26 @@ class FunctionFactory:
 
     def query_function(
         self,
-        model: ChatModel,
-        result: ChatModelResponse,
+        chat_model: ChatModel,
+        function_result: ChatModelResponse,
         messages: List[ChatModelResponse],
     ) -> Optional[ChatModelResponse]:
         """
         Query the language model with the results of the function execution.
 
         Args:
-            model (ChatModel): The language model used for chat completions.
-            result (ChatModelResponse): The result of the executed function.
+            chat_model (ChatModel): The language model used for chat completions.
+            function_result (ChatModelResponse): The result of the executed function.
             messages (List[ChatModelResponse]): List of chat completion messages.
 
         Returns:
             Optional[ChatModelResponse]: The generated chat completion message, or None if an error occurs.
         """
-        if result is None:
+        if function_result is None:
             return None
 
         shadow_messages = copy.deepcopy(messages)
-        shadow_messages.append(result)
+        shadow_messages.append(function_result)
         prompt_templates: list[dict[str, str]] = self.config.get_value(
             "function.templates", []
         )
@@ -166,7 +166,7 @@ class FunctionFactory:
                 self.logger.debug(f"role: {casting['role']}")
                 self.logger.debug(f"content: {casting['content']}")
 
-        message = model.get_chat_completions(messages=shadow_messages)
+        message = chat_model.get_chat_completion(messages=shadow_messages)
         self.logger.info(f"Chat completion message: {message}")
 
         return message
