@@ -2,20 +2,28 @@
 pygptprompt/database/chroma.py
 """
 from datetime import datetime
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from chromadb import PersistentClient, Settings
+from chromadb.api.types import Include, OneOrMany, QueryResult, Where, WhereDocument
 
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.database.function import VectorStoreEmbeddingFunction
-from pygptprompt.pattern.model import (
-    ChatModel,
-    ChatModelDocument,
-    ChatModelDocuments,
-    ChatModelEmbedding,
-)
+from pygptprompt.pattern.model import ChatModel, ChatModelDocument, ChatModelDocuments
 
 
+# NOTE:
+# TELEMETRY IS SET TO OFF BY DEFAULT.
+# YOU MUST OPT IN IF YOU WANT THIS TURNED ON.
+#
+# I plan on removing telemetry completely in the future.
+# When I do, Chroma will be removed completely as a result.
+#
+# Set anonymized_telemetry in your clients settings to
+# False to opt out of telemetry.
+#
+# SOURCE: https://docs.trychroma.com/telemetry
+#
 class ChromaVectorStore:
     def __init__(
         self,
@@ -23,11 +31,13 @@ class ChromaVectorStore:
         database_path: str,
         config: ConfigurationManager,
         chat_model: ChatModel,
+        anonymized_telemetry: bool = False,
     ):
         self.collection_name = collection_name
         self.database_path = database_path
         self.config = config
         self.chat_model = chat_model
+        self.anonymized_telemetry = anonymized_telemetry
         self.embedding_function = None
         self.chroma_client = None
         self.collection = None
@@ -46,7 +56,9 @@ class ChromaVectorStore:
 
         self.chroma_client = PersistentClient(
             path=self.database_path,
-            settings=Settings(anonymized_telemetry=False),
+            settings=Settings(
+                anonymized_telemetry=self.anonymized_telemetry,
+            ),
         )
 
     def _get_or_create_collection(self):
@@ -71,6 +83,21 @@ class ChromaVectorStore:
         """returns total number of embeddings in a collection"""
         return self.collection.count()
 
+    def add_message_to_collection(self, message: dict):
+        """add new items to a collection"""
+        timestamp = datetime.utcnow().isoformat()
+        unique_id = f"{self.collection_name}_{timestamp}"
+
+        self.collection.add(
+            ids=[unique_id],
+            documents=[message["content"]],
+            metadatas=[{"role": message["role"]}],
+        )
+
+        self.logger.debug(
+            f"Added message to collection {self.collection_name} with ID {unique_id}"
+        )
+
     def upsert_to_collection(
         self,
         ids: Union[str, List[str]],
@@ -88,17 +115,18 @@ class ChromaVectorStore:
             f"Upserted documents to collection {self.collection_name} with ID {ids}"
         )
 
-    def add_message_to_collection(self, message: dict):
-        """add new items to a collection"""
-        timestamp = datetime.utcnow().isoformat()
-        unique_id = f"{self.collection_name}_{timestamp}"
-
-        self.collection.add(
-            ids=[unique_id],
-            documents=[message["content"]],
-            metadatas=[{"role": message["role"]}],
-        )
-
-        self.logger.debug(
-            f"Added message to collection {self.collection_name} with ID {unique_id}"
+    def query_from_collection(
+        self,
+        query_texts: Optional[OneOrMany[ChatModelDocument]] = None,
+        n_results: int = 10,
+        where: Optional[Where] = None,
+        where_document: Optional[WhereDocument] = None,
+        include: Include = ["metadatas", "documents", "distances"],
+    ) -> QueryResult:
+        return self.collection.query(
+            query_texts=query_texts,
+            n_results=n_results,
+            where=where,
+            where_document=where_document,
+            include=include,
         )
