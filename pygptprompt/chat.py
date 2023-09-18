@@ -3,7 +3,6 @@ pygptprompt/chat.py
 """
 import sys
 import traceback
-from datetime import datetime
 from logging import Logger
 
 import click
@@ -77,42 +76,48 @@ def manage_message_sequence(
 
 @click.command()
 @click.argument(
-    "session_name",
-    type=click.STRING,
-    default="default",
-)
-@click.argument(
     "config_path",
     type=click.Path(exists=True),
-    default="config.json",
+)
+@click.option(
+    "--session-name",
+    "-s",
+    type=click.STRING,
+    default="default",
+    help="Label for the database collection and associated JSON files.",
 )
 @click.option(
     "--prompt",
+    "-v",
     type=click.STRING,
-    default=str(),
+    default="",
     help="Prompt the model with a string.",
 )
 @click.option(
     "--chat",
+    "-x",
     is_flag=True,
     help="Enter a chat loop with the model.",
 )
 @click.option(
     "--embed",
+    "-e",
     is_flag=True,
-    help="Employ the chroma vector database while prompting or chatting.",
+    help="Use the chroma vector database while prompting or chatting.",
 )
 @click.option(
     "--provider",
+    "-p",
     type=click.STRING,
     default="llama_cpp",
     help="Specify the model provider to use. Options are 'openai' for GPT models and 'llama_cpp' for Llama models.",
 )
 @click.option(
-    "--database_path",
+    "--database-path",
+    "-d",
     type=click.STRING,
     default="database",
-    help="The path the embeddings are written to.",
+    help="Path where embeddings are written to.",
 )
 def main(session_name, config_path, prompt, chat, embed, provider, database_path):
     if not (bool(prompt) ^ chat):
@@ -303,12 +308,19 @@ def main(session_name, config_path, prompt, chat, embed, provider, database_path
                 # The context, transcript, and embedding spaces are all isolated.
                 # The context and transcript are written to JSON.
                 # The embedding is written to a sqlite database.
+                print()  # DEBUG clutters CLI; This is temporary.
                 context_window.save_from_chat_completions()
                 transcript.save_from_chat_completions()
 
-                print()  # Add padding to output
-                print(f"Chroma Heartbeat: {vector_store.get_chroma_heartbeat()}")
-                print(f"Chroma Collections: {vector_store.get_collection_count()}")
+                if embed:
+                    print()  # Add padding to output
+                    logger.debug(
+                        f"Chroma Heartbeat: {vector_store.get_chroma_heartbeat()}"
+                    )
+                    logger.debug(
+                        f"Chroma Collections: {vector_store.get_collection_count()}"
+                    )
+
                 print()  # Add padding to output
     except Exception as e:
         print()  # Add padding to output
