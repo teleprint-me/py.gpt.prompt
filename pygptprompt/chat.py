@@ -147,6 +147,7 @@ def main(session_name, config_path, prompt, chat, embed, provider, database_path
     vector_store: ChromaVectorStore = ChromaVectorStore(
         collection_name=session_name,
         database_path=database_path,
+        config=config,
         chat_model=chat_model,
     )
 
