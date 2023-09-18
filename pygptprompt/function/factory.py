@@ -105,7 +105,13 @@ class FunctionFactory:
             return None
 
         try:
-            # Call the function
+            # Log shadow function args
+            if self.logger.getEffectiveLevel() == logging.DEBUG:
+                # Call the function
+                for key, val in function_args.items():
+                    self.logger.debug(
+                        f"Using function args with key '{key}' and value '{val}'"
+                    )
             result = function(**function_args)
         except Exception as e:
             self.logger.error(
