@@ -62,6 +62,8 @@ development and not yet production-ready.
 - [Features](docs/features.md)
 - [Install](docs/install/)
 - [Quickstart](docs/quickstart.md)
+- [Configuration](docs/configuration.md)
+- [Quantization](docs/quantization.md)
 - [Prompting](docs/prompting/)
 - [Models](docs/models/)
 
@@ -83,7 +85,7 @@ development and not yet production-ready.
 
 ## Updates
 
-As of July 19, 2023, several major changes and updates have been made. For more
+As of Sept 16, 2023, several major changes and updates have been made. For more
 detailed information, refer to the individual commits in the
 [GitHub Commits](https://github.com/teleprint-me/py.gpt.prompt/commits/main)
 section.
@@ -111,7 +113,7 @@ contributions are greatly appreciated. Check out the
 
 ## License
 
-    A Context Window Management System for automating prompting with Chat Models.
+    PyGPTPrompt: A Context Window Management System for Automating Prompting with Chat Models.
     Copyright (C) 2023 Austin Berrio
 
     This program is free software: you can redistribute it and/or modify it under
