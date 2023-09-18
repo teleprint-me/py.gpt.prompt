@@ -1,52 +1,33 @@
 """
-"There is a stubbornness about me that never can bear to be frightened at the will of others. My courage always rises at every attempt to intimidate me."
-  - Jane Austen, Pride and Prejudice
-
 pygptprompt/__init__.py
 
-NOTE:
+PyGPTPrompt: A Context Window Management System for Automating Prompting with Chat Models.
+Copyright (C) 2023 Austin Berrio
 
-Models can be manually downloaded before runtime.
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version.
 
-Models can be optionally downloaded at runtime.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 
-The context window size may vary from model to model and can
-be easily adjusted as required.
+You should have received a copy of the GNU Affero General Public License along
+with this program. If not, see <https://www.gnu.org/licenses/>.
 
-NOTE: IMPORTANT: MODEL_REPOSITORY
-
-Model reference:
-
-  <username>/<repository>
-
-  - where <username>/<repository> represents the url endpoint
-
-  - where `hf_hub_download` writes [source] to [destination].
-
-For example:
-  ~/.cache/huggingface/hub/models--TheBloke--orca_mini_7B-GGML
-
-NOTE: IMPORTANT: MODEL_FILENAME
-
-Identifier reference:
-
-  <model-id>.<n-params>.<ggml-version>.<quant-type>.<extension>
-
-  - where <model-id> represents the specific model identifier.
-
-For example:
-  orca-mini-7b.ggmlv3.q2_K.bin
+"There is a stubbornness about me that never can bear to be frightened at the will of others. My courage always rises at every attempt to intimidate me."
+  - Jane Austen, Pride and Prejudice
 """
 import os
 
-__version__ = "0.0.30"
+__version__ = "0.0.31"
+__name__ = "pygptprompt"
+__agent__ = f"teleprint-me/{__name__}"
+__source__ = f"https://github.com/{__agent__}"
+__author__ = "Austin Berrio"
+__email__ = "aberrio@teleprint.me"
 
-# The number of CPU threads for ingestion
-# Use os.sched_getaffinity(0) to get the set of threads
-# the current process can be prioritized by.
-# If the set of threads cannot be determined,
-# get the CPU core count or assume duo-core CPU availability
-# as a fallback.
 try:
     CPU_COUNT: int = len(os.sched_getaffinity(0))
 except AttributeError:

@@ -26,8 +26,8 @@
 #
 [tool.poetry]
 name = "pygptprompt"
-version = "0.0.30"
-description = "A Context Window Management System for automating prompting with Chat Models."
+version = "0.0.31"
+description = "PyGPTPrompt: A Context Window Management System for Automating Prompting with Chat Models."
 authors = ["Austin Berrio <aberrio@teleprint.me>"]
 license = "AGPL"
 readme = "README.md"
