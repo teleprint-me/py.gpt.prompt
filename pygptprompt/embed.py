@@ -6,6 +6,7 @@ generating embeddings, and persisting them to the Chroma database.
 """
 
 import logging
+from logging import Logger
 
 import click
 from chromadb import API, PersistentClient, Settings
@@ -13,51 +14,85 @@ from chromadb.api.models.Collection import Collection
 from chromadb.api.types import Documents, QueryResult
 
 from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.database.chroma import ChromaVectorStore
 from pygptprompt.model.factory import ChatModelFactory
+from pygptprompt.pattern.list import ListTemplate
 from pygptprompt.pattern.model import ChatModel, ChatModelEmbeddingFunction
+from pygptprompt.session.token import ChatSessionTokenManager
 
 
 @click.command()
 @click.argument(
     "config_path",
     type=click.Path(exists=True),
-    default="config.json",
+)
+@click.argument(
+    "source_path",
+    type=click.STRING,
 )
 @click.option(
-    "--path_source",
+    "--session_name",
+    "-s",
     type=click.STRING,
-    help="The path the documents are read from.",
-)
-@click.option(
-    "--path_database",
-    type=click.STRING,
-    default="database",
-    help="The path the embeddings are written to.",
+    default="default",
+    help="Label for the database collection and associated JSON files.",
 )
 @click.option(
     "--provider",
-    type=click.STRING,
+    "-p",
+    type=click.Choice(
+        [
+            "openai",
+            "llama_cpp",
+            "huggingface",
+            "torch",
+        ]
+    ),
     default="llama_cpp",
-    help="The provider to generate embeddings with.",
+    help="Specify the model provider to use. Options include 'openai' for GPT models, 'llama_cpp' for quantized models supported by llama.cpp, 'huggingface' for Hugging Face models, and 'torch' for other PyTorch models like Facebook's Llama model.",
+)
+@click.option(
+    "--database_path",
+    "-d",
+    type=click.STRING,
+    default="database",
+    help="Path where embeddings are written to.",
 )
 def main(
     config_path,
-    path_source,
-    path_database,
+    session_name,
     provider,
+    source_path,
+    database_path,
 ):
+    session_name: str = session_name
+
     config: ConfigurationManager = ConfigurationManager(config_path)
 
-    factory: ChatModelFactory = ChatModelFactory(config)
-    chat_model: ChatModel = factory.create_model(provider)
-    embedding_function: ChatModelEmbeddingFunction = ChatModelEmbeddingFunction(
-        chat_model=chat_model
+    logger: Logger = config.get_logger(
+        "app.log.general",
+        "Embed",
+        "DEBUG",
+    )
+    logger.info(f"Using Session: {session_name}")
+    logger.info(f"Using Config: {config_path}")
+    logger.info(f"Using Provider: {provider}")
+    logger.info(f"Using Database: {database_path}")
+    logger.info(f"Loading documents from {source_path}")
+
+    model_factory: ChatModelFactory = ChatModelFactory(config)
+    chat_model: ChatModel = model_factory.create_model(provider)
+
+    token_manager: ChatSessionTokenManager = ChatSessionTokenManager(
+        provider, config, chat_model
     )
 
-    name: str = "my_collection"
-
-    # Load documents and split them into chunks
-    logging.info(f"Loading documents from {path_source}")
+    vector_store: ChromaVectorStore = ChromaVectorStore(
+        collection_name=session_name,
+        database_path=database_path,
+        config=config,
+        chat_model=chat_model,
+    )
 
     # NOTE: Imagine that documents are messages
     documents: Documents = [
@@ -71,28 +106,14 @@ def main(
     # This will require something thoughtful to make
     # each role reference unique. Maybe the position/index
     # within the transcript?
-    ids: list[str] = ["doc1", "doc2", "doc3"]
-
-    # Uses PostHog library to collect telemetry
-    chroma_client: API = PersistentClient(
-        path=path_database,
-        settings=Settings(anonymized_telemetry=False),
+    vector_store.upsert_to_collection(
+        documents=documents,
+        ids=["doc1", "doc2", "doc3"],
     )
-
-    try:
-        collection: Collection = chroma_client.create_collection(
-            name=name, embedding_function=embedding_function
-        )
-
-        collection.add(documents=documents, ids=ids)
-    except ValueError:
-        logging.info(f"Collection with name {name} already exists")
-        collection: Collection = chroma_client.get_collection(
-            name=name, embedding_function=embedding_function
-        )
-
     query = "synthetic document"
-    results: QueryResult = collection.query(query_texts=[query], n_results=2)
+    results: QueryResult = vector_store.query_from_collection(
+        query_texts=[query], n_results=2
+    )
 
     print(f"Document IDs: {results['ids']}")
     if results["documents"]:
@@ -100,7 +121,7 @@ def main(
     if results["distances"]:
         print(f"Similarity Scores: {results['distances']}")
 
-    logging.info(f"Loaded {len(documents)} documents from {path_source}")
+    logging.info(f"Loaded {len(documents)} documents from {source_path}")
     logging.info("Embeddings persisted to Chroma database.")
 
 
