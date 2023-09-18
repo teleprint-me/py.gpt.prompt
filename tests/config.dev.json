@@ -77,7 +77,7 @@
     "model": {
       "repo_id": "teleprint-me/llama-2-7b-chat-GGUF",
       "filename": "llama-2-7b-chat.GGUF.q5_0.bin",
-      "local": "models/ehartford/Samantha-1.11-CodeLlama-34b/Samantha-1.11-CodeLlama-34b.GGUF.q4_1.bin",
+      "local": "models/ehartford/WizardLM-1.0-Uncensored-CodeLlama-34b/WizardLM-1.0-Uncensored-CodeLlama-34b.GGUF.q4_0.bin",
       "n_ctx": 16385,
       "n_parts": -1,
       "seed": 1337,
@@ -89,7 +89,7 @@
       "embedding": true,
       "n_threads": null,
       "n_batch": 512,
-      "n_gpu_layers": 0,
+      "n_gpu_layers": 20,
       "low_vram": false,
       "last_n_tokens_size": 64,
       "lora_base": null,
@@ -114,7 +114,7 @@
     },
     "system_prompt": {
       "role": "system",
-      "content": "My name is Samantha. I am a helpful assistant."
+      "content": "My name is Llama. I am a helpful assistant."
     }
   },
   "openai": {
