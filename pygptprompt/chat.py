@@ -7,20 +7,72 @@ from datetime import datetime
 from logging import Logger
 
 import click
-from chromadb import API, PersistentClient, Settings
-from chromadb.api.models.Collection import Collection
 from prompt_toolkit import prompt as input
 
 from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.database.chroma import ChromaVectorStore
 from pygptprompt.function.factory import FunctionFactory
 from pygptprompt.model.factory import ChatModelFactory
 from pygptprompt.pattern.list import ListTemplate
-from pygptprompt.pattern.model import (
-    ChatModel,
-    ChatModelEmbeddingFunction,
-    ChatModelResponse,
-)
+from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 from pygptprompt.session.token import ChatSessionTokenManager
+
+# Extract common logic to functions
+
+
+# NOTE:
+# This is a sketch of the constructor for
+# the Context and Transcript Managers.
+def initialize_list_template(
+    file_path: str,
+    system_prompt: ChatModelResponse,
+    session_name: str,
+    logger: Logger,
+) -> ListTemplate:
+    list_template = ListTemplate(file_path=file_path)
+    list_template.make_directory()
+
+    if list_template.load_json():
+        logger.debug(f"Continuing previous session {session_name} from {file_path}")
+    else:
+        logger.debug(f"Starting new session {session_name} for {file_path}")
+        list_template.append(system_prompt)
+
+    return list_template
+
+
+# NOTE: This is a sketch for the ContextManager class
+def manage_message_sequence(
+    new_message: ChatModelResponse,
+    context_window: ListTemplate,
+    transcript: ListTemplate,
+    vector_store: ChromaVectorStore,
+    session_name: str,
+    embed: bool,
+    token_manager: ChatSessionTokenManager,
+):
+    # Reset oldest_message before enqueuing or dequeuing messages
+    oldest_message = None
+
+    # Check for token overflow
+    sequence_overflow = token_manager.causes_chat_sequence_overflow(
+        new_message, context_window.data
+    )
+
+    # Pop the oldest message if there's a sequence overflow
+    if sequence_overflow:
+        # The first message is often the model's system message, hence starting from index 1
+        oldest_message = context_window.pop(1)
+
+    # Store the oldest message in DB if embed flag is true
+    if embed and sequence_overflow and oldest_message:
+        vector_store.add_message_to_collection(
+            oldest_message,
+        )
+
+    # Append the new message to both context window and transcript
+    context_window.append(new_message)
+    transcript.append(new_message)
 
 
 @click.command()
@@ -57,12 +109,12 @@ from pygptprompt.session.token import ChatSessionTokenManager
     help="Specify the model provider to use. Options are 'openai' for GPT models and 'llama_cpp' for Llama models.",
 )
 @click.option(
-    "--path_database",
+    "--database_path",
     type=click.STRING,
     default="database",
     help="The path the embeddings are written to.",
 )
-def main(session_name, config_path, prompt, chat, embed, provider, path_database):
+def main(session_name, config_path, prompt, chat, embed, provider, database_path):
     if not (bool(prompt) ^ chat):
         print(
             "Use either --prompt or --chat, but not both.",
@@ -73,7 +125,15 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
     session_name: str = session_name
 
     config: ConfigurationManager = ConfigurationManager(config_path)
+
     logger: Logger = config.get_logger("app.log.general", "Chat", "DEBUG")
+    logger.info(f"Using Session: {session_name}")
+    logger.info(f"Using Config: {config_path}")
+    logger.info(f"Using Prompt: {prompt}")
+    logger.info(f"Using Chat: {chat}")
+    logger.info(f"Using Embed: {embed}")
+    logger.info(f"Using Provider: {provider}")
+    logger.info(f"Using Database: {database_path}")
 
     function_factory = FunctionFactory(config)
 
@@ -84,43 +144,11 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
         provider, config, chat_model
     )
 
-    embedding_function: ChatModelEmbeddingFunction = ChatModelEmbeddingFunction(
-        model=chat_model
+    vector_store: ChromaVectorStore = ChromaVectorStore(
+        collection_name=session_name,
+        database_path=database_path,
+        chat_model=chat_model,
     )
-
-    # Uses PostHog library to collect telemetry
-    chroma_client: API = PersistentClient(
-        path=path_database,
-        settings=Settings(anonymized_telemetry=False),
-    )
-
-    try:
-        collection: Collection = chroma_client.create_collection(
-            name=session_name, embedding_function=embedding_function
-        )
-        logger.debug(f"Created collection {session_name}")
-    except ValueError:
-        collection: Collection = chroma_client.get_collection(
-            name=session_name, embedding_function=embedding_function
-        )
-        logger.debug(f"Loaded collection {session_name}")
-
-    def initialize_list_template(
-        file_path: str,
-        system_prompt: ChatModelResponse,
-        session_name: str,
-        logger: Logger,
-    ) -> ListTemplate:
-        list_template = ListTemplate(file_path=file_path)
-        list_template.make_directory()
-
-        if list_template.load_json():
-            logger.debug(f"Continuing previous session {session_name} from {file_path}")
-        else:
-            logger.debug(f"Starting new session {session_name} for {file_path}")
-            list_template.append(system_prompt)
-
-        return list_template
 
     # Initialize ListTemplates for Context and Transcript
     system_prompt = ChatModelResponse(
@@ -169,47 +197,14 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
             print()
             print(f"Collections: {collection.count()}")
         elif chat:
-            # Extract common logic to functions
-
-            # NOTE: This is a sketch for the VectorStore class
-            def add_message_to_db(collection, session_name, message):
-                unique_id = f"{session_name}_{datetime.utcnow().isoformat()}"
-                collection.add(
-                    documents=[message["content"]],
-                    metadatas=[{"role": message["role"]}],
-                    ids=[unique_id],
-                )
-
-            # NOTE: This is a sketch for the ContextManager class
-            def manage_message_sequence(
-                new_message,
-                context_window,
-                transcript,
-                collection,
-                session_name,
-                embed,
-                token_manager,
-            ):
-                # Reset oldest_message before enqueuing or dequeuing messages
-                oldest_message = None
-
-                # Check for token overflow
-                sequence_overflow = token_manager.causes_chat_sequence_overflow(
-                    new_message, context_window.data
-                )
-
-                # Pop the oldest message if there's a sequence overflow
-                if sequence_overflow:
-                    # The first message is often the model's system message, hence starting from index 1
-                    oldest_message = context_window.pop(1)
-
-                # Store the oldest message in DB if embed flag is true
-                if embed and sequence_overflow and oldest_message:
-                    add_message_to_db(collection, session_name, oldest_message)
-
-                # Append the new message to both context window and transcript
-                context_window.append(new_message)
-                transcript.append(new_message)
+            # NOTE: Print previous content to stdout if it exists
+            for message in context_window.data:
+                # NOTE: We want to avoid outputting the function role
+                # Maybe make this optional in the future?
+                if message["role"] in ["user", "assistant"]:
+                    print(message["role"])
+                    print(message["content"])
+                    print()
 
             while True:
                 # Manage user message
@@ -223,14 +218,15 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
 
                 # Then, in your chat loop for user input:
                 user_message = ChatModelResponse(role="user", content=text_input)
+
                 manage_message_sequence(
-                    user_message,
-                    context_window,
-                    transcript,
-                    collection,
-                    session_name,
-                    embed,
-                    token_manager,
+                    new_message=user_message,
+                    context_window=context_window,
+                    transcript=transcript,
+                    vector_store=vector_store,
+                    session_name=session_name,
+                    embed=embed,
+                    token_manager=token_manager,
                 )
 
                 # NOTE:
@@ -279,28 +275,28 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
                     # The shadow context is a deepcopy of context window.
                     if function_message is not None:
                         manage_message_sequence(
-                            function_message,
-                            context_window,
-                            transcript,
-                            collection,
-                            session_name,
-                            embed,
-                            token_manager,
+                            new_message=function_message,
+                            context_window=context_window,
+                            transcript=transcript,
+                            vector_store=vector_store,
+                            session_name=session_name,
+                            embed=embed,
+                            token_manager=token_manager,
                         )
                         context_window.append(function_message)
                     else:
                         logger.error("Failed to generate a response message.")
                         continue
-
-                manage_message_sequence(
-                    assistant_message,
-                    context_window,
-                    transcript,
-                    collection,
-                    session_name,
-                    embed,
-                    token_manager,
-                )
+                else:  # NOTE: Keep an eye on this branch for buggy behavior
+                    manage_message_sequence(
+                        new_message=assistant_message,
+                        context_window=context_window,
+                        transcript=transcript,
+                        vector_store=vector_store,
+                        session_name=session_name,
+                        embed=embed,
+                        token_manager=token_manager,
+                    )
 
                 # NOTE: We only write messages at the end of a cycle
                 # The context, transcript, and embedding spaces are all isolated.
@@ -310,8 +306,8 @@ def main(session_name, config_path, prompt, chat, embed, provider, path_database
                 transcript.save_from_chat_completions()
 
                 print()  # Add padding to output
-                print(f"Heartbeat: {chroma_client.heartbeat()}")
-                print(f"Collections: {collection.count()}")
+                print(f"Chroma Heartbeat: {vector_store.get_chroma_heartbeat()}")
+                print(f"Chroma Collections: {vector_store.get_collection_count()}")
                 print()  # Add padding to output
     except Exception as e:
         print()  # Add padding to output
