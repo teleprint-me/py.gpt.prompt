@@ -1,146 +1,104 @@
 """
 pygptprompt/database/chroma.py
-
-This module provides functionality for loading and persisting
-documents to the Chroma database.
-
-Classes:
-- ChromaDBLoader: A class for loading and persisting documents to the Chroma database.
-
-The ChromaDBLoader class handles loading documents, generating
-embeddings using different embedding models, and persisting the
-documents along with their embeddings to the Chroma database.
-
-Usage:
-    # Example usage of ChromaDBLoader
-    loader = ChromaDBLoader(
-        source_directory="path/to/source",
-        persist_directory="path/to/database",
-        embedding_model="huggingface/model",
-        embedding_type="HuggingFaceInstructEmbeddings",
-        device_type="cuda",
-    )
-
-    # Load the vector store retriever
-    retriever = loader.load_retriever()
-
-    # Persist a list of documents to the Chroma database
-    documents = [document1, document2, document3]
-    loader.persist(documents)
 """
+from datetime import datetime
+from typing import Dict, List, Union
 
-from chromadb.config import Settings
+from chromadb import PersistentClient, Settings
 
-from pygptprompt import EMBEDDINGS_MODEL, PATH_DATABASE, PATH_SOURCE, TORCH_DEVICE_TYPE
+from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.database.function import VectorStoreEmbeddingFunction
+from pygptprompt.pattern.model import (
+    ChatModel,
+    ChatModelDocument,
+    ChatModelDocuments,
+    ChatModelEmbedding,
+)
 
 
-class ChromaDBLoader:
-    """
-    ChromaDBLoader class handles loading and persisting documents to Chroma database.
-
-    Args:
-        source_directory (str, optional): Directory path for source documents.
-            Defaults to SOURCE_DIRECTORY.
-
-        persist_directory (str, optional): Directory path for persisting the database.
-            Defaults to PERSIST_DIRECTORY.
-
-        embedding_model (str, optional): Name of the embedding model.
-            Defaults to DEFAULT_EMBEDDING_MODEL.
-
-        embedding_type (str, optional): Type of the embedding.
-            Defaults to DEFAULT_EMBEDDING_TYPE.
-
-        device_type (str, optional): Device type for embeddings.
-            Defaults to DEFAULT_DEVICE_TYPE.
-    """
-
+class ChromaVectorStore:
     def __init__(
         self,
-        path_source: str | None,
-        path_database: str | None,
-        embeddings_model: str | None,
-        torch_device_type: str | None,
+        collection_name: str,
+        database_path: str,
+        config: ConfigurationManager,
+        chat_model: ChatModel,
     ):
-        self.source_directory = path_source or PATH_SOURCE
-        self.persist_directory = path_database or PATH_DATABASE
-        self.embedding_model = embeddings_model or EMBEDDINGS_MODEL
-        self.device_type = torch_device_type or TORCH_DEVICE_TYPE
+        self.collection_name = collection_name
+        self.database_path = database_path
+        self.config = config
+        self.chat_model = chat_model
+        self.embedding_function = None
+        self.chroma_client = None
+        self.collection = None
 
-        # The settings for the Chroma database
-        # - chroma_db_impl: Chroma database implementation (duckdb+parquet)
-        # - persist_directory: Directory for persisting the database
-        # - anonymized_telemetry: Whether anonymized telemetry is enabled (False)
-        self.settings: Settings = Settings(
-            chroma_db_impl="duckdb+parquet",
-            persist_directory=str(self.persist_directory),
-            anonymized_telemetry=False,
+        self.logger = self.config.get_logger(
+            "app.log.general", "ChromaVectorStore", "DEBUG"
         )
 
-    def load_embedding_function(self) -> Embeddings | None:
-        """
-        Load the embedding function based on the specified embedding type.
+        self._initialize_components()
+        self._get_or_create_collection()  # avoid cascades
 
-        Returns:
-            Optional[Embeddings]: Embeddings object for the specified embedding type.
+    def _initialize_components(self):
+        self.embedding_function = VectorStoreEmbeddingFunction(
+            chat_model=self.chat_model, logger=self.logger
+        )
 
-        Raises:
-            AttributeError: If an unsupported embedding type is provided.
-        """
-        if self.embedding_type in MAP_EMBEDDINGS_CLASS.keys():
-            cls_EmbeddingType = MAP_EMBEDDINGS_CLASS[self.embedding_type]
-            return cls_EmbeddingType(
-                model_name=self.embedding_model,
-                model_kwargs={"device": self.device_type},
+        self.chroma_client = PersistentClient(
+            path=self.database_path,
+            settings=Settings(anonymized_telemetry=False),
+        )
+
+    def _get_or_create_collection(self):
+        try:
+            self.collection = self.chroma_client.create_collection(
+                name=self.collection_name,
+                embedding_function=self.embedding_function,
             )
-        else:
-            raise AttributeError(
-                f"Unsupported embeddings type provided: {self.embedding_type}"
+            self.logger.debug(f"Created collection {self.collection_name}")
+        except ValueError:
+            self.collection = self.chroma_client.get_collection(
+                name=self.collection_name,
+                embedding_function=self.embedding_function,
             )
+            self.logger.debug(f"Loaded collection {self.collection_name}")
 
-    def load_retriever(self) -> VectorStoreRetriever:
-        """
-        Load the vector store retriever from the Chroma database.
+    def get_chroma_heartbeat(self) -> int:
+        """returns timestamp to check if service is alive"""
+        return self.chroma_client.heartbeat()
 
-        Returns:
-            VectorStoreRetriever: VectorStoreRetriever object.
-        """
-        database = Chroma(
-            persist_directory=str(self.persist_directory),
-            embedding_function=self.load_embedding_function(),
-            client_settings=self.settings,
-        )
-        return database.as_retriever()
+    def get_collection_count(self) -> int:
+        """returns total number of embeddings in a collection"""
+        return self.collection.count()
 
-    def load_retrieval_qa(self, llm: BaseLanguageModel) -> BaseRetrievalQA:
-        """
-        Loads a retrieval-based question answering model.
-
-        Args:
-            llm (BaseLanguageModel): The language model for answering questions.
-
-        Returns:
-            BaseRetrievalQA: The retrieval-based question answering model.
-        """
-        return RetrievalQA.from_chain_type(
-            llm=llm,
-            chain_type="stuff",
-            retriever=self.load_retriever(),
-            return_source_documents=True,
-        )
-
-    def persist(self, documents: list[Document]) -> None:
-        """
-        Persist the documents and their embeddings to the Chroma database.
-
-        Args:
-            documents (List[Document]): List of Document objects to be persisted.
-        """
-        # Persist the embeddings to Chroma database
-        database = Chroma.from_documents(
+    def upsert_to_collection(
+        self,
+        ids: Union[str, List[str]],
+        metadatas: Union[Dict[str, str], List[Dict[str, str]]],
+        documents: Union[ChatModelDocument, ChatModelDocuments],
+    ):
+        """new items will be added, existing items will be updated."""
+        self.collection.upsert(
+            ids=ids,
+            metadatas=metadatas,
             documents=documents,
-            embedding=self.load_embedding_function(),
-            persist_directory=str(self.persist_directory),
-            client_settings=self.settings,
         )
-        database.persist()
+
+        self.logger.debug(
+            f"Upserted documents to collection {self.collection_name} with ID {ids}"
+        )
+
+    def add_message_to_collection(self, message: dict):
+        """add new items to a collection"""
+        timestamp = datetime.utcnow().isoformat()
+        unique_id = f"{self.collection_name}_{timestamp}"
+
+        self.collection.add(
+            ids=[unique_id],
+            documents=[message["content"]],
+            metadatas=[{"role": message["role"]}],
+        )
+
+        self.logger.debug(
+            f"Added message to collection {self.collection_name} with ID {unique_id}"
+        )
