@@ -18,14 +18,7 @@ import os
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from typing import List, Tuple
 
-from langchain.docstore.document import Document
-from langchain.text_splitter import Language, RecursiveCharacterTextSplitter
-
-from pygptprompt import DEFAULT_CPU_COUNT
-from pygptprompt.database.registry import LoaderRegistry, TextSplitterRegistry
-
-loader_registry = LoaderRegistry()
-splitter_registry = TextSplitterRegistry()
+from pygptprompt import CPU_COUNT
 
 
 def load_single_document(file_path: str) -> Document:
@@ -108,7 +101,7 @@ def load_documents(source_dir: str) -> List[Document]:
             paths.append(source_file_path)
 
     # Have at least one worker and at most INGEST_THREADS workers
-    n_workers = min(DEFAULT_CPU_COUNT, max(len(paths), 1))
+    n_workers = min(CPU_COUNT, max(len(paths), 1))
     chunk_size = round(len(paths) / n_workers)
     docs = []
 
@@ -128,39 +121,3 @@ def load_documents(source_dir: str) -> List[Document]:
             docs.extend(contents)
 
     return docs
-
-
-def split_documents(documents: List[Document]) -> List[Document]:
-    """
-    Splits the given documents based on their type for the correct Text Splitter.
-
-    Args:
-        documents (List[Document]): The list of documents to split.
-
-    Returns:
-        List[Document]: A list of split documents.
-    """
-    logging.info(f"Splitting: {[doc.metadata['source'] for doc in documents]}")
-
-    split_documents = []
-    for doc in documents:
-        logging.info(f"Splitting: {doc.metadata['source']}")
-        file_extension = splitter_registry.get_extension(doc)
-        language_str = splitter_registry.get_language(file_extension)
-
-        # If we have a language for this file extension,
-        # use a language-specific splitter
-        if language_str is not None:
-            language = Language(language_str)  # Convert string to Language enum
-            splitter = RecursiveCharacterTextSplitter.from_language(
-                language=language, chunk_size=1000, chunk_overlap=200
-            )
-        # Otherwise, use a default text splitter
-        else:
-            splitter = RecursiveCharacterTextSplitter(
-                chunk_size=1000, chunk_overlap=200
-            )
-
-        split_documents.extend(splitter.split_documents([doc]))
-
-    return split_documents
