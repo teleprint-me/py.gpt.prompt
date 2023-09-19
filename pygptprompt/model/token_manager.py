@@ -1,5 +1,5 @@
 """
-pygptprompt/session/token.py
+pygptprompt/model/token_manager.py
 """
 from typing import List
 
