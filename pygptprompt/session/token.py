@@ -7,7 +7,7 @@ from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 
 
-class ChatSessionTokenManager:
+class ContextWindowTokenManager:
     """
     A helper class for managing tokens within a chat session.
 
