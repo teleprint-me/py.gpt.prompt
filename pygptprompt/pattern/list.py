@@ -6,7 +6,6 @@ from logging import Logger
 from typing import Optional
 
 from pygptprompt.pattern.json import JSONList, JSONMap, JSONTemplate
-from pygptprompt.pattern.model import ChatModelResponse
 
 
 class ListTemplate(JSONTemplate):
@@ -47,30 +46,6 @@ class ListTemplate(JSONTemplate):
     def data(self) -> Optional[JSONList]:
         """Return a copy of the internal data list or None if empty."""
         return deepcopy(self._data) if self._data else None
-
-    def load_to_chat_completions(self) -> bool:
-        """
-        Load JSON data from the file into the _data attribute.
-
-        Returns:
-            bool: True if the JSON data was loaded successfully, False on error.
-        """
-        if self.load_json():
-            self._data = [ChatModelResponse(**element) for element in self._data]
-            return True
-        return False
-
-    def save_from_chat_completions(self) -> bool:
-        """
-        Save the _data attribute to the JSON file.
-
-        Returns:
-            bool: True if the JSON data was saved successfully, False on error.
-        """
-        if self._data:
-            data = [dict(element) for element in self._data]
-            return self.save_json(data)
-        return False
 
     def append(self, item: JSONMap) -> None:
         """
