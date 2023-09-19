@@ -12,9 +12,9 @@ from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.database.chroma import ChromaVectorStore
 from pygptprompt.function.factory import FunctionFactory
 from pygptprompt.model.factory import ChatModelFactory
+from pygptprompt.model.token_manager import ContextWindowTokenManager
 from pygptprompt.pattern.list import ListTemplate
 from pygptprompt.pattern.model import ChatModel, ChatModelResponse
-from pygptprompt.session.token import ChatSessionTokenManager
 
 # Extract common logic to functions
 
@@ -40,7 +40,8 @@ def initialize_list_template(
     return list_template
 
 
-# NOTE: This is a sketch for the ContextManager class
+# NOTE:
+# This is a sketch for the ContextManager class
 def manage_message_sequence(
     new_message: ChatModelResponse,
     context_window: ListTemplate,
@@ -48,7 +49,7 @@ def manage_message_sequence(
     vector_store: ChromaVectorStore,
     session_name: str,
     embed: bool,
-    token_manager: ChatSessionTokenManager,
+    token_manager: ContextWindowTokenManager,
 ):
     # Reset oldest_message before enqueuing or dequeuing messages
     oldest_message = None
@@ -80,7 +81,7 @@ def manage_message_sequence(
     type=click.Path(exists=True),
 )
 @click.option(
-    "--session-name",
+    "--session_name",
     "-s",
     type=click.STRING,
     default="default",
@@ -113,13 +114,21 @@ def manage_message_sequence(
     help="Specify the model provider to use. Options are 'openai' for GPT models and 'llama_cpp' for Llama models.",
 )
 @click.option(
-    "--database-path",
+    "--database_path",
     "-d",
     type=click.STRING,
     default="database",
     help="Path where embeddings are written to.",
 )
-def main(session_name, config_path, prompt, chat, embed, provider, database_path):
+def main(
+    config_path,
+    session_name,
+    prompt,
+    chat,
+    embed,
+    provider,
+    database_path,
+):
     if not (bool(prompt) ^ chat):
         print(
             "Use either --prompt or --chat, but not both.",
@@ -129,7 +138,7 @@ def main(session_name, config_path, prompt, chat, embed, provider, database_path
 
     session_name: str = session_name
 
-    config: ConfigurationManager = ConfigurationManager(config_path)
+    config = ConfigurationManager(config_path)
 
     logger: Logger = config.get_logger("app.log.general", "Chat", "DEBUG")
     logger.info(f"Using Session: {session_name}")
@@ -142,14 +151,12 @@ def main(session_name, config_path, prompt, chat, embed, provider, database_path
 
     function_factory = FunctionFactory(config)
 
-    model_factory: ChatModelFactory = ChatModelFactory(config)
+    model_factory = ChatModelFactory(config)
     chat_model: ChatModel = model_factory.create_model(provider)
 
-    token_manager: ChatSessionTokenManager = ChatSessionTokenManager(
-        provider, config, chat_model
-    )
+    token_manager = ContextWindowTokenManager(provider, config, chat_model)
 
-    vector_store: ChromaVectorStore = ChromaVectorStore(
+    vector_store = ChromaVectorStore(
         collection_name=session_name,
         database_path=database_path,
         config=config,
@@ -196,12 +203,18 @@ def main(session_name, config_path, prompt, chat, embed, provider, database_path
             logger.debug(f"Assistant Message: {assistant_message['content']}")
 
             context_window.append(assistant_message)
-            context_window.save_from_chat_completions()
-
             transcript.append(assistant_message)
+
+            print()  # DEBUG clutters CLI; This is temporary.
+            context_window.save_from_chat_completions()
             transcript.save_from_chat_completions()
-            print()
-            print(f"Collections: {collection.count()}")
+
+            if embed:
+                logger.debug(f"Chroma Heartbeat: {vector_store.get_chroma_heartbeat()}")
+                logger.debug(
+                    f"Chroma Collections: {vector_store.get_collection_count()}"
+                )
+
         elif chat:
             # NOTE: Print previous content to stdout if it exists
             for message in context_window.data:
