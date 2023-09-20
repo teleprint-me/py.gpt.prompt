@@ -6,7 +6,6 @@ from typing import Optional
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.database.chroma import ChromaVectorStore
 from pygptprompt.model.sequence.sequence_manager import SequenceManager
-from pygptprompt.model.sequence.token_manager import ContextWindowTokenManager
 from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 
 
@@ -20,22 +19,28 @@ class ContextWindowManager(SequenceManager):
     This class extends TranscriptManager to provide functionality for managing chat model context windows.
 
     Args:
-        file_path (str): The file path for storing the chat context.
-        provider (str): The provider of the chat model.
-        config (ConfigurationManager): The configuration manager for the application.
-        chat_model (ChatModel): The chat model used for generating responses.
-        vector_store (Optional[ChromaVectorStore]): An optional vector store for embedding messages.
-        embed (bool, optional): A flag indicating whether to embed messages in the vector store.
+        file_path (str): The file path to the JSON file used to store chat completion data.
+        provider (str): The provider or source of chat completions.
+        config (ConfigurationManager): The configuration manager for accessing settings and configurations.
+        chat_model (ChatModel): The chat model used for managing chat completions.
 
     Attributes:
+        logger (Logger): The logger instance for logging messages.
+        list_template (ListTemplate): The template for working with JSON lists.
         token_manager (ContextWindowTokenManager): The token manager for handling chat tokens.
-        vector_store (Optional[ChromaVectorStore]): An optional vector store for embedding messages.
-        embed (bool): A flag indicating whether to embed messages in the vector store.
+        sequence (List[ChatModelResponse]): The list of ChatModelResponse objects.
+
+    Properties:
+        system_message (ChatModelResponse): The system message at the beginning of the sequence.
+        token_count (int): The total count of tokens in the sequence.
+        reserved_upper_bound (int): Get the reserved upper bound for the sequence length.
 
     Methods:
-        dequeue(): Dequeues the oldest message from the context window.
-        _append_single_message(message: ChatModelResponse): Appends a single message to the context window.
-
+        load_to_chat_completions(): Load data from JSON into the sequence.
+        save_from_chat_completions(): Save the sequence to JSON.
+        _append_single_message(message): Append a single ChatModelResponse to the sequence.
+        _append_multiple_messages(messages): Append multiple ChatModelResponse objects to the sequence.
+        enqueue(message): Add a ChatModelResponse or a list of them to the sequence.
     """
 
     def __init__(
@@ -49,12 +54,21 @@ class ContextWindowManager(SequenceManager):
     ):
         super().__init__(file_path, config)
 
-        self.token_manager = ContextWindowTokenManager(
-            provider=provider, config=config, chat_model=chat_model
-        )
-
         self.vector_store = vector_store
         self.embed = embed
+
+    @property
+    def reserved_upper_bound(self) -> int:
+        """
+        Get the reserved upper bound for the sequence length.
+
+        This property defines the maximum number of tokens reserved for content injection,
+        such as responses from documents or web requests.
+
+        Returns:
+            int: The reserved upper bound for the sequence length.
+        """
+        return self.token_manager.reserved_upper_bound
 
     def dequeue(self) -> None:
         """
