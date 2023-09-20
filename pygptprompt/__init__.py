@@ -32,19 +32,3 @@ try:
     CPU_COUNT: int = len(os.sched_getaffinity(0))
 except AttributeError:
     CPU_COUNT: int = os.cpu_count() or 2
-
-# NOTE:
-# This is here for future reference.
-# This will be removed once obsoleted.
-#
-# from pygptprompt.processor.image import ImageProcessor
-# from pygptprompt.processor.pdf import PDFProcessor
-#
-# # A mapping of MIME types to langchain loader classes
-# MAP_MIME_TYPES: tuple[tuple[str, type[object]], ...] = (
-#     # ("text/plain", TextProcessor),
-#     # ("text/csv", CSVProcessor),
-#     ("application/pdf", PDFProcessor),
-#     ("image/png", ImageProcessor),
-#     ("image/jpeg", ImageProcessor),
-# )
