@@ -1,0 +1,174 @@
+@startuml SequenceManagement
+!theme blueprint
+
+class ChatCompletionMessage {
+    ' Represents a single completion message from the chat model.
+    ' The role of the message.
+    + role: Literal["assistant", "user", "system"]
+    ' The content of the message.
+    + content: str
+    ' The user who originated this message, if applicable.
+    + user: NotRequired[str]
+}
+
+class ChatModelResponse extends ChatCompletionMessage {
+    ' Extends ChatCompletionMessage to include optional function calls and their arguments.
+    ' The role of the message.
+    + role: Literal["assistant", "user", "system", "function"]
+    ' The content of the message.
+    + content: NotRequired[str]
+    ' The function being called, if applicable.
+    + function_call: NotRequired[str]
+    ' The arguments for the function call, if applicable.
+    + function_args: NotRequired[str]
+    ' The user who originated this message, if applicable.
+    + user: NotRequired[str]
+}
+
+class JSONTemplate extends Protocol {
+    ' A base template class for working with JSON files.
+    ' JSONMap = Dict[str, Any]
+    ' JSONList = List[JSONMap]
+    ' JSONData = Union[JSONMap, JSONList]
+    - _file_path: Path
+    - _data: Optional[JSONData]
+    - _logger: Logger
+    + JSONTemplate(file_path: str, initial_data: Optional[JSONData], logger: Optional[Logger])
+    ' Get the path to the JSON file.
+    # Path file_path
+    ' Load JSON data from the file into the _data attribute.
+    # Optional[JSONData] data
+    ' Save JSON data to the file. Returns True if successful, False otherwise.
+    + bool load_json()
+    ' Create a backup of the JSON file. Returns True if successful, False otherwise.
+    + bool save_json(data: Optional[JSONData], indent: int)
+    ' Create a backup of the JSON file. Returns True if successful, False otherwise.
+    + bool backup_json()
+    ' Create the directory for the JSON file. Returns True if successful, False otherwise.
+    + bool make_directory()
+}
+
+class ListTemplate extends JSONTemplate {
+    ' A template class for managing a list of dictionaries in JSON files.
+    ' JSONMap = Dict[str, Any]
+    ' JSONList = List[JSONMap]
+    - JSONList _data
+    + ListTemplate(file_path: str, initial_data: Optional[JSONList], logger: Optional[Logger] = None)
+    ' Return the length of the internal data list.
+    # int length
+    ' Return a copy of the internal data list or None if empty.
+    # Optional[JSONList] data
+    ' Append a dictionary to the internal data list.
+    + bool append(item: JSONMap)
+    ' Insert a dictionary at a specific index.
+    + bool insert(index: int, item: JSONMap)
+    ' Get a dictionary from a specific index.
+    + Optional[JSONMap] get(index: int)
+    ' Update a dictionary at a specific index.
+    + bool update(index: int, item: JSONMap)
+    ' Remove a dictionary at a specific index.
+    + bool remove(index: int)
+    ' Pop a dictionary from a specific index.
+    + Optional[JSONMap] pop(index: int)
+    ' Clear the internal data list.
+    + bool clear()
+    ' NOTE: The following methods are TBD (To Be Decided).
+    ' Sort the list based on a key.
+    + bool sort(key: str, reverse: bool)
+    ' Filter the list based on a condition.
+    + Optional[JSONList] filter(condition: Callable[[JSONMap], bool])
+}
+
+class TokenManager {
+    ' A helper class for managing tokens within a chat session.
+    - str _provider
+    - ConfigurationManager _config
+    - ChatModel _model
+    + TokenManager(provider: str, config: ConfigurationManager, chat_model: ChatModel)
+    ' A floating-point value between 0 and 1 that represents the percentage of the maximum sequence length reserved for special content injection during a chat session.
+    # reserve(): float
+    ' The number of tokens to offset within a given sequence.
+    # offset(): int
+    ' An integer value representing the maximum sequence length for the given model.
+    # max_sequence(): int
+    ' An integer value representing the maximum sequence length the model is allowed to generate.
+    # max_tokens(): int
+    ' The artificial ceiling that guarantees the model's output fits within the defined sequence length.
+    # upper_bound(): int
+    ' Calculate the upper bound as a percentage of the reserve for content size management.
+    # reserved_upper_bound(): int
+    ' Count the number of tokens within the given text sequence.
+    + calculate_text_sequence_length(text: str): int
+    ' Returns the number of tokens in a given message.
+    + calculate_chat_message_length(message: ChatModelResponse): int
+    ' Returns the total number of tokens in a list of chat messages.
+    + calculate_chat_sequence_length(messages: List[ChatModelResponse]): int
+    ' Check if adding a new message will cause the sequence to overflow.
+    + causes_chat_sequence_overflow(new_message: ChatModelResponse, messages: List[ChatModelResponse]): bool
+}
+
+class SequenceManager extends Protocol {
+    ' Interface for managing sequences of ChatModelResponse objects.
+    - Logger logger
+    - ListTemplate list_template
+    - TokenManager token_manager
+    - List sequence
+    + SequenceManager(file_path: str, provider: str, config: ConfigurationManager, chat_model: ChatModel)
+    ' Get the length of the sequence.
+    + __len__(): int
+    ' Get a ChatModelResponse at the specified index.
+    + __getitem__(index): ChatModelResponse
+    ' Set a ChatModelResponse at the specified index.
+    + __setitem__(index: int, value: ChatModelResponse)
+    ' Delete a ChatModelResponse at the specified index.
+    + __delitem__(index: int)
+    ' Get an iterator for the sequence.
+    + __iter__(): Iterator[ChatModelResponse]
+    ' Check if a ChatModelResponse is in the sequence.
+    + __contains__(item: ChatModelResponse)
+    ' Get the system message at the beginning of the sequence.
+    # system_message(): ChatModelResponse
+    ' Get the total count of tokens in the sequence.
+    # token_count(): int
+    ' Load data from JSON into the sequence.
+    + load_to_chat_completions(): bool
+    ' Save the sequence to JSON.
+    + save_from_chat_completions(): bool
+    ' Append a single ChatModelResponse to the sequence.
+    - _append_single_message(message: ChatModelResponse): void
+    ' Append multiple ChatModelResponse objects to the sequence.
+    - _append_multiple_messages(messages: List[ChatModelResponse]): void
+    ' Add a ChatModelResponse or a list of them to the sequence.
+    + enqueue(message: Union[ChatModelResponse, List[ChatModelResponse]]): void
+}
+
+class TranscriptManager extends SequenceManager {
+    ' Contains complete and full records of every chat completion
+    + TranscriptManager(file_path: str, provider: str, config: ConfigurationManager, chat_model: ChatModel)
+}
+
+class ContextWindowManager extends SequenceManager {
+    ' Contains the current contextual sequence of chat completions
+    - ChromaVectorStore vector_store
+    - bool embed
+    + ContextWindowManager(file_path: str, initial_data: Optional[JSONList], vector_store: Optional[ChromaVectorStore] = None, embed: bool = False)
+    ' Get the reserved upper bound for the sequence length.
+    # reserved_upper_bound(): int
+    ' Optionally enables dequeueing oldest message into a vector store.
+    + dequeue(): None
+    ' Overrides parent class to enable dequeue into optional vector store.
+    - _append_single_message(message: ChatModelResponse): void
+}
+
+TranscriptManager --|> SequenceManager : <<inherits>>
+ContextWindowManager --|> SequenceManager : <<inherits>>
+
+SequenceManager o--> TokenManager : <<uses>>
+SequenceManager o--> ListTemplate : <<component>>
+
+TranscriptManager --> ChatModelResponse : <<uses>>
+ContextWindowManager --> ChatModelResponse : <<uses>>
+
+ContextWindowManager o--> VectorStore : <<component>>
+
+@enduml
