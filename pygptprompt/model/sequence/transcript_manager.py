@@ -2,7 +2,7 @@
 pygptprompt/model/sequence/transcript.py
 """
 from pygptprompt.config.manager import ConfigurationManager
-from pygptprompt.model.sequence.manager import SequenceManager
+from pygptprompt.model.sequence.sequence_manager import SequenceManager
 
 
 class TranscriptManager(SequenceManager):

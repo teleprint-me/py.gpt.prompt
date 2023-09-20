@@ -5,8 +5,8 @@ from typing import Optional
 
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.database.chroma import ChromaVectorStore
-from pygptprompt.model.sequence.manager import SequenceManager
-from pygptprompt.model.token_manager import ContextWindowTokenManager
+from pygptprompt.model.sequence.sequence_manager import SequenceManager
+from pygptprompt.model.sequence.token_manager import ContextWindowTokenManager
 from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 
 
