@@ -69,7 +69,7 @@ class JSONTemplate:
         if logger:
             self._logger = logger
         else:
-            self._logger = logging.getLogger(__name__)
+            self._logger = logging.getLogger(self.__class__.__name__)
 
             if not self._logger.hasHandlers():
                 handler = logging.StreamHandler(stream=sys.stdout)
@@ -82,7 +82,7 @@ class JSONTemplate:
 
         # Test for initialization data
         if initial_data is not None:
-            self._logger.info("JSON successfully initialized into memory")
+            self._logger.debug("JSON successfully initialized into memory")
 
     @property
     def file_path(self) -> Path:
@@ -113,7 +113,7 @@ class JSONTemplate:
         try:
             with self._file_path.open("r") as file:
                 self._data = json.load(file)
-            self._logger.info(f"JSON successfully loaded from {self._file_path}")
+            self._logger.debug(f"JSON successfully loaded from {self._file_path}")
             return True
         except DecodeError as e:
             self._logger.error(f"Error loading JSON from {self._file_path}: {e}")
