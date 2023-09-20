@@ -13,7 +13,7 @@ import logging
 import sys
 from logging import Logger
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Protocol, Union
 
 # NOTE:
 # List[Dict[str, Any]] uses a data type value of Any,
@@ -39,9 +39,9 @@ DecodeError = (
 JSONError = EncodeError + DecodeError
 
 
-class JSONTemplate:
+class JSONTemplate(Protocol):
     """
-    A template class for working with JSON files.
+    A base template class for working with JSON files.
 
     Properties:
         _file_path (Path): A path-like object pointing to the JSON source file.
@@ -95,7 +95,7 @@ class JSONTemplate:
         return self._file_path
 
     @property
-    def data(self) -> JSONData:
+    def data(self) -> Optional[JSONData]:
         """
         Get the underlying JSON data structure.
 
@@ -105,7 +105,8 @@ class JSONTemplate:
         return self._data
 
     def load_json(self) -> bool:
-        """Load JSON data from the file into the _data attribute.
+        """
+        Load JSON data from the file into the _data attribute.
 
         Returns:
             bool: True if the JSON data was loaded successfully, False otherwise.
@@ -120,7 +121,8 @@ class JSONTemplate:
             return False
 
     def save_json(self, data: Optional[JSONData] = None, indent: int = 4) -> bool:
-        """Save JSON data to the file.
+        """
+        Save JSON data to the file.
 
         If data is provided, it updates the _data attribute as well.
 
@@ -146,7 +148,8 @@ class JSONTemplate:
             return False
 
     def backup_json(self, indent: int = 4) -> bool:
-        """Create a backup of the JSON file.
+        """
+        Create a backup of the JSON file.
 
         Parameters:
             indent (int): The indentation level for the JSON output. Defaults to 4.
@@ -167,7 +170,8 @@ class JSONTemplate:
             return False
 
     def make_directory(self) -> bool:
-        """Create the directory for the JSON file.
+        """
+        Create the directory for the JSON file.
 
         Returns:
             bool: True if successful, False otherwise.
