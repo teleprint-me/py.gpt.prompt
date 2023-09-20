@@ -1,7 +1,8 @@
 """
 pygptprompt/download.py
 """
-
+import logging
+import os
 import sys
 
 import click
@@ -13,10 +14,12 @@ from huggingface_hub.utils import (
     RepositoryNotFoundError,
 )
 
-from pygptprompt import logging
+logging_format = "%(asctime)s - %(levelname)s - %(filename)s:%(lineno)s - %(message)s"
+logging.basicConfig(format=logging_format, level=logging.INFO)
 
 
 def download_files(repo_id, local_dir, file_names):
+    os.makedirs(local_dir, exist_ok=True)
     for file_name in file_names:
         model_path = hf_hub_download(
             repo_id=repo_id,
