@@ -5,8 +5,9 @@ pygptprompt/model/sequence/manager.py
 from typing import Iterator, List, Protocol, Union
 
 from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.model.sequence.token_manager import TokenManager
 from pygptprompt.pattern.list import ListTemplate
-from pygptprompt.pattern.model import ChatModelResponse
+from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 
 
 class SequenceManager(Protocol):
@@ -18,16 +19,21 @@ class SequenceManager(Protocol):
     dequeuing, and other common sequence operations.
 
     Args:
-        file_path (str): The file path to the JSON data storage.
-        config (ConfigurationManager): The configuration manager for logging.
+        file_path (str): The file path to the JSON file used to store chat completion data.
+        provider (str): The provider or source of chat completions.
+        config (ConfigurationManager): The configuration manager for accessing settings and configurations.
+        chat_model (ChatModel): The chat model used for managing chat completions.
 
     Attributes:
         logger (Logger): The logger instance for logging messages.
         list_template (ListTemplate): The template for working with JSON lists.
+        token_manager (ContextWindowTokenManager): The token manager for handling chat tokens.
         sequence (List[ChatModelResponse]): The list of ChatModelResponse objects.
 
     Properties:
         system_message (ChatModelResponse): The system message at the beginning of the sequence.
+        token_count (int): The total count of tokens in the sequence.
+        reserved_upper_bound (int): Get the reserved upper bound for the sequence length.
 
     Methods:
         __len__(): Get the length of the sequence.
@@ -46,14 +52,22 @@ class SequenceManager(Protocol):
     def __init__(
         self,
         file_path: str,
+        provider: str,
         config: ConfigurationManager,
+        chat_model: ChatModel,
     ):
         self.logger = config.get_logger(
             key="app.log.general",
             logger_name=self.__class__.__name__,
             level="DEBUG",
         )
+
         self.list_template = ListTemplate(file_path=file_path, logger=self.logger)
+
+        self.token_manager = TokenManager(
+            provider=provider, config=config, chat_model=chat_model
+        )
+
         self.sequence = []
 
     def __len__(self) -> int:
@@ -92,6 +106,16 @@ class SequenceManager(Protocol):
             return self.sequence[0]
         except IndexError:
             return ChatModelResponse(role="", content="")
+
+    @property
+    def token_count(self) -> int:
+        """
+        Get the total count of tokens in the sequence.
+
+        Returns:
+            int: The total number of tokens.
+        """
+        return self.token_manager.calculate_chat_sequence_length(self.sequence)
 
     def load_to_chat_completions(self) -> bool:
         """
