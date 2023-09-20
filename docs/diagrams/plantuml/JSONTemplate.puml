@@ -1,0 +1,93 @@
+@startuml JSONTemplate
+!theme blueprint
+
+class JSONTemplate extends Protocol {
+    ' A base template class for working with JSON files.
+    ' JSONMap = Dict[str, Any]
+    ' JSONList = List[JSONMap]
+    ' JSONData = Union[JSONMap, JSONList]
+    - _file_path: Path
+    - _data: Optional[JSONData]
+    - _logger: Logger
+    + JSONTemplate(file_path: str, initial_data: Optional[JSONData], logger: Optional[Logger])
+    ' Get the path to the JSON file.
+    # Path file_path
+    ' Load JSON data from the file into the _data attribute.
+    # Optional[JSONData] data
+    ' Save JSON data to the file. Returns True if successful, False otherwise.
+    + bool load_json()
+    ' Create a backup of the JSON file. Returns True if successful, False otherwise.
+    + bool save_json(data: Optional[JSONData], indent: int)
+    ' Create a backup of the JSON file. Returns True if successful, False otherwise.
+    + bool backup_json()
+    ' Create the directory for the JSON file. Returns True if successful, False otherwise.
+    + bool make_directory()
+}
+
+class MappingTemplate extends JSONTemplate {
+    ' A template class for creating and managing a mapping of key-value pairs.
+    ' JSONMap = Dict[str, Any]
+    - JSONMap _data
+    + MappingTemplate(file_path: str, initial_data: Optional[JSONMap], logger: Optional[Logger])
+    ' Get a list of all keys in the mapping.
+    # List[str] keys
+    ' Get the underlying data structure of the mapping.
+    # JSONMap data
+    ' Create a new key-value pair in the mapping.
+    + bool create(key: str, value: Any)
+    ' Create a nested key-value pair in the mapping.
+    + bool create_nested(value: Any, *keys: str)
+    ' Read the value associated with a key in the mapping.
+    + Any read(key: str)
+    ' Read the value associated with a nested key hierarchy in the mapping.
+    + Any read_nested(*keys: str)
+    ' Update the value associated with a key in the mapping.
+    + bool update(key: str, value: Any)
+    ' Update the value associated with a nested key hierarchy in the mapping.
+    + bool update_nested(value: Any, *keys: str)
+    ' Delete a key-value pair from the mapping.
+    + bool delete(key: str)
+    ' Delete a nested key-value pair from the mapping.
+    + bool delete_nested(*keys: str)
+}
+
+class ListTemplate extends JSONTemplate {
+    ' A template class for managing a list of dictionaries in JSON files.
+    ' JSONMap = Dict[str, Any]
+    ' JSONList = List[JSONMap]
+    - JSONList _data
+    + ListTemplate(file_path: str, initial_data: Optional[JSONList], logger: Optional[Logger] = None)
+    ' Return the length of the internal data list.
+    # int length
+    ' Return a copy of the internal data list or None if empty.
+    # Optional[JSONList] data
+    ' Append a dictionary to the internal data list.
+    + bool append(item: JSONMap)
+    ' Insert a dictionary at a specific index.
+    + bool insert(index: int, item: JSONMap)
+    ' Get a dictionary from a specific index.
+    + Optional[JSONMap] get(index: int)
+    ' Update a dictionary at a specific index.
+    + bool update(index: int, item: JSONMap)
+    ' Remove a dictionary at a specific index.
+    + bool remove(index: int)
+    ' Pop a dictionary from a specific index.
+    + Optional[JSONMap] pop(index: int)
+    ' Clear the internal data list.
+    + bool clear()
+    ' NOTE: The following methods are TBD (To Be Decided).
+    ' Sort the list based on a key.
+    + bool sort(key: str, reverse: bool)
+    ' Filter the list based on a condition.
+    + Optional[JSONList] filter(condition: Callable[[JSONMap], bool])
+}
+
+class ConfigurationManager
+MappingTemplate <|.. ConfigurationManager
+
+class ContextWindowManager
+ListTemplate <|.. ContextWindowManager
+
+class TranscriptManager
+ListTemplate <|.. TranscriptManager
+@enduml
