@@ -21,7 +21,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>.
 """
 import os
 
-__version__ = "0.0.32"
+__version__ = "0.0.33"
 __name__ = "pygptprompt"
 __agent__ = f"teleprint-me/{__name__}"
 __source__ = f"https://github.com/{__agent__}"
