@@ -10,12 +10,12 @@ import click
 from prompt_toolkit import prompt as input
 
 from pygptprompt.config.manager import ConfigurationManager
-from pygptprompt.database.chroma import ChromaVectorStore
 from pygptprompt.function.factory import FunctionFactory
 from pygptprompt.model.factory import ChatModelFactory
 from pygptprompt.model.sequence.context_manager import ContextWindowManager
 from pygptprompt.model.sequence.transcript_manager import TranscriptManager
 from pygptprompt.pattern.model import ChatModel, ChatModelResponse
+from pygptprompt.storage.chroma import ChromaVectorStore
 
 
 # NOTE:
@@ -53,7 +53,10 @@ def initialize_context_window(
         embed=embed,
     )
     transcript_manager = TranscriptManager(
-        file_path=transcript_manager_path, config=config
+        file_path=transcript_manager_path,
+        provider=provider,
+        config=config,
+        chat_model=chat_model,
     )
     logger.debug("Managers initialized.")
 

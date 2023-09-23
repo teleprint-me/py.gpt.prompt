@@ -4,9 +4,9 @@ pygptprompt/model/sequence/context.py
 from typing import Optional
 
 from pygptprompt.config.manager import ConfigurationManager
-from pygptprompt.database.chroma import ChromaVectorStore
 from pygptprompt.model.sequence.sequence_manager import SequenceManager
 from pygptprompt.pattern.model import ChatModel, ChatModelResponse
+from pygptprompt.storage.chroma import ChromaVectorStore
 
 
 # TODO: Consider making the system message optional for increased code reusability.
@@ -52,7 +52,7 @@ class ContextWindowManager(SequenceManager):
         vector_store: Optional[ChromaVectorStore] = None,
         embed: bool = False,
     ):
-        super().__init__(file_path, config)
+        super().__init__(file_path, provider, config, chat_model)
 
         self.vector_store = vector_store
         self.embed = embed
