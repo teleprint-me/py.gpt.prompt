@@ -1,8 +1,6 @@
 """
 pygptprompt/storage/function.py
 """
-import logging
-import sys
 from logging import Logger
 from typing import Optional
 
@@ -32,7 +30,7 @@ class VectorStoreEmbeddingFunction(EmbeddingFunction):
         if logger:
             self._logger = logger
         else:
-            self._logger = get_default_logger("ChatModelEmbeddingFunction")
+            self._logger = get_default_logger(self.__class__.__name__)
 
         # Test for initialization data
         self._logger.debug("Successfully initialized chat model embedding function.")

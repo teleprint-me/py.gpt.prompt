@@ -15,6 +15,8 @@ from logging import Logger
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol, Union
 
+from pygptprompt.pattern.logger import get_default_logger
+
 # NOTE:
 # List[Dict[str, Any]] uses a data type value of Any,
 # enforcing generic types, to allow for portability.
@@ -69,16 +71,7 @@ class JSONTemplate(Protocol):
         if logger:
             self._logger = logger
         else:
-            self._logger = logging.getLogger(self.__class__.__name__)
-
-            if not self._logger.hasHandlers():
-                handler = logging.StreamHandler(stream=sys.stdout)
-                formatter = logging.Formatter(
-                    "%(asctime)s - %(levelname)s - %(message)s"
-                )
-                handler.setFormatter(formatter)
-                self._logger.addHandler(handler)
-                self._logger.setLevel(logging.DEBUG)
+            self._logger = get_default_logger(self.__class__.__name__)
 
         # Test for initialization data
         if initial_data is not None:
