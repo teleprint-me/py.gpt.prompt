@@ -3,8 +3,15 @@
 
 ' docs/diagrams/plantuml/chat_model.puml
 
+' // ChatModel Type Definitions
+' ChatModelVector = Union[List[int], List[float]]
+' ChatModelEncoding = ChatModelVector
+' ChatModelEmbedding = List[ChatModelVector]
+' ChatModelDocument = str
+' ChatModelDocuments = List[ChatModelDocument]
+' ChatModelTextCompletion = str
+
 class ConfigurationManager extends Singleton {
-    // JSONMap = Dict[str, Any]
     - MappingTemplate _map_template
     + ConfigurationManager(file_path: str, initial_data: Optional[JSONMap])
     + bool load()
@@ -14,9 +21,10 @@ class ConfigurationManager extends Singleton {
     + bool set_value(key: str, value: Any)
     + Optional[str] evaluate_path(key: str, default: Optional[Any])
     + str get_environment(variable: str)
+    + Logger get_logger(key: str, logger_name: str, level: str = "DEBUG")
 }
 
-class ChatModelResponse extends TypeDict {
+class ChatModelResponse extends ChatCompletionMessage {
     + role: Literal["assistant", "user", "system", "function"]
     + content: NotRequired[str]
     + function_call: NotRequired[str]
@@ -25,12 +33,6 @@ class ChatModelResponse extends TypeDict {
 }
 
 abstract class ChatModel {
-    // ChatModelVector = Union[List[int], List[float]]
-    // ChatModelEncoding = ChatModelVector
-    // ChatModelEmbedding = List[ChatModelVector]
-    // ChatModelDocument = str
-    // ChatModelDocuments = List[ChatModelDocument]
-    // ChatModelTextCompletion = str
     - ConfigurationManager _config
     + ChatModel(config: ConfigurationManager)
     + ChatModelTextCompletion get_completion(prompt: str)
