@@ -87,7 +87,7 @@ class TranscriptManager extends SequenceManager {
     - chat_model: ChatModel
     - logger: Logger
     - list_template: ListTemplate
-    - token_manager: ContextWindowTokenManager
+    - token_manager: TokenManager
     - sequence: List[ChatModelResponse]
 
     + TranscriptManager(file_path: str, provider: str, config: ConfigurationManager, chat_model: ChatModel)
@@ -107,7 +107,7 @@ class ContextWindowManager extends SequenceManager {
     - embed: bool
     - logger: Logger
     - list_template: ListTemplate
-    - token_manager: ContextWindowTokenManager
+    - token_manager: TokenManager
     - sequence: List[ChatModelResponse]
 
     + ContextWindowManager(file_path: str, provider: str, config: ConfigurationManager, chat_model: ChatModel, vector_store: Optional[ChromaVectorStore] = None, embed: bool = False)
@@ -119,17 +119,37 @@ class User {
     // Represents a user interacting with the system
 }
 
-User --> ChatModel : interacts
+' UML diagram relationships
 
-ChatModelResponse <-- ChatModel : generates
-ChatModelResponse <-- User : generates
+' User and ChatModel have a bidirectional association
+User <--> ChatModel : interacts
 
-ContextWindowManager "1" o-- "1" TokenManager : uses
-ContextWindowManager --> ChatModelResponse : uses
-ContextWindowManager::_list_template o--> ListTemplate : component
+' ChatModel and ChatModelResponse are tightly coupled
+ChatModel "1" -- "1..*" ChatModelResponse : generates
+User "1" -- "1..*" ChatModelResponse : generates
 
+' ContextWindowManager has a composition relationship with TokenManager
+ContextWindowManager "1" *-- "1" TokenManager : uses
+
+' ContextWindowManager uses ChatModelResponse
+ContextWindowManager -- "0..*" ChatModelResponse : uses
+
+' ListTemplate is a component of ContextWindowManager
+ContextWindowManager "1" o-- "1" ListTemplate : has-a
+
+' TokenManager has a unidirectional association with ChatModel and ListTemplate
 TokenManager --> ChatModel : uses
-TokenManager --> ChatModelResponse : manages
 TokenManager --> ListTemplate : uses
+
+' TokenManager manages tokens in ChatModelResponse
+TokenManager --> "0..*" ChatModelResponse : manages
+
+' Optional: Add logger relationship (if applicable)
+' Logger class would be linked to classes that use it
+' Logger <.. ContextWindowManager : logs
+' Logger <.. TokenManager : logs
+
+' Optional: JSONTemplate and ListTemplate relationship (if applicable)
+' JSONTemplate <|-- ListTemplate : extends
 
 @enduml
