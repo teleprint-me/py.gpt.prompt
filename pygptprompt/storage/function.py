@@ -1,5 +1,5 @@
 """
-pygptprompt/database/function.py
+pygptprompt/storage/function.py
 """
 import logging
 import sys
