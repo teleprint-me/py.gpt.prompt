@@ -89,9 +89,9 @@ class ChatSessionTokenManager {
 }
 
 abstract class ChatModel {
-    // ChatModelVector = Union[List[int], List[float]]
-    // ChatModelEncoding = ChatModelVector
-    // ChatModelEmbedding = List[ChatModelVector]
+    ' ChatModelVector = Union[List[int], List[float]]
+    ' ChatModelEncoding = ChatModelVector
+    ' ChatModelEmbedding = List[ChatModelVector]
     - ConfigurationManager _config
     + ChatModel(config: ConfigurationManager)
     + ChatModelTextCompletion get_completion(prompt: str)
