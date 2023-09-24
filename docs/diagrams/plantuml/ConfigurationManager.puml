@@ -1,0 +1,44 @@
+@startuml ConfigurationManager
+!theme blueprint
+
+' docs/diagrams/plantuml/configuration_manager.puml
+
+class MetaSingleton extends Type {
+    ' Metaclass for implementing the Singleton pattern.
+    # Dict[Type, object] _instances
+    ' Call method invoked when a singleton class is instantiated.
+    # Dict[Type, object] __call__(cls, *args, **kwargs)
+    # MetaSingleton()
+}
+
+class Singleton extends MetaSingleton {
+    ' Base class for implementing the Singleton pattern.
+    # Singleton()
+}
+
+class ConfigurationManager extends Singleton {
+    ' Singleton class for managing configuration data.
+    ' JSONMap = Dict[str, Any]
+    - MappingTemplate _map_template
+    + ConfigurationManager(file_path: str, initial_data: Optional[JSONMap])
+    ' Load configuration data from the file.
+    + bool load()
+    ' Save configuration data to the file.
+    + bool save()
+    ' Create a backup of the configuration file.
+    + bool backup()
+    ' Get a configuration value based on the provided key.
+    + Any get_value(key: str, default: Optional[Any])
+    ' Set a configuration value for the provided key.
+    + bool set_value(key: str, value: Any)
+    ' Evaluate a configuration path based on the provided key.
+    + Optional[str] evaluate_path(key: str, default: Optional[Any])
+    ' Get the value of an environment variable.
+    + str get_environment(variable: str)
+    ' Get a logger instance with specified configuration.
+    + Logger get_logger(key: str, logger_name: str, level: str = "DEBUG")
+}
+
+
+MappingTemplate o--> ConfigurationManager::_map_template
+@enduml
