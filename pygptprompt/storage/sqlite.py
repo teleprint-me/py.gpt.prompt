@@ -19,6 +19,16 @@ from pygptprompt.pattern.logger import get_default_logger
 
 
 def ensure_db_connection(method):
+    """
+    Decorator to ensure a database connection is open before executing the decorated method.
+
+    Args:
+        method (callable): The method to decorate.
+
+    Returns:
+        callable: The decorated method.
+    """
+
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         if self.db.is_closed():
@@ -31,6 +41,16 @@ def ensure_db_connection(method):
 
 
 def close_db_after_use(method):
+    """
+    Decorator to close the database connection after executing the decorated method.
+
+    Args:
+        method (callable): The method to decorate.
+
+    Returns:
+        callable: The decorated method.
+    """
+
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         result = method(self, *args, **kwargs)
@@ -43,6 +63,14 @@ def close_db_after_use(method):
 
 class SQLiteMemoryStore:
     def __init__(self, db_name: Optional[str] = None, logger: Optional[Logger] = None):
+        """
+        Initialize an SQLite memory store.
+
+        Args:
+            db_name (str, optional): The name of the SQLite database. Defaults to None.
+            logger (Logger, optional): The logger instance to use. Defaults to None, in which case a default logger is created.
+
+        """
         self.db_name = db_name or "chat_model_static_memory.sqlite"
         self.db = SqliteDatabase(self.db_name)
 
@@ -52,6 +80,12 @@ class SQLiteMemoryStore:
             self._logger = get_default_logger(self.__class__.__name__)
 
     def connect(self) -> bool:
+        """
+        Connect to the SQLite database.
+
+        Returns:
+            bool: True if the connection was successful, False otherwise.
+        """
         try:
             return self.db.connect()
         except OperationalError as message:
@@ -60,9 +94,24 @@ class SQLiteMemoryStore:
         return False
 
     def close(self) -> bool:
+        """
+        Close the database connection.
+
+        Returns:
+            bool: True if the connection was closed successfully, False otherwise.
+        """
         return self.db.close()
 
     def _create_chat_model_sequence(self, table_name: str) -> Model:
+        """
+        Create and return a Peewee Model for chat model sequences.
+
+        Args:
+            table_name (str): The name of the database table.
+
+        Returns:
+            Model: The Peewee Model for chat model sequences.
+        """
         # NOTE: A sequence can be the Context Window or Transcript
         db = self.db
 
@@ -81,6 +130,15 @@ class SQLiteMemoryStore:
         return ChatModelSequence
 
     def _create_chat_model_memory(self, table_name: str) -> Model:
+        """
+        Create and return a Peewee Model for chat model static memory.
+
+        Args:
+            table_name (str): The name of the database table.
+
+        Returns:
+            Model: The Peewee Model for chat model static memory.
+        """
         # NOTE: A memory is a recorded fact about a person, place, thing, etc.
         db = self.db
 
@@ -97,6 +155,16 @@ class SQLiteMemoryStore:
         return ChatModelStaticMemory
 
     def _create_model_by_type(self, model_id: str, table_name: str) -> Model:
+        """
+        Create a Peewee Model based on the given model_id and table_name.
+
+        Args:
+            model_id (str): The ID of the model.
+            table_name (str): The name of the database table.
+
+        Returns:
+            Model: The Peewee Model.
+        """
         model_map = {
             "sequence": self._create_chat_model_sequence,
             "memory": self._create_chat_model_memory,
@@ -110,6 +178,16 @@ class SQLiteMemoryStore:
 
     @ensure_db_connection
     def get_model(self, model_id: str, table_name: str) -> Model:
+        """
+        Get a Peewee Model for a specific model_id and table_name.
+
+        Args:
+            model_id (str): The ID of the model.
+            table_name (str): The name of the database table.
+
+        Returns:
+            Model: The Peewee Model.
+        """
         model = self._create_model_by_type(model_id, table_name)
 
         if self.db.table_exists(model._meta.table_name):
@@ -126,6 +204,16 @@ class SQLiteMemoryStore:
 
     @ensure_db_connection
     def get_models(self, model_id: str, table_names: List[str]) -> List[Model]:
+        """
+        Get a list of Peewee Models for the specified model_id and table_names.
+
+        Args:
+            model_id (str): The ID of the model.
+            table_names (List[str]): The names of the database tables.
+
+        Returns:
+            List[Model]: A list of Peewee Models.
+        """
         models = []
         new_models = []
 
