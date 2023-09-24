@@ -1,47 +1,52 @@
 @startuml ChatSession
 !theme blueprint
 
-class JSONTemplate {
-    // Template class for managing JSON sources
-    // JSONMap = Dict[str, Any]
-    // JSONList = List[JSONMap]
-    // JSONData = Union[JSONMap, JSONList]
-    + JSONTemplate(file_path: str, initial_data: Optional[JSONData])
-    # Path file_path
-    # JSONData data
-    + bool load_json()
-    + bool save_json(data: JSONData)
-    + bool backup_json()
-    + bool make_directory()
+class ChatCompletionMessage {
+    ' Represents a single completion message from the chat model.
+}
+
+class ChatModelResponse extends ChatCompletionMessage {
+    ' Extends ChatCompletionMessage to include optional function calls and their arguments.
+    ' The role of the message.
+    + role: Literal["assistant", "user", "system", "function"]
+    ' The content of the message.
+    + content: NotRequired[str]
+    ' The function being called, if applicable.
+    + function_call: NotRequired[str]
+    ' The arguments for the function call, if applicable.
+    + function_args: NotRequired[str]
+    ' The user who originated this message, if applicable.
+    + user: NotRequired[str]
+}
+
+class JSONTemplate extends Protocol {
+    ' A base template class for working with JSON files.
 }
 
 class ListTemplate extends JSONTemplate {
-    // Template class for managing sequences of chat completions
-    // JSONMap = Dict[str, Any]
-    // JSONList = List[JSONMap]
-    + ListTemplate(file_path: str, initial_data: Optional[JSONList])
+    ' A template class for managing a list of dictionaries in JSON files.
+    ' JSONMap = Dict[str, Any]
+    ' JSONList = List[JSONMap]
+    - JSONList _data
+    + ListTemplate(file_path: str, initial_data: Optional[JSONList], logger: Optional[Logger] = None)
+    ' Return the length of the internal data list.
     # int length
-    + None append(item: JSONMap)
+    ' Return a copy of the internal data list or None if empty.
+    # Optional[JSONList] data
+    ' Append a dictionary to the internal data list.
+    + bool append(item: JSONMap)
+    ' Insert a dictionary at a specific index.
     + bool insert(index: int, item: JSONMap)
+    ' Get a dictionary from a specific index.
     + Optional[JSONMap] get(index: int)
+    ' Update a dictionary at a specific index.
     + bool update(index: int, item: JSONMap)
+    ' Remove a dictionary at a specific index.
     + bool remove(index: int)
+    ' Pop a dictionary from a specific index.
     + Optional[JSONMap] pop(index: int)
-    + None clear()
-}
-
-class ChatCompletionMessage extends TypeDict {
-    + role: Literal["assistant", "user", "system"]
-    + content: str
-    + user: NotRequired[str]
-}
-
-class ChatModelChatCompletion extends ChatCompletionMessage {
-    + role: Literal["assistant", "user", "system", "function"]
-    + content: NotRequired[str]
-    + function_call: NotRequired[str]
-    + function_args: NotRequired[str]
-    + user: NotRequired[str]
+    ' Clear the internal data list.
+    + bool clear()
 }
 
 class ContextWindowManager {
@@ -51,10 +56,10 @@ class ContextWindowManager {
     + ContextWindowManager(file_path: str, initial_data: Optional[JSONList])
     # int max_length
     # int length
-    # List[ChatModelChatCompletion] sequence
-    + None append(message: ChatModelChatCompletion)
-    + Optional[ChatModelChatCompletion] pop_initial_message()
-    + bool insert(index: int, message: ChatModelChatCompletion)
+    # List[ChatModelResponse] sequence
+    + None append(message: ChatModelResponse)
+    + Optional[ChatModelResponse] pop_initial_message()
+    + bool insert(index: int, message: ChatModelResponse)
     + bool remove(index: int)
     + None clear()
 }
@@ -63,8 +68,8 @@ class TranscriptManager {
     // Contains complete and full records of every chat completion
     - ListTemplate _list_template
     + TranscriptManager(file_path: str, initial_data: Optional[JSONList])
-    + None append(message: ChatModelChatCompletion)
-    + List[ChatModelChatCompletion] sequence
+    + None append(message: ChatModelResponse)
+    + List[ChatModelResponse] sequence
 }
 
 class ChatSessionTokenManager {
@@ -78,9 +83,9 @@ class ChatSessionTokenManager {
     + int upper_bound
     + int reserved_upper_bound
     + int get_sequence_length(text: str)
-    + int get_message_length(message: ChatModelChatCompletion)
-    + int get_total_message_length(messages: List[ChatModelChatCompletion])
-    + bool is_overflow(new_message: ChatModelChatCompletion, messages: List[ChatModelChatCompletion])
+    + int get_message_length(message: ChatModelResponse)
+    + int get_total_message_length(messages: List[ChatModelResponse])
+    + bool is_overflow(new_message: ChatModelResponse, messages: List[ChatModelResponse])
 }
 
 abstract class ChatModel {
@@ -90,7 +95,7 @@ abstract class ChatModel {
     - ConfigurationManager _config
     + ChatModel(config: ConfigurationManager)
     + ChatModelTextCompletion get_completion(prompt: str)
-    + ChatModelChatCompletion get_chat_completion(messages: List[ChatModelChatCompletion])
+    + ChatModelResponse get_chat_completion(messages: List[ChatModelResponse])
     + ChatModelEmbedding get_embedding(input: Union[str, List[str]])
     + ChatModelEncoding get_encoding(text: str)
 }
@@ -110,11 +115,11 @@ class FunctionFactory {
     - dict[str, Any] _function_args
     - Optional[Callable] _function
     + FunctionFactory(config: ConfigurationManager)
-    + dict[str, Any] get_function_args(message: ChatModelChatCompletion)
-    + Optional[Callable] get_function(message: ChatModelChatCompletion)
+    + dict[str, Any] get_function_args(message: ChatModelResponse)
+    + Optional[Callable] get_function(message: ChatModelResponse)
     + None register_function(function_name: str, function: Callable)
-    + Optional[ChatModelChatCompletion] execute_function(message: ChatModelChatCompletion)
-    + Optional[ChatModelChatCompletion] query_function(model: ChatModel, result: ChatModelChatCompletion, messages: List[ChatModelChatCompletion])
+    + Optional[ChatModelResponse] execute_function(message: ChatModelResponse)
+    + Optional[ChatModelResponse] query_function(model: ChatModel, result: ChatModelResponse, messages: List[ChatModelResponse])
 }
 
 class ChatSession {
@@ -123,8 +128,8 @@ class ChatSession {
     - ChatSessionTokenManager token_manager
     - ChatModel model
     + ChatSession(provider: str, config: ConfigurationManager)
-    + ChatModelChatCompletion send_message(message: ChatModelChatCompletion)
-    + List[ChatModelChatCompletion] get_transcript()
+    + ChatModelResponse send_message(message: ChatModelResponse)
+    + List[ChatModelResponse] get_transcript()
     + clear()
 }
 
@@ -136,10 +141,10 @@ ChatSession --> ChatModelFactory : <<creates>>
 ChatModelFactory --> ChatModel : <<creates>>
 
 FunctionFactory::_config o--> ConfigurationManager
-FunctionFactory --> ChatModelChatCompletion : <<uses>>
+FunctionFactory --> ChatModelResponse : <<uses>>
 ChatModel --> FunctionFactory : <<uses>>
 
-ChatSession --> ChatModelChatCompletion : <<uses>>
+ChatSession --> ChatModelResponse : <<uses>>
 ChatSession --> ChatModel : <<uses>>
 ChatSession --> ContextWindowManager : <<uses>>
 ChatSession --> TranscriptManager : <<uses>>
