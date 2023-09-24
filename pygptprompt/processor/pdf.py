@@ -1,91 +1,76 @@
 """
 pygptprompt/processor/pdf.py
 """
-import nltk
-import spacy
+import os
+from typing import Any, Dict, List
+
+import magic
 from poppler import load_from_file
+
+from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.model.factory import ChatModelFactory
+from pygptprompt.pattern.model import ChatModel, ChatModelResponse
+from pygptprompt.session.token import ChatSessionTokenManager
 
 
 class PDFProcessor:
     def __init__(
         self,
         file_path: str,
-        max_length: int,
-        spacy_model: str = "en_core_web_sm",
-        language: str = "english",
+        provider: str,
+        config: ConfigurationManager,
+        language: str = "English",
     ):
-        self.file_path = file_path
-        self.max_length = max_length
-        self.spacy_model = spacy_model
+        # Initialize chat model
+        model_factory = ChatModelFactory(config)
+        # NOTE: Chat Models can make function calls
+        self.chat_model = model_factory.create_model(provider)
+        # Token manager will keep track of text based sequences
+        self.token_manager = ChatSessionTokenManager(provider, config, self.chat_model)
+        self.file_path = file_path  # a pdf or directory
         self.language = language
 
-    def convert_pdf_to_text(self) -> list[str]:
+    def scan_directory_for_pdfs(self, directory: str) -> List[str]:
+        """Get all pdf files from within a given directory"""
+        # If "file_path" is a single pdf source, ignore this method.
+        # If "file_path" is a directory, get all pdfs within directory.
+        pdf_files: List[str] = []
+        for root, dirs, files in os.walk(directory):
+            for file in files:
+                file_path = os.path.join(root, file)
+                mime = magic.Magic()
+                mime_type = mime.from_file(file_path)
+                if "pdf" in mime_type.lower():
+                    pdf_files.append(file_path)
+        return pdf_files
+
+    def convert_pdf_to_text(self) -> List[Dict[str, Any]]:
         """
-        Convert a PDF document into a list of strings, where each string is the text of a page.
-        Returns:
-            A list of strings representing the text of each page in the PDF.
+        Convert a PDF document into a list of dictionaries, where each dictionary
+        contains the text of a page and metadata like pdf_id, page_number, and num_chunks.
         """
-        pages: list[str] = []
+        pages: List[Dict[str, Any]] = []
         pdf_document = load_from_file(file_name=self.file_path)
         for index in range(pdf_document.pages):
             page = pdf_document.create_page(index)
-            pages.append(page.text())
+            meta = {
+                "pdf_id": self.file_path.split("/")[-1],  # or any identifier
+                "page_number": index,
+                "num_chunks": 0,  # to be updated
+            }
+            pages.append({"text": page.text(), "metadata": meta})
         return pages
 
-    def chunk_text_with_spacy(self, text: str):
+    def chunk_text_with_chat_model(self, text: str, metadata: Dict):
         """
-        Split a text into chunks that are less than max_length using sentence segmentation from spaCy.
-        Args:
-            text: The input text to be chunked.
-        Returns:
-            A list of strings representing the text chunks.
+        Split a text into chunks that are less than max_length using your chat model.
+        Updates the metadata to include the number of chunks generated.
         """
-        nlp = spacy.load(self.spacy_model)
-        doc = nlp(text)
-
+        # Your chat model-based chunking algorithm here
         chunks = []
-        current_chunk = ""
-        for sentence in doc.sents:
-            if len(current_chunk) + len(sentence.text) <= self.max_length:
-                # If the current sentence fits in the current chunk, add it
-                current_chunk += " " + sentence.text
-            else:
-                # If the current sentence doesn't fit in the current chunk, start a new chunk
-                chunks.append(current_chunk.strip())
-                current_chunk = sentence.text
+        # ... logic to fill chunks and count tokens
 
-        # Don't forget to add the last chunk
-        if current_chunk:
-            chunks.append(current_chunk.strip())
+        # Update metadata
+        metadata["num_chunks"] = len(chunks)
 
-        return chunks
-
-    def chunk_text_with_nltk(self, text: str) -> list[str]:
-        """
-        Split a text into chunks that are less than max_length. This version splits the text up into
-        sentences and then combines those sentences to form chunks that are at most max_length long.
-        Args:
-            text: The input text to be chunked.
-        Returns:
-            A list of strings representing the text chunks.
-        """
-        # Split the text into sentences
-        sentences = nltk.sent_tokenize(text, language=self.language)
-
-        # Combine sentences into chunks that are at most max_length long
-        chunks = []
-        current_chunk = ""
-        for sentence in sentences:
-            if len(current_chunk) + len(sentence) <= self.max_length:
-                # If the current sentence fits in the current chunk, add it
-                current_chunk += " " + sentence
-            else:
-                # If the current sentence doesn't fit in the current chunk, start a new chunk
-                chunks.append(current_chunk.strip())
-                current_chunk = sentence
-
-        # Don't forget to add the last chunk
-        if current_chunk:
-            chunks.append(current_chunk.strip())
-
-        return chunks
+        return chunks, metadata  # now returns updated metadata
