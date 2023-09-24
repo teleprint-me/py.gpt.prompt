@@ -16,7 +16,7 @@ class ConfigurationManager extends Singleton {
     + str get_environment(variable: str)
 }
 
-class ChatCompletionMessage extends TypeDict {
+class ChatModelResponse extends TypeDict {
     + role: Literal["assistant", "user", "system", "function"]
     + content: NotRequired[str]
     + function_call: NotRequired[str]
@@ -34,7 +34,7 @@ abstract class ChatModel {
     - ConfigurationManager _config
     + ChatModel(config: ConfigurationManager)
     + ChatModelTextCompletion get_completion(prompt: str)
-    + ChatCompletionMessage get_chat_completion(messages: List[ChatCompletionMessage])
+    + ChatModelResponse get_chat_completion(messages: List[ChatModelResponse])
     + ChatModelEmbedding get_embedding(input: Union[str, List[str]])
     + ChatModelEncoding get_encoding(text: str)
 }
@@ -62,23 +62,23 @@ class FunctionFactory {
     - dict[str, Any] _function_args
     - Optional[Callable] _function
     + FunctionFactory(config: ConfigurationManager)
-    + dict[str, Any] get_function_args(message: ChatCompletionMessage)
-    + Optional[Callable] get_function(message: ChatCompletionMessage)
+    + dict[str, Any] get_function_args(message: ChatModelResponse)
+    + Optional[Callable] get_function(message: ChatModelResponse)
     + None register_function(function_name: str, function: Callable)
-    + Optional[ChatCompletionMessage] execute_function(message: ChatCompletionMessage)
-    + Optional[ChatCompletionMessage] query_function(model: ChatModel, result: ChatCompletionMessage, messages: List[ChatCompletionMessage])
+    + Optional[ChatModelResponse] execute_function(message: ChatModelResponse)
+    + Optional[ChatModelResponse] query_function(model: ChatModel, result: ChatModelResponse, messages: List[ChatModelResponse])
 }
 
 ChatModelFactory --> ChatModel : "creates"
 ChatModelFactory *-- ConfigurationManager
 
 ChatModel *-- ConfigurationManager
-ChatModel --> ChatCompletionMessage : "uses"
+ChatModel --> ChatModelResponse : "uses"
 ' note left of ChatModel: Maximum token limit in sequence is model-dependent. Refer to model documentation for specifics.
 
 FunctionFactory *-- ConfigurationManager
 FunctionFactory *-- Callable
-FunctionFactory --> ChatCompletionMessage : "uses"
+FunctionFactory --> ChatModelResponse : "uses"
 FunctionFactory <-- ChatModel : "uses"
 
 ChatModelEmbeddingFunction --> ChatModel : "uses"
