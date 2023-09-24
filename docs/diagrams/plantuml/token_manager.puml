@@ -1,10 +1,9 @@
-@startuml TokenManager
+@startuml SequenceManager
 !theme blueprint
 
 ' docs/diagrams/plantuml/token_manager.puml
 
-class ChatCompletionMessage {
-    ' Extends TypeDict
+class ChatModelResponse extends ChatCompletionMessage {
     + role: Literal["assistant", "user", "system", "function"]
     + content: NotRequired[str]
     + function_call: NotRequired[str]
@@ -13,69 +12,107 @@ class ChatCompletionMessage {
 }
 
 abstract class ChatModel {
-    ' Model that generates chat completions
     - ConfigurationManager _config
     + ChatModel(config: ConfigurationManager)
     + ChatModelTextCompletion get_completion(prompt: str)
-    + ChatCompletionMessage get_chat_completion(messages: List[ChatCompletionMessage])
+    + ChatModelResponse get_chat_completion(messages: List[ChatModelResponse])
     + ChatModelEmbedding get_embedding(input: Union[str, List[str]])
     + ChatModelEncoding get_encoding(text: str)
 }
 
-class JSONTemplate {
-    // Template class for managing JSON sources
+class JSONTemplate extends Protocol {
+    ' Template class for managing JSON sources
     + JSONTemplate(file_path: str, initial_data: Optional[JSONData])
-    # Path file_path
-    # JSONData data
-    + bool load_json()
-    + bool save_json(data: JSONData)
-    + bool backup_json()
-    + bool make_directory()
 }
 
 class ListTemplate extends JSONTemplate {
-    // Template class for managing sequences of chat completions
-    + ListTemplate(file_path: str, initial_data: Optional[JSONList])
+    ' A template class for managing a list of dictionaries in JSON files.
+    - JSONList _data
+    + ListTemplate(file_path: str, initial_data: Optional[JSONList], logger: Optional[Logger] = None)
     # int length
-    + None append(item: JSONMap)
+    # Optional[JSONList] data
+    + bool append(item: JSONMap)
     + bool insert(index: int, item: JSONMap)
     + Optional[JSONMap] get(index: int)
     + bool update(index: int, item: JSONMap)
     + bool remove(index: int)
     + Optional[JSONMap] pop(index: int)
-    + None clear()
+    + bool clear()
 }
 
-class ContextWindowManager {
-    // Contains the current contextual sequence of chat completions
-    - int _max_length
-    - ListTemplate _list_template
-    + ContextWindowManager(file_path: str, initial_data: Optional[JSONList])
-    # int max_length
-    # int length
-    # List[ChatCompletionMessage] sequence
-    + None append(message: ChatCompletionMessage)
-    + Optional[ChatCompletionMessage] pop_initial_message()
-    + bool insert(index: int, message: ChatCompletionMessage)
-    + bool remove(index: int)
-    + None clear()
+class TokenManager {
+    - _provider: str
+    - _config: ConfigurationManager
+    - _model: ChatModel
+
+    + TokenManager(provider: str, config: ConfigurationManager, chat_model: ChatModel)
+    + reserve: float
+    + offset: int
+    + max_sequence: int
+    + max_tokens: int
+    + upper_bound: int
+    + reserved_upper_bound: int
+    + calculate_text_sequence_length(text: str): int
+    + calculate_chat_message_length(message: ChatModelResponse): int
+    + calculate_chat_sequence_length(messages: List[ChatModelResponse]): int
+    + causes_chat_sequence_overflow(new_message: ChatModelResponse, messages: List[ChatModelResponse]): bool
 }
 
-class ContextWindowTokenManager {
-    - str _provider
-    - ConfigurationManager _config
-    - ChatModel _model
-    + ContextWindowManager(provider: str, config: ConfigurationManager, model: ChatModel)
-    + float reserve
-    + int offset
-    + int max_length
-    + int max_tokens
-    + int upper_bound
-    + int reserved_upper_bound
-    + int get_sequence_length(text: str)
-    + int get_message_length(message: ChatCompletionMessage)
-    + int get_total_message_length(messages: List[ChatCompletionMessage])
-    + bool is_overflow(new_message: ChatCompletionMessage, messages: List[ChatCompletionMessage])
+class SequenceManager extends Protocol {
+    - logger: Logger
+    - list_template: ListTemplate
+    - token_manager: TokenManager
+    - sequence: List[ChatModelResponse]
+
+    + SequenceManager(file_path: str, provider: str, config: ConfigurationManager, chat_model: ChatModel)
+    + __len__(): int
+    + __getitem__(index: int): ChatModelResponse
+    + __setitem__(index: int, value: ChatModelResponse)
+    + __delitem__(index: int)
+    + __iter__(): Iterator[ChatModelResponse]
+    + __contains__(item: ChatModelResponse)
+    + system_message: ChatModelResponse
+    + token_count: int
+    + load_to_chat_completions(): bool
+    + save_from_chat_completions(): bool
+    + _append_single_message(message: ChatModelResponse)
+    + _append_multiple_messages(messages: List[ChatModelResponse])
+    + enqueue(message: Union[ChatModelResponse, List[ChatModelResponse]])
+}
+
+class TranscriptManager extends SequenceManager {
+    - file_path: str
+    - provider: str
+    - config: ConfigurationManager
+    - chat_model: ChatModel
+    - logger: Logger
+    - list_template: ListTemplate
+    - token_manager: ContextWindowTokenManager
+    - sequence: List[ChatModelResponse]
+
+    + TranscriptManager(file_path: str, provider: str, config: ConfigurationManager, chat_model: ChatModel)
+    + system_message: ChatModelResponse
+    + token_count: int
+    + load_to_chat_completions(): bool
+    + save_from_chat_completions(): bool
+    + enqueue(message: Union[ChatModelResponse, List[ChatModelResponse]]): None
+}
+
+class ContextWindowManager extends SequenceManager {
+    - file_path: str
+    - provider: str
+    - config: ConfigurationManager
+    - chat_model: ChatModel
+    - vector_store: Optional[ChromaVectorStore]
+    - embed: bool
+    - logger: Logger
+    - list_template: ListTemplate
+    - token_manager: ContextWindowTokenManager
+    - sequence: List[ChatModelResponse]
+
+    + ContextWindowManager(file_path: str, provider: str, config: ConfigurationManager, chat_model: ChatModel, vector_store: Optional[ChromaVectorStore] = None, embed: bool = False)
+    + reserved_upper_bound: int
+    + dequeue(): None
 }
 
 class User {
@@ -84,15 +121,15 @@ class User {
 
 User --> ChatModel : interacts
 
-ChatCompletionMessage <-- ChatModel : generates
-ChatCompletionMessage <-- User : generates
+ChatModelResponse <-- ChatModel : generates
+ChatModelResponse <-- User : generates
 
-ContextWindowManager "1" o-- "1" ContextWindowTokenManager : uses
-ContextWindowManager --> ChatCompletionMessage : uses
+ContextWindowManager "1" o-- "1" TokenManager : uses
+ContextWindowManager --> ChatModelResponse : uses
 ContextWindowManager::_list_template o--> ListTemplate : component
 
-ContextWindowTokenManager --> ChatModel : uses
-ContextWindowTokenManager --> ChatCompletionMessage : manages
-ContextWindowTokenManager --> ListTemplate : uses
+TokenManager --> ChatModel : uses
+TokenManager --> ChatModelResponse : manages
+TokenManager --> ListTemplate : uses
 
 @enduml
