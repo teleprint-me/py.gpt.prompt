@@ -6,6 +6,7 @@ import sys
 from logging import Logger
 from typing import Optional
 
+from pygptprompt.pattern.logger import get_default_logger
 from pygptprompt.pattern.model import (
     ChatModel,
     ChatModelDocuments,
@@ -31,16 +32,7 @@ class VectorStoreEmbeddingFunction(EmbeddingFunction):
         if logger:
             self._logger = logger
         else:
-            self._logger = logging.getLogger("ChatModelEmbeddingFunction")
-
-            if not self._logger.hasHandlers():
-                handler = logging.StreamHandler(stream=sys.stdout)
-                formatter = logging.Formatter(
-                    "%(asctime)s - %(levelname)s - %(message)s"
-                )
-                handler.setFormatter(formatter)
-                self._logger.addHandler(handler)
-                self._logger.setLevel(logging.DEBUG)
+            self._logger = get_default_logger("ChatModelEmbeddingFunction")
 
         # Test for initialization data
         self._logger.debug("Successfully initialized chat model embedding function.")
