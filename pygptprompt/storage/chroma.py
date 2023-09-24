@@ -1,5 +1,5 @@
 """
-pygptprompt/database/chroma.py
+pygptprompt/storage/chroma.py
 """
 from datetime import datetime
 from typing import Dict, List, Optional, Union
@@ -25,6 +25,37 @@ from pygptprompt.storage.function import VectorStoreEmbeddingFunction
 # SOURCE: https://docs.trychroma.com/telemetry
 #
 class ChromaVectorStore:
+    """
+    A class for managing the Chroma vector store.
+
+    This class is responsible for managing interactions with the Chroma vector store, including
+    adding messages to the store and querying stored vectors.
+
+    Args:
+        collection_name (str): The name of the collection in the Chroma vector store.
+        database_path (str): The path to the Chroma database.
+        config (ConfigurationManager): The configuration manager for accessing settings and configurations.
+        chat_model (ChatModel): The chat model used for embedding messages.
+        anonymized_telemetry (bool, optional): Whether anonymized telemetry should be enabled. Default is False.
+
+    Attributes:
+        collection_name (str): The name of the collection in the Chroma vector store.
+        database_path (str): The path to the Chroma database.
+        config (ConfigurationManager): The configuration manager for accessing settings and configurations.
+        chat_model (ChatModel): The chat model used for embedding messages.
+        anonymized_telemetry (bool): Whether anonymized telemetry is enabled.
+        embedding_function (VectorStoreEmbeddingFunction): The function for embedding messages.
+        chroma_client (PersistentClient): The Chroma database client.
+        collection: The collection in the Chroma vector store.
+
+    Methods:
+        get_chroma_heartbeat(): Get the Chroma service timestamp.
+        get_collection_count(): Get the total number of embeddings in the collection.
+        add_message_to_collection(message: dict): Add a message to the collection.
+        upsert_to_collection(ids, metadatas, documents): Upsert documents to the collection.
+        query_from_collection(query_texts, n_results, where, where_document, include): Query the collection for documents.
+    """
+
     def __init__(
         self,
         collection_name: str,
@@ -33,6 +64,7 @@ class ChromaVectorStore:
         chat_model: ChatModel,
         anonymized_telemetry: bool = False,
     ):
+        # Initialize attributes
         self.collection_name = collection_name
         self.database_path = database_path
         self.config = config
@@ -42,18 +74,22 @@ class ChromaVectorStore:
         self.chroma_client = None
         self.collection = None
 
+        # Initialize logger
         self.logger = self.config.get_logger(
             "app.log.general", "ChromaVectorStore", "DEBUG"
         )
 
+        # Initialize components
         self._initialize_components()
         self._get_or_create_collection()  # avoid cascades
 
     def _initialize_components(self):
+        # Initialize embedding function
         self.embedding_function = VectorStoreEmbeddingFunction(
             chat_model=self.chat_model, logger=self.logger
         )
 
+        # Initialize Chroma client
         self.chroma_client = PersistentClient(
             path=self.database_path,
             settings=Settings(
@@ -76,15 +112,30 @@ class ChromaVectorStore:
             self.logger.debug(f"Loaded collection {self.collection_name}")
 
     def get_chroma_heartbeat(self) -> int:
-        """returns timestamp to check if service is alive"""
+        """
+        Get the Chroma service timestamp.
+
+        Returns:
+            int: The Chroma service timestamp.
+        """
         return self.chroma_client.heartbeat()
 
     def get_collection_count(self) -> int:
-        """returns total number of embeddings in a collection"""
+        """
+        Get the total number of embeddings in a collection.
+
+        Returns:
+            int: The total number of embeddings in the collection.
+        """
         return self.collection.count()
 
     def add_message_to_collection(self, message: dict):
-        """add new items to a collection"""
+        """
+        Add a message to the collection.
+
+        Args:
+            message (dict): The message to be added to the collection.
+        """
         timestamp = datetime.utcnow().isoformat()
         unique_id = f"{self.collection_name}_{timestamp}"
 
@@ -104,7 +155,16 @@ class ChromaVectorStore:
         metadatas: Union[Dict[str, str], List[Dict[str, str]]],
         documents: Union[ChatModelDocument, ChatModelDocuments],
     ):
-        """new items will be added, existing items will be updated."""
+        """
+        Upsert documents to the collection.
+
+        New items will be added, and existing items will be updated.
+
+        Args:
+            ids (Union[str, List[str]]): The IDs of the documents to upsert.
+            metadatas (Union[Dict[str, str], List[Dict[str, str]]]): The metadata of the documents.
+            documents (Union[ChatModelDocument, ChatModelDocuments]): The documents to upsert.
+        """
         self.collection.upsert(
             ids=ids,
             metadatas=metadatas,
@@ -123,6 +183,19 @@ class ChromaVectorStore:
         where_document: Optional[WhereDocument] = None,
         include: Include = ["metadatas", "documents", "distances"],
     ) -> QueryResult:
+        """
+        Query the collection for documents.
+
+        Args:
+            query_texts (Optional[OneOrMany[ChatModelDocument]]): The query texts.
+            n_results (int): The number of results to retrieve. Default is 10.
+            where (Optional[Where]): The where condition for the query. Default is None.
+            where_document (Optional[WhereDocument]): The where document for the query. Default is None.
+            include (Include): The elements to include in the query result. Default is ["metadatas", "documents", "distances"].
+
+        Returns:
+            QueryResult: The query result.
+        """
         return self.collection.query(
             query_texts=query_texts,
             n_results=n_results,
