@@ -10,6 +10,7 @@ from typing import Any, Optional
 import dotenv
 
 from pygptprompt.pattern.json import JSONMap
+from pygptprompt.pattern.logger import LOGGER_FORMAT
 from pygptprompt.pattern.mapping import MappingTemplate
 from pygptprompt.pattern.singleton import Singleton
 
@@ -136,6 +137,22 @@ class ConfigurationManager(Singleton):
         return value
 
     def get_logger(self, key: str, logger_name: str, level: str = "DEBUG") -> Logger:
+        """
+        Get a logger instance with specified configuration.
+
+        Args:
+            key (str): A unique key identifying the logger configuration.
+            logger_name (str): The name of the logger.
+            level (str, optional): The log level for the logger (default is "DEBUG").
+
+        Returns:
+            Logger: A configured logger instance.
+
+        Note:
+            - The `key` parameter is used to determine the log file path and log level based on configuration settings.
+            - If the logger with the specified `logger_name` already exists, it returns the existing logger to ensure consistent logging across the application.
+            - Log messages are written to a log file, and the log format includes timestamp, log level, and the log message itself.
+        """
         # Use cache path from config or fallback to '/tmp' or another path
         default_path = self.get_value("app.path.cache", "/tmp/pygptprompt/logs")
 
@@ -150,8 +167,7 @@ class ConfigurationManager(Singleton):
 
         if not logger.handlers:
             handler = logging.FileHandler(log_file_path, "a")
-            formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-
+            formatter = logging.Formatter(LOGGER_FORMAT)
             handler.setFormatter(formatter)
             logger.addHandler(handler)
             logger.setLevel(log_level)
