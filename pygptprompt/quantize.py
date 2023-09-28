@@ -31,6 +31,7 @@ NOTE:
 
 Source: https://github.com/abetlen/llama-cpp-python/blob/main/examples/low_level_api/quantize.py
 """
+import logging
 import os
 
 import click
@@ -45,7 +46,7 @@ from llama_cpp import (
     llama_model_quantize_default_params,
 )
 
-from pygptprompt import logging
+from pygptprompt.pattern.logger import get_default_logger
 
 QUANTIZATION_TYPE_KEYS = ["f16", "q8_0", "q5_1", "q5_0", "q4_1", "q4_0"]
 
@@ -101,8 +102,8 @@ def main(model_input_path, model_output_path, q_type):
     # Ensure converted model exists
     if not os.path.exists(model_input_path):
         raise RuntimeError(f"Converted model does not exist ({model_input_path})")
-
-    logging.info(f"Using Input Path: {model_input_path}")
+    logger = get_default_logger(name=__name__, level=logging.DEBUG)
+    logger.info(f"Using Input Path: {model_input_path}")
     fname_inp = model_input_path.encode("utf-8")
 
     # Construct the models output file path
@@ -115,31 +116,31 @@ def main(model_input_path, model_output_path, q_type):
         raise RuntimeError(f"Quantized model already exists ({fname_out})")
 
     # Encode output file path to bytes
-    logging.info(f"Using Output Path: {fname_out}")
+    logger.info(f"Using Output Path: {fname_out}")
     fname_out = fname_out.encode("utf-8")
 
     # Get the default C struct parameters
-    logging.info("Initializing Quantization Parameters")
+    logger.info("Initializing Quantization Parameters")
     params = llama_model_quantize_default_params()
 
     # Set the quantization type
     # Defaults to 4-bit if not found
-    logging.info(f"Using Quantization Type: {q_type}")
+    logger.info(f"Using Quantization Type: {q_type}")
     # enum llama_ftype ftype; // quantize to this llama_ftype
     params.ftype = get_quantization_type(q_type)
 
     # Set the number of threads
     params.nthread = os.cpu_count() or 2
-    logging.info(f"Using CPU Count: {params.nthread}")
+    logger.info(f"Using CPU Count: {params.nthread}")
     # You can also set other fields as needed
 
-    logging.info("Starting Quantization Process...")
+    logger.info("Starting Quantization Process...")
     return_code = llama_model_quantize(fname_inp, fname_out, params)
 
     if return_code == 0:
-        logging.info(f"Quantized model saved to {fname_out}")
+        logger.info(f"Quantized model saved to {fname_out}")
     else:
-        logging.error(f"Quantization failed with code: {return_code}")
+        logger.error(f"Quantization failed with code: {return_code}")
 
 
 if __name__ == "__main__":
