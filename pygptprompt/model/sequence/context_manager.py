@@ -50,12 +50,10 @@ class ContextWindowManager(SequenceManager):
         config: ConfigurationManager,
         chat_model: ChatModel,
         vector_store: Optional[ChromaVectorStore] = None,
-        embed: bool = False,
     ):
         super().__init__(file_path, provider, config, chat_model)
 
         self.vector_store = vector_store
-        self.embed = embed
 
     @property
     def reserved_upper_bound(self) -> int:
@@ -70,7 +68,7 @@ class ContextWindowManager(SequenceManager):
         """
         return self.token_manager.reserved_upper_bound
 
-    def dequeue(self) -> None:
+    def dequeue(self) -> ChatModelResponse:
         """
         Dequeues the oldest message from the context window.
 
@@ -82,9 +80,12 @@ class ContextWindowManager(SequenceManager):
             None
         """
         dequeued_message = self.sequence.pop(1)
+
         # Embedding messages is optional and is set by the user at runtime.
-        if self.vector_store is not None and self.embed:
+        if self.vector_store is not None:
             self.vector_store.add_message_to_collection(dequeued_message)
+
+        return dequeued_message
 
     def _append_single_message(self, message: ChatModelResponse) -> None:
         """
