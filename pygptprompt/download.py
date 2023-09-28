@@ -26,6 +26,7 @@ def download_files(repo_id, local_dir, file_names):
             filename=file_name,
             local_dir=local_dir,
             resume_download=True,
+            local_dir_use_symlinks=False,
         )
         logging.info(f"Downloaded {file_name} to {model_path}")
 
