@@ -4,100 +4,17 @@ pygptprompt/chat.py
 import sys
 import traceback
 from logging import Logger
-from typing import Tuple
 
 import click
 from prompt_toolkit import prompt as input
 
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.factory import FunctionFactory
+from pygptprompt.function.manager import FunctionManager
 from pygptprompt.model.factory import ChatModelFactory
-from pygptprompt.model.sequence.context_manager import ContextWindowManager
-from pygptprompt.model.sequence.transcript_manager import TranscriptManager
+from pygptprompt.model.sequence.session_manager import SessionManager
 from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 from pygptprompt.storage.chroma import ChromaVectorStore
-
-
-# NOTE:
-# This is a sketch of the constructor for ChatSessionManager class.
-def initialize_context_window(
-    session_name: str,
-    provider: str,
-    config: ConfigurationManager,
-    chat_model: ChatModel,
-    vector_store: ChromaVectorStore,
-    logger: Logger,
-    embed: bool = False,
-) -> Tuple[TranscriptManager, ContextWindowManager]:
-    logger.debug("Initializing context window.")
-
-    # Initialize System Prompt
-    system_prompt = ChatModelResponse(
-        role=config.get_value(f"{provider}.system_prompt.role"),
-        content=config.get_value(f"{provider}.system_prompt.content"),
-    )
-    logger.debug("System prompt initialized.")
-
-    # Paths
-    context_manager_path = config.get_value("app.path.local") + "/context.json"
-    transcript_manager_path = config.get_value("app.path.local") + "/transcript.json"
-    logger.debug("Paths for context and transcript managers established.")
-
-    # Initialize Managers
-    context_window = ContextWindowManager(
-        file_path=context_manager_path,
-        provider=provider,
-        config=config,
-        chat_model=chat_model,
-        vector_store=vector_store,
-        embed=embed,
-    )
-    transcript_manager = TranscriptManager(
-        file_path=transcript_manager_path,
-        provider=provider,
-        config=config,
-        chat_model=chat_model,
-    )
-    logger.debug("Managers initialized.")
-
-    # Load existing or start new session
-    if context_window.load_to_chat_completions():
-        context_window.logger.debug(
-            f"Continuing previous session {session_name} from {context_manager_path}"
-        )
-    else:
-        context_window.logger.debug(
-            f"Starting new session {session_name} for {context_manager_path}"
-        )
-        context_window.enqueue(system_prompt)
-
-    # Load transcript
-    if transcript_manager.load_to_chat_completions():
-        transcript_manager.logger.debug(
-            f"Continuing previous session {session_name} from {transcript_manager_path}"
-        )
-    else:
-        transcript_manager.logger.debug(
-            f"Starting new session {session_name} for {transcript_manager_path}"
-        )
-        transcript_manager.enqueue(system_prompt)
-
-    logger.debug("Context window initialized.")
-    return transcript_manager, context_window
-
-
-# NOTE:
-# This is a sketch for managing the queue for the ChatSessionManager class.
-def add_message_to_queue(
-    new_message: ChatModelResponse,
-    context_window: ContextWindowManager,
-    transcript_manager: TranscriptManager,
-    logger: Logger,
-):
-    # Append the new message to both context window and transcript
-    logger.debug(f"{new_message['role'].upper()} Message: {new_message['content']}")
-    context_window.enqueue(new_message)
-    transcript_manager.enqueue(new_message)
 
 
 @click.command()
@@ -174,10 +91,11 @@ def main(
     logger.info(f"Using Provider: {provider}")
     logger.info(f"Using Database: {database_path}")
 
-    function_factory = FunctionFactory(config)
-
     model_factory = ChatModelFactory(config)
     chat_model: ChatModel = model_factory.create_model(provider)
+
+    function_factory = FunctionFactory(config)
+    function_manager = FunctionManager(function_factory, config, chat_model)
 
     # NOTE: Even though telemetry defaults to being off,
     # Chroma still (annoyingly) sets a UID in the home path.
@@ -190,52 +108,57 @@ def main(
         chat_model=chat_model,
     )
 
-    transcript_manager, context_window = initialize_context_window(
+    # Initialize System Prompt
+    system_prompt = ChatModelResponse(
+        role=config.get_value(f"{provider}.system_prompt.role"),
+        content=config.get_value(f"{provider}.system_prompt.content"),
+    )
+
+    session_manager = SessionManager(
         session_name=session_name,
         provider=provider,
         config=config,
         chat_model=chat_model,
         vector_store=vector_store,
-        logger=logger,
-        embed=embed,
     )
 
-    print(context_window.system_message.get("role"))
-    print(context_window.system_message.get("content"))
-    print()
+    session_manager.load(system_prompt=system_prompt)
 
     try:
         if prompt:
             # Create a ChatModelResponse object for the user's prompt
-            user_prompt = ChatModelResponse(role="user", content=prompt)
+            user_message = ChatModelResponse(role="user", content=prompt)
 
             # Log and add to context and transcript
-            add_message_to_queue(
-                new_message=user_prompt,
-                context_window=context_window,
-                transcript_manager=transcript_manager,
-                logger=logger,
-            )
+            session_manager.enqueue(message=user_message)
+
+            # NOTE:
+            # We don't want to duplicate user queries, so we skip saving
+            # state here and wait until the assistant responds.
+            # If the script crashes, then the user message is lost.
+            # This is a desirable behavior within the given context.
 
             # Get assistant's response
             print("assistant")
+
+            # And for assistant output:
             assistant_message = chat_model.get_chat_completion(
-                messages=context_window.sequence
+                messages=session_manager.output()
             )
 
-            # Log and add to context and transcript
-            add_message_to_queue(
-                new_message=assistant_message,
-                context_window=context_window,
-                transcript_manager=transcript_manager,
-                logger=logger,
-            )
+            if assistant_message["role"] == "function":
+                function_manager.process_function(assistant_message, session_manager)
+            else:
+                session_manager.enqueue(message=assistant_message)
 
-            print()  # DEBUG clutters CLI; This is temporary.
-            context_window.save_from_chat_completions()
-            transcript_manager.save_from_chat_completions()
+            # NOTE: We only write messages after the assistants response.
+            # The context, transcript, and embedding spaces are encapsulated.
+            # The context and transcript are written to JSON.
+            # The embeddings are written to sqlite database.
+            session_manager.save()
 
             if embed:
+                print()  # Add padding to output
                 logger.debug(f"Chroma Heartbeat: {vector_store.get_chroma_heartbeat()}")
                 logger.debug(
                     f"Chroma Collections: {vector_store.get_collection_count()}"
@@ -243,13 +166,7 @@ def main(
 
         elif chat:
             # NOTE: Print previous content to stdout if it exists
-            for message in context_window:
-                # NOTE: We want to avoid outputting the function role
-                # Maybe make this optional in the future?
-                if message["role"] in ["user", "assistant"]:
-                    print(message["role"])
-                    print(message["content"])
-                    print()
+            session_manager.print()
 
             while True:
                 # Manage user message
@@ -264,12 +181,7 @@ def main(
                 # Then, in your chat loop for user input:
                 user_message = ChatModelResponse(role="user", content=text_input)
 
-                add_message_to_queue(
-                    new_message=user_message,
-                    context_window=context_window,
-                    transcript_manager=transcript_manager,
-                    logger=logger,
-                )
+                session_manager.enqueue(message=user_message)
 
                 # NOTE:
                 # We don't want to duplicate user queries, so we skip saving
@@ -282,65 +194,21 @@ def main(
 
                 # And for assistant output:
                 assistant_message = chat_model.get_chat_completion(
-                    messages=context_window.sequence
+                    messages=session_manager.output()
                 )
 
                 if assistant_message["role"] == "function":
-                    # NOTE:
-                    # Model responds to user query via function result
-
-                    # 1. Query the function from the factory and execute it
-                    function_result: ChatModelResponse = (
-                        function_factory.execute_function(assistant_message)
+                    function_manager.process_function(
+                        assistant_message, session_manager
                     )
-
-                    # Check and skip if function result is None
-                    if function_result is None:
-                        logger.error(
-                            f"Function {function_factory.function_name} did not return a result."
-                        )
-                        continue
-
-                    # 2. Query the model using a prompt and function result
-                    # NOTE: A prompt template is set by the user in the config
-                    function_message: ChatModelResponse = (
-                        function_factory.query_function(
-                            chat_model=chat_model,
-                            function_result=function_result,
-                            messages=context_window.sequence,
-                        )
-                    )
-
-                    # 3. We handle the return response as a "function message"
-                    # We need to check and ensure everything went alright because
-                    # query_function utilizes as a "shadow context window".
-                    # The shadow context is a deepcopy of context window.
-                    if function_message is not None:
-                        add_message_to_queue(
-                            new_message=function_message,
-                            context_window=context_window,
-                            transcript_manager=transcript_manager,
-                            logger=logger,
-                        )
-                        context_window.enqueue(function_message)
-                    else:
-                        logger.error("Failed to generate a response message.")
-                        continue
-                else:  # NOTE: Keep an eye on this branch for buggy behavior
-                    add_message_to_queue(
-                        new_message=assistant_message,
-                        context_window=context_window,
-                        transcript_manager=transcript_manager,
-                        logger=logger,
-                    )
+                else:
+                    session_manager.enqueue(message=assistant_message)
 
                 # NOTE: We only write messages at the end of a cycle
-                # The context, transcript, and embedding spaces are all isolated.
+                # The context, transcript, and embedding spaces are encapsulated.
                 # The context and transcript are written to JSON.
-                # The embedding is written to a sqlite database.
-                print()  # DEBUG clutters CLI; This is temporary.
-                context_window.save_from_chat_completions()
-                transcript_manager.save_from_chat_completions()
+                # The embeddings are written to sqlite database.
+                session_manager.save()
 
                 if embed:
                     print()  # Add padding to output
