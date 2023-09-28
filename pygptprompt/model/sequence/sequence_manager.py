@@ -217,7 +217,7 @@ class SequenceManager(Protocol):
         Args:
             message (Union[ChatModelResponse, List[ChatModelResponse]]): The ChatModelResponse or list of them to add.
         """
-        if isinstance(message, ChatModelResponse):
-            self._append_single_message(message)
-        elif isinstance(message, list):
+        if isinstance(message, list):
             self._append_multiple_messages(message)
+        else:  # TypedDict does not support instance and class checks
+            self._append_single_message(message)

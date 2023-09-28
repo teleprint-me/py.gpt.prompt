@@ -23,6 +23,7 @@ class SessionManager:
         self.provider = provider
         self.config = config
         self.chat_model = chat_model
+        self.vector_store = vector_store
         self.logger = self.config.get_logger("app.log.general", self.__class__.__name__)
         self.context_window = None
         self.transcript = None
@@ -35,26 +36,21 @@ class SessionManager:
         chat_model: ChatModel,
         vector_store: Optional[ChromaVectorStore] = None,
     ) -> Tuple[ContextWindowManager, TranscriptManager]:
-        common_args = {
-            "file_path": f"{config.get_value('app.path.local')}/{session_name}_{{}}.json",
-            "provider": provider,
-            "config": config,
-            "chat_model": chat_model,
-            "vector_store": vector_store,
-        }
+        file_path = f"{config.get_value('app.path.local')}/{session_name}_{{}}.json"
 
         context_window = ContextWindowManager(
-            **{
-                **common_args,
-                "file_path": common_args["file_path"].format("context"),
-            }
+            file_path=file_path.format("context"),
+            provider=provider,
+            config=config,
+            chat_model=chat_model,
+            vector_store=vector_store,
         )
 
         transcript = TranscriptManager(
-            **{
-                **common_args,
-                "file_path": common_args["file_path"].format("transcript"),
-            }
+            file_path=file_path.format("transcript"),
+            provider=provider,
+            config=config,
+            chat_model=chat_model,
         )
 
         return context_window, transcript
