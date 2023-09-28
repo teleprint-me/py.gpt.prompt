@@ -1,7 +1,7 @@
 """
 pygptprompt/model/sequence/session_manager.py
 """
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.model.sequence.context_manager import ContextWindowManager
@@ -27,7 +27,7 @@ class SessionManager:
         self.context_window = None
         self.transcript = None
 
-    def create_managers(
+    def _create_managers(
         self,
         session_name: str,
         provider: str,
@@ -60,7 +60,7 @@ class SessionManager:
         return context_window, transcript
 
     def _initialize_managers(self, system_prompt):
-        self.context_window, self.transcript = self.create_managers(
+        self.context_window, self.transcript = self._create_managers(
             self.session_name,
             self.provider,
             self.config,
@@ -79,6 +79,16 @@ class SessionManager:
             self.context_window.enqueue(system_prompt)
             self.transcript.enqueue(system_prompt)
 
+    @property
+    def system_message(self) -> ChatModelResponse:
+        return self.context_window.system_message
+
+    @system_message.setter
+    def system_message(self, message: ChatModelResponse) -> None:
+        # NOTE: This keeps the system message in sync.
+        self.context_window.system_message = message
+        self.transcript.system_message = message
+
     def load(self, system_prompt: ChatModelResponse) -> None:
         self._initialize_managers(system_prompt=system_prompt)
 
@@ -95,12 +105,19 @@ class SessionManager:
     def dequeue(self) -> ChatModelResponse:
         return self.context_window.dequeue()
 
-    def output(self) -> None:
-        # NOTE: Print previous content to stdout if it exists
+    def output(self, roles: Optional[List[str]] = None) -> List[ChatModelResponse]:
+        sequence = []
+        if roles is None:
+            roles = ["system", "user", "assistant", "function"]
         for message in self.context_window:
-            # NOTE: We want to avoid outputting the function role
-            # Maybe make this optional in the future?
-            if message["role"] in ["user", "assistant"]:
-                print(message["role"])
-                print(message["content"])
-                print()
+            if message["role"] in roles:
+                sequence.append(message)
+        return sequence
+
+    def print(self, roles: Optional[List[str]] = None) -> None:
+        if roles is None:
+            roles = ["system", "user", "assistant"]
+        for message in self.output(roles=roles):
+            print(message["role"])
+            print(message["content"])
+            print()
