@@ -4,31 +4,33 @@ pygptprompt/function/lazy.py
 This module defines classes and functions related to lazy loading of functions and classes.
 
 Example:
+    from pygptprompt.config.manager import ConfigurationManager
     from pygptprompt.function.lazy import LazyFunctionMapper
-    from pygptprompt.function.memory import ChatModelMemory
+    from pygptprompt.function.memory import SQLiteMemoryFunction
 
+    config = ConfigurationManager("tests/config.dev.json")
     mapper = LazyFunctionMapper()
 
     mapper.register_class(
-        "ChatModelMemory",
-        ChatModelMemory,
-        db_name="database/chat_model_static_memory.sqlite",
+        "SQLiteMemoryFunction",
+        SQLiteMemoryFunction,
         table_name="test",
+        database_path="database/chat_model_static_memory.sqlite",
+        config=config,
     )
 
-    mapper.map_class_methods("ChatModelMemory", ["query_memory", "update_memory"])
+    mapper.map_class_methods("SQLiteMemoryFunction", ["query_memory", "update_memory"])
     print(mapper.functions)
 
-
-    update_memory = mapper.functions["ChatModelMemory_update_memory"]
+    update_memory = mapper.functions["SQLiteMemoryFunction_update_memory"]
     print(update_memory("test", "this is just a test"))
 
-    query_memory = mapper.functions["ChatModelMemory_query_memory"]
+    query_memory = mapper.functions["SQLiteMemoryFunction_query_memory"]
     print(query_memory("test"))
 """
 from typing import Any, Callable, Dict, Type
 
-from pygptprompt.function.memory import ChatModelMemory
+from pygptprompt.function.memory import SQLiteMemoryFunction
 from pygptprompt.function.weather import get_current_weather
 
 
@@ -87,7 +89,7 @@ class LazyFunctionMapper:
 
     def __init__(self):
         self._functions = {"get_current_weather": get_current_weather}
-        self._classes = {"ChatModelMemory": ChatModelMemory}
+        self._classes = {"SQLiteMemoryFunction": SQLiteMemoryFunction}
         self._class_configurations: Dict[str, LazyFunctionWrapper] = {}
 
     @property
