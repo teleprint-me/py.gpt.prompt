@@ -1,21 +1,30 @@
 {
   "app": {
-    "provider": "app",
-    "path": {
-      "test": "tests/tmp",
-      "local": "local",
-      "cache": "cache",
-      "config": "config",
-      "logs": "logs"
-    },
-    "log": {
+    "provider": "pygptprompt",
+    "env": { "path": ".env", "type": "file" },
+    "local": { "path": "local", "type": "dir" },
+    "cache": { "path": "local/cache", "type": "dir" },
+    "session": { "path": "local/session", "type": "dir" },
+    "logs": {
       "general": {
-        "level": "INFO",
-        "path": "logs/general.log"
+        "path": "local/logs/general.log",
+        "level": "DEBUG",
+        "type": "file"
       },
       "shadow": {
+        "path": "local/logs/shadow.log",
         "level": "DEBUG",
-        "path": "logs/shadow.log"
+        "type": "file"
+      }
+    },
+    "database": {
+      "sqlite": {
+        "path": "local/sqlite/static.sqlite3",
+        "type": "file"
+      },
+      "chroma": {
+        "path": "local/chroma",
+        "type": "dir"
       }
     },
     "access": {
@@ -28,10 +37,7 @@
           "cat",
           "grep",
           "git",
-          "tree",
-          "virtualenv",
-          "poetry",
-          "pytest"
+          "tree"
         ],
         "disallowed_commands": ["rm", "sudo", "su"],
         "disallowed_strings": ["-rf /", ":(){ :|:& };:"],
@@ -45,15 +51,6 @@
     "style": {
       "italic": "italic",
       "bold": "bold"
-    }
-  },
-  "chroma": {
-    "provider": "chroma",
-    "device": "cpu",
-    "model": {
-      "repo_id": "hkunlp/instructor-large",
-      "class_id": "InstructorEmbeddingFunction",
-      "max_tokens": 256
     }
   },
   "torch": {
@@ -77,7 +74,7 @@
     "model": {
       "repo_id": "teleprint-me/llama-2-7b-chat-GGUF",
       "filename": "llama-2-7b-chat.GGUF.q5_0.bin",
-      "local": "models/ehartford/WizardLM-1.0-Uncensored-CodeLlama-34b/WizardLM-1.0-Uncensored-CodeLlama-34b.GGUF.q4_0.bin",
+      "local": "models/llama-2/llama-2-7b-chat/llama-2-7b-chat.GGUF.q4_0.bin",
       "n_ctx": 16385,
       "n_parts": -1,
       "seed": 1337,
