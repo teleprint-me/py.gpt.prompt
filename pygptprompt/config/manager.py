@@ -4,7 +4,6 @@ pygptprompt/config/manager.py
 import logging
 import os
 from logging import Logger
-from pathlib import Path
 from typing import Any, Optional
 
 import dotenv
@@ -107,12 +106,31 @@ class ConfigurationManager(Singleton):
         Returns:
             Optional[str]: The evaluated path, or the default value if not found.
         """
-        path = self.get_value(key, default)
-        if path is None:
+        path_info = self.get_value(key, default)
+
+        if path_info is None:
             return None
+
+        path_type = path_info.get("type", "dir")  # default to 'dir' if not specified
+        path = path_info.get("path")
+
+        if path_type not in ["file", "dir"]:
+            raise ValueError(f"Invalid path type: {path_type}")
+
         if not isinstance(path, str):
             raise TypeError(f"Expected a string for path but got {type(path).__name__}")
-        return os.path.expanduser(os.path.expandvars(path))
+
+        evaluated_path = os.path.expanduser(os.path.expandvars(path))
+
+        # Create the path if it doesn't exist
+        if not os.path.exists(evaluated_path):
+            if path_type == "dir":
+                os.makedirs(evaluated_path)
+            else:
+                os.makedirs(os.path.dirname(evaluated_path), exist_ok=True)
+                open(evaluated_path, "a").close()
+
+        return evaluated_path
 
     def get_environment(self, variable: str = "OPENAI_API_KEY") -> str:
         """
@@ -124,7 +142,7 @@ class ConfigurationManager(Singleton):
         Returns:
             str: The value of the environment variable.
         """
-        env_path = self.evaluate_path("app.path.env", ".env")
+        env_path = self.evaluate_path("app.env", ".env")
 
         if not dotenv.load_dotenv(env_path):
             raise ValueError("EnvironmentError: Failed to load `.env`")
@@ -153,16 +171,13 @@ class ConfigurationManager(Singleton):
             - If the logger with the specified `logger_name` already exists, it returns the existing logger to ensure consistent logging across the application.
             - Log messages are written to a log file, and the log format includes timestamp, log level, and the log message itself.
         """
-        # Use cache path from config or fallback to '/tmp' or another path
-        default_path = self.get_value("app.path.cache", "/tmp/pygptprompt/logs")
+        log_info = self.get_value(f"app.logs.{key}", None)
 
-        log_file_path = self.evaluate_path(
-            f"{key}.path",
-            str(Path(default_path) / key),
-        )
+        if log_info is None:
+            raise ValueError(f"Logger configuration for {key} not found.")
 
-        log_level = self.get_value(f"{key}.level", level)
-
+        log_file_path = self.evaluate_path(f"app.logs.{key}", "/tmp/pygptprompt/logs")
+        log_level = log_info.get("level", level)
         logger = logging.getLogger(logger_name)
 
         if not logger.handlers:
