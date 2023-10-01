@@ -1,27 +1,96 @@
 """
 pygptprompt/function/chroma.py
+
+This module defines the ChromaVectorFunction class, which provides methods for querying and updating a vector store used for managing conversational context in chat models.
 """
+from typing import Dict, List, Optional, Union
+
+from chromadb.api.types import Include, OneOrMany, Where, WhereDocument
+
+from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.pattern.model import ChatModel
+from pygptprompt.storage.chroma import ChromaVectorStore
 
 
-def query_chroma_collection(collection, query_text, metadata_filter=None):
+class ChromaVectorFunction:
     """
-    Query a Chroma collection and return the results.
+    Provides methods for querying and updating a vector store used for managing conversational context in chat models.
 
-    This function queries a given Chroma collection based on the provided
-    query text and optional metadata filter. It returns up to 10 results
-    that match the query.
+    Args:
+        collection_name (str): The name of the collection in the vector store.
+        database_path (str): The path to the vector database.
+        config (ConfigurationManager): An instance of ConfigurationManager for configuration settings.
+        chat_model (ChatModel): An instance of the ChatModel for context.
 
-    Parameters:
-        collection (object): The Chroma collection to query.
-        query_text (str): The text to use for querying the collection.
-        metadata_filter (dict, optional): A dictionary containing metadata filters. Defaults to None.
-
-    Returns:
-        object: The query result containing matched documents and metadata.
+    Attributes:
+        vector_store (ChromaVectorStore): The ChromaVectorStore instance for vector operations.
     """
-    query_result = collection.query(
-        query_texts=[query_text],
-        n_results=10,
-        where=metadata_filter,
-    )
-    return query_result
+
+    def __init__(
+        self,
+        collection_name: str,
+        database_path: str,
+        config: ConfigurationManager,
+        chat_model: ChatModel,
+    ):
+        self.vector_store = ChromaVectorStore(
+            collection_name, database_path, config, chat_model
+        )
+
+    def query_collection(
+        self,
+        query_texts: Optional[OneOrMany[str]] = None,
+        n_results: int = 10,
+        where: Optional[Where] = None,
+        where_document: Optional[WhereDocument] = None,
+        include: Include = ["metadatas", "documents", "distances"],
+    ) -> str:
+        """
+        Query the collection for documents.
+
+        Args:
+            query_texts (Optional[OneOrMany[str]]): The query texts.
+            n_results (int): The number of results to retrieve. Default is 10.
+            where (Optional[Where]): The where condition for the query. Default is None.
+            where_document (Optional[WhereDocument]): The where document for the query. Default is None.
+            include (Include): The elements to include in the query result. Default is ["metadatas", "documents", "distances"].
+
+        Returns:
+            str: A message indicating the result of the query.
+        """
+        results = self.vector_store.query_from_collection(
+            query_texts=query_texts,
+            n_results=n_results,
+            where=where,
+            where_document=where_document,
+            include=include,
+        )
+
+        return f"Queried documents from {self.collection_name} with {results}"
+
+    def upsert_to_collection(
+        self,
+        ids: Union[str, List[str]],
+        metadatas: Union[Dict[str, str], List[Dict[str, str]]],
+        documents: Union[str, List[str]],
+    ) -> str:
+        """
+        Upsert documents to the collection.
+
+        New items will be added, and existing items will be updated.
+
+        Args:
+            ids (Union[str, List[str]]): The IDs of the documents to upsert.
+            metadatas (Union[Dict[str, str], List[Dict[str, str]]]): The metadata of the documents.
+            documents (Union[ChatModelDocument, ChatModelDocuments]): The documents to upsert.
+
+        Returns:
+            str: A message indicating the result of the upsert operation.
+        """
+        self.vector_store.upsert_to_collection(
+            ids=ids,
+            metadatas=metadatas,
+            documents=documents,
+        )
+
+        return f"Upserted documents to collection {self.collection_name} with ID {ids}"
