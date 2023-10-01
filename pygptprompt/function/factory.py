@@ -4,11 +4,10 @@ pygptprompt/function/factory.py
 import copy
 import json
 import logging
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List, Optional, Type
 
 from pygptprompt.config.manager import ConfigurationManager
-from pygptprompt.function.chroma import query_chroma_collection
-from pygptprompt.function.weather import get_current_weather
+from pygptprompt.function.lazy import LazyFunctionMapper
 from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 
 
@@ -21,16 +20,42 @@ class FunctionFactory:
             config (ConfigurationManager): The configuration manager instance.
         """
         self.config = config
-        self.functions: dict[str, object] = {
-            "get_current_weather": get_current_weather,
-            "query_chroma_collection": query_chroma_collection
-            # Add more functions here as needed
-        }
+        self.function_mapper = LazyFunctionMapper()
         self.function_name: str = ""
         self.function_args: dict[str, Any] = {}
         self.function: Optional[Callable] = None
+        self.logger = config.get_logger("shadow", self.__class__.__name__)
 
-        self.logger = config.get_logger("app.log.shadow", "FunctionFactory", "DEBUG")
+    def register_function(self, function_name: str, function: Callable) -> None:
+        """
+        Register a function for lazy loading.
+
+        Args:
+            function_name (str): The name to be used for the registered function.
+            function (Callable): The function to be registered.
+        """
+        self.function_mapper.register_function(function_name, function)
+
+    def register_class(self, class_name: str, cls: Type[Any], **init_params) -> None:
+        """
+        Register a class for lazy loading.
+
+        Args:
+            class_name (str): The name to be used for the registered class.
+            cls (Type[Any]): The class to be registered.
+            **init_params: Keyword arguments to be passed to the class constructor.
+        """
+        self.function_mapper.register_class(class_name, cls, **init_params)
+
+    def map_class_methods(self, class_name: str, methods: List[str]) -> None:
+        """
+        Map methods of a registered class to functions for lazy loading.
+
+        Args:
+            class_name (str): The name of the registered class.
+            methods (list[str]): A list of method names to be mapped to functions.
+        """
+        self.function_mapper.map_class_methods(class_name, methods)
 
     def get_function_args(self, message: ChatModelResponse) -> dict[str, Any]:
         """
@@ -65,18 +90,8 @@ class FunctionFactory:
             Optional[object]: The function specified in the message or None if it doesn't exist.
         """
         self.function_name = message.get("function_call")
-        self.function = self.functions.get(self.function_name)
+        self.function = self.function_mapper.functions.get(self.function_name)
         return self.function
-
-    def register_function(self, function_name: str, function: Callable) -> None:
-        """
-        Register a new function with the FunctionFactory.
-
-        Args:
-            function_name (str): The name of the function to register.
-            function (object): The function object to register.
-        """
-        self.functions[function_name] = function
 
     def execute_function(
         self, message: ChatModelResponse
