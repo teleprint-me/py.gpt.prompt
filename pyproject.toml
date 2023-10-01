@@ -31,7 +31,7 @@ description = "PyGPTPrompt: A Context Window Management System for Automating Pr
 authors = ["Austin Berrio <aberrio@teleprint.me>"]
 license = "AGPL"
 readme = "README.md"
-keywords = ["OpenAI", "GPT", "Python", "Prompt", "Automation", "API"]
+keywords = ["openai", "gpt", "llama", "llama.cpp", "python", "prompt", "automation", "api"]
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
@@ -53,14 +53,15 @@ sentencepiece = "^0.1.99"
 python-poppler = "^0.4.1"
 huggingface_hub = "^0.17.3"
 chromadb = "^0.4.13"
-llama-cpp-python = "^0.2.7"
+llama-cpp-python = "^0.2.11"
 tiktoken = "^0.5.1"
 openai = {extras = ["embeddings"], version = "^0.28.1"}
 scipy = "1.11.2"
 gguf = "^0.3.3"
 torch = {version = "^2.0.1+cpu", source = "pytorch"}
-rich = "^13.5.3"
+rich = "^13.6.0"
 inquirer = "^3.1.3"
+peewee = "^3.16.3"
 
 [tool.poetry.group.dev.dependencies]
 pre_commit = "^3.4.0"
