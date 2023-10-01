@@ -104,13 +104,12 @@ class ContextWindowManager extends SequenceManager {
     - config: ConfigurationManager
     - chat_model: ChatModel
     - vector_store: Optional[ChromaVectorStore]
-    - embed: bool
     - logger: Logger
     - list_template: ListTemplate
     - token_manager: TokenManager
     - sequence: List[ChatModelResponse]
 
-    + ContextWindowManager(file_path: str, provider: str, config: ConfigurationManager, chat_model: ChatModel, vector_store: Optional[ChromaVectorStore] = None, embed: bool = False)
+    + ContextWindowManager(file_path: str, provider: str, config: ConfigurationManager, chat_model: ChatModel, vector_store: Optional[ChromaVectorStore] = None)
     + reserved_upper_bound: int
     + dequeue(): None
 }
