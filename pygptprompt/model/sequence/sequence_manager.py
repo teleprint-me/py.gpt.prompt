@@ -57,9 +57,7 @@ class SequenceManager(Protocol):
         chat_model: ChatModel,
     ):
         self.logger = config.get_logger(
-            key="app.log.general",
-            logger_name=self.__class__.__name__,
-            level="DEBUG",
+            key="general", logger_name=self.__class__.__name__
         )
 
         self._sequence = []

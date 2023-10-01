@@ -15,9 +15,7 @@ class FunctionManager:
         chat_model: ChatModel,
     ):
         self.function_factory = function_factory
-        self.logger = config.get_logger(
-            "app.log.general", self.__class__.__name__, "DEBUG"
-        )
+        self.logger = config.get_logger("general", self.__class__.__name__)
         self.chat_model = chat_model
 
     def process_function(

@@ -4,6 +4,7 @@ pygptprompt/chat.py
 import sys
 import traceback
 from logging import Logger
+from pathlib import Path
 
 import click
 from prompt_toolkit import prompt as input
@@ -55,13 +56,6 @@ from pygptprompt.storage.chroma import ChromaVectorStore
     default="llama_cpp",
     help="Specify the model provider to use. Options are 'openai' for GPT models and 'llama_cpp' for Llama models.",
 )
-@click.option(
-    "--database_path",
-    "-d",
-    type=click.STRING,
-    default="database",
-    help="Path where embeddings are written to.",
-)
 def main(
     config_path,
     session_name,
@@ -69,7 +63,6 @@ def main(
     chat,
     embed,
     provider,
-    database_path,
 ):
     if not (bool(prompt) ^ chat):
         print(
@@ -82,14 +75,13 @@ def main(
 
     config = ConfigurationManager(config_path)
 
-    logger: Logger = config.get_logger("app.log.general", "Chat", "DEBUG")
+    logger: Logger = config.get_logger("general", Path(__file__).stem)
     logger.info(f"Using Session: {session_name}")
     logger.info(f"Using Config: {config_path}")
     logger.info(f"Using Prompt: {prompt}")
     logger.info(f"Using Chat: {chat}")
     logger.info(f"Using Embed: {embed}")
     logger.info(f"Using Provider: {provider}")
-    logger.info(f"Using Database: {database_path}")
 
     model_factory = ChatModelFactory(config)
     chat_model: ChatModel = model_factory.create_model(provider)
@@ -101,12 +93,14 @@ def main(
     # Chroma still (annoyingly) sets a UID in the home path.
     # Chroma will be deprecated in future releases simply because
     # it does not respect the end user.
-    vector_store = ChromaVectorStore(
-        collection_name=session_name,
-        database_path=database_path,
-        config=config,
-        chat_model=chat_model,
-    )
+    if embed:
+        vector_store = ChromaVectorStore(
+            collection_name=session_name,
+            config=config,
+            chat_model=chat_model,
+        )
+    else:
+        vector_store = None
 
     # Initialize System Prompt
     system_prompt = ChatModelResponse(

@@ -59,25 +59,22 @@ class ChromaVectorStore:
     def __init__(
         self,
         collection_name: str,
-        database_path: str,
         config: ConfigurationManager,
         chat_model: ChatModel,
         anonymized_telemetry: bool = False,
     ):
         # Initialize attributes
         self.collection_name = collection_name
-        self.database_path = database_path
         self.config = config
         self.chat_model = chat_model
         self.anonymized_telemetry = anonymized_telemetry
+        self.database_path = config.evaluate_path("app.database.chroma")
         self.embedding_function = None
         self.chroma_client = None
         self.collection = None
 
         # Initialize logger
-        self.logger = self.config.get_logger(
-            "app.log.general", "ChromaVectorStore", "DEBUG"
-        )
+        self.logger = self.config.get_logger("general", self.__class__.__name__)
 
         # Initialize components
         self._initialize_components()

@@ -41,7 +41,7 @@ class OpenAIModel(ChatModel):
             config (ConfigurationManager): The configuration manager instance.
         """
         self.config = config
-        self.logger = config.get_logger("app.log.general", "OpenAIModel", "DEBUG")
+        self.logger = config.get_logger("general", self.__class__.__name__)
         openai.api_key = config.get_environment()
 
     def _extract_content(self, delta: DeltaContent, content: str) -> str:

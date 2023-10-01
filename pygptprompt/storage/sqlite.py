@@ -3,8 +3,7 @@ pygptprompt/storage/sqlite.py
 """
 import logging
 from functools import wraps
-from logging import Logger
-from typing import List, Optional
+from typing import List
 
 from peewee import (
     CharField,
@@ -15,7 +14,7 @@ from peewee import (
     TextField,
 )
 
-from pygptprompt.pattern.logger import get_default_logger
+from pygptprompt.config.manager import ConfigurationManager
 
 
 def ensure_db_connection(method):
@@ -62,7 +61,7 @@ def close_db_after_use(method):
 
 
 class SQLiteMemoryStore:
-    def __init__(self, db_name: Optional[str] = None, logger: Optional[Logger] = None):
+    def __init__(self, config: ConfigurationManager):
         """
         Initialize an SQLite memory store.
 
@@ -71,13 +70,9 @@ class SQLiteMemoryStore:
             logger (Logger, optional): The logger instance to use. Defaults to None, in which case a default logger is created.
 
         """
-        self.db_name = db_name or "chat_model_static_memory.sqlite"
+        self.db_name = config.evaluate_path("app.database.sqlite")
         self.db = SqliteDatabase(self.db_name)
-
-        if logger:
-            self._logger = logger
-        else:
-            self._logger = get_default_logger(self.__class__.__name__)
+        self._logger = config.get_logger("general", self.__class__.__name__)
 
     def connect(self) -> bool:
         """

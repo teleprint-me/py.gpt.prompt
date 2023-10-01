@@ -42,7 +42,7 @@ class LlamaCppModel(ChatModel):
 
     def __init__(self, config: ConfigurationManager):
         self.config = config
-        self.logger = config.get_logger("app.log.general", "LlamaCppModel", "DEBUG")
+        self.logger = config.get_logger("general", self.__class__.__name__)
         self.repo_id = config.get_value(
             "llama_cpp.model.repo_id", "TheBloke/Llama-2-7B-Chat-GGML"
         )
