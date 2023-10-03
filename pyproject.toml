@@ -65,7 +65,7 @@ peewee = "^3.16.3"
 
 [tool.poetry.group.dev.dependencies]
 pre_commit = "^3.4.0"
-pyupgrade = "^3.13.0"
+pyupgrade = "^3.14.0"
 pynvim = "^0.4.3"
 pytest = "^7.4.2"
 black = "^23.9.1"
@@ -74,7 +74,7 @@ flake8 = "^6.1.0"
 build = "^1.0.3"
 mkdocs = "^1.5.3"
 mkdocstrings = {version = "^0.23.0", extras = ["python"]}
-mkdocs-material = "^9.4.2"
+mkdocs-material = "^9.4.3"
 ipykernel = "^6.25.2"  # VSCode requires the kernel
 # jupyter = "^1.0.0"  # Only install if you need it
 
