@@ -1,8 +1,5 @@
 {
   "editor.defaultFormatter": null,
-  "editor.formatOnPaste": true,
-  "editor.formatOnSave": false, // enable per language
-  "editor.formatOnType": true,
   "editor.stickyTabStops": true,
   "editor.tabCompletion": "on",
   "editor.wordWrap": "on",
@@ -33,7 +30,7 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
-    "editor.formatOnPaste": false, // black doesn't support this feature
+    "editor.formatOnPaste": false,
     "editor.codeActionsOnSave": {
       "source.organizeImports": true
     }
