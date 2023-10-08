@@ -1,5 +1,5 @@
 """
-pygptprompt/gen_schema.py
+pygptprompt/cli/gen_schema.py
 """
 import ast
 import json
