@@ -53,8 +53,5 @@ class VectorStoreEmbeddingFunction(EmbeddingFunction):
         for text in texts:
             self._logger.debug(f"{text}")
 
-        # Replace newlines, which can negatively affect performance.
-        texts = [t.replace("\n", " ") for t in texts]
-
         # Get embeddings from the chat model API
         return self._model.get_embedding(input=texts)
