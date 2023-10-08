@@ -1,5 +1,5 @@
 """
-pygptprompt/quantize.py
+pygptprompt/cli/quantize.py
 
 MIT License
 

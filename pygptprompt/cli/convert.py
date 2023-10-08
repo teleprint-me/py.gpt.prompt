@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 """
+pygptprompt/cli/convert.py
+
 MIT License
 
 Copyright (c) 2023 Georgi Gerganov

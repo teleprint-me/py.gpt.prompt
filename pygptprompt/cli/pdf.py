@@ -1,5 +1,5 @@
 """
-pygptprompt/pdf.py
+pygptprompt/cli/pdf.py
 """
 import os
 

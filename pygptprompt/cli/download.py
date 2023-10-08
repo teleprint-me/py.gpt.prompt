@@ -1,5 +1,5 @@
 """
-pygptprompt/download.py
+pygptprompt/cli/download.py
 """
 import logging
 import os

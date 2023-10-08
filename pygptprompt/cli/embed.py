@@ -1,5 +1,5 @@
 """
-pygptprompt/embed.py
+pygptprompt/cli/embed.py
 
 This script provides functionality for ingesting documents,
 generating embeddings, and persisting them to the Chroma database.

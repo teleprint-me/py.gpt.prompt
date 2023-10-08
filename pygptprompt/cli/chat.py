@@ -1,5 +1,5 @@
 """
-pygptprompt/chat.py
+pygptprompt/cli/chat.py
 """
 import sys
 import traceback

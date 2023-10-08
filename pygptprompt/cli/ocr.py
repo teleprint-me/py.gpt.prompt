@@ -1,5 +1,5 @@
 """
-pygptprompt/ocr.py
+pygptprompt/cli/ocr.py
 
 A command-line OCR tool that performs various image processing operations and extracts text from images.
 """
