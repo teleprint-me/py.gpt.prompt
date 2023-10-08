@@ -35,8 +35,8 @@ performance.
 
 Hardware requirements:
 
-- Minimum: Quad-Core Processor, 8 GB CPU RAM, 6 GB GPU VRAM
-- Recommended: Octa-Core Processor, 64 GB CPU RAM, 24 GB GPU VRAM
+- Minimum: Quad-Core Processor, 8 GB CPU RAM
+- Recommended: Octa-Core Processor, 64 GB CPU RAM, 16 GB GPU VRAM
 
 ## Features
 
