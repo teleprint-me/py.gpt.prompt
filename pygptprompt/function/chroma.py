@@ -29,13 +29,11 @@ class ChromaVectorFunction:
     def __init__(
         self,
         collection_name: str,
-        database_path: str,
         config: ConfigurationManager,
         chat_model: ChatModel,
     ):
-        self.vector_store = ChromaVectorStore(
-            collection_name, database_path, config, chat_model
-        )
+        self.collection_name = collection_name
+        self.vector_store = ChromaVectorStore(collection_name, config, chat_model)
 
     def query_collection(
         self,
