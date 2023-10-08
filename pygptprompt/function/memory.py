@@ -8,8 +8,7 @@ from pygptprompt.config.manager import ConfigurationManager
 
 config = ConfigurationManager("tests/config.dev.json")
 
-database_path = "database/chat_model_memory.sqlite3"
-chat_model_memory = SQLiteMemoryFunction("test", database_path, config)
+chat_model_memory = SQLiteMemoryFunction("test", config)
 
 # Query a memory with a given key
 memory_result = chat_model_memory.query_memory("some_key")
@@ -40,10 +39,9 @@ class SQLiteMemoryFunction:
     def __init__(
         self,
         table_name: str,
-        database_path: str,
         config: ConfigurationManager,
     ):
-        database = SQLiteMemoryStore(database_path)
+        database = SQLiteMemoryStore(config)
         self._model = database.get_model("memory", table_name)
         self._logger = config.get_logger("general", self.__class__.__name__)
 
@@ -56,6 +54,27 @@ class SQLiteMemoryFunction:
             Model: The database model for memory records.
         """
         return self._model
+
+    def get_all_keys(self) -> str:
+        """
+        Retrieve all the keys from the memory records in the database.
+
+        Returns:
+            str: A formatted string representing the list of keys for direct LLM consumption.
+
+        Raises:
+            OperationalError: If an error occurs while querying the database.
+        """
+        try:
+            keys = [memory.key for memory in self.model.select(self.model.key)]
+
+            # Format the list of keys into a structured string
+            formatted_keys = "\n".join(keys)
+            return f"Available Memory Keys:\n{formatted_keys}"
+
+        except OperationalError as message:
+            self._logger.exception(message)
+            return f"Error: {message}"
 
     def query_memory(self, key: str) -> str:
         """
@@ -73,9 +92,11 @@ class SQLiteMemoryFunction:
         try:
             memory = self.model.select().where(self.model.key == key).get()
             return f"---\n{memory.timestamp}:\n---\n{memory.content}"
+
         except self.model.DoesNotExist:
             self._logger.warning(f"No memory found for key: {key}")
             return f"No memory found for key: {key}"
+
         except OperationalError as message:
             self._logger.exception(message)
             return f"Error: {message}"
@@ -98,12 +119,43 @@ class SQLiteMemoryFunction:
             memory, created = self.model.get_or_create(
                 key=key, defaults={"content": content, "timestamp": datetime.now()}
             )
+
             if not created:
                 memory.content = content
                 memory.timestamp = datetime.now()
                 memory.save()
+
             self._logger.info(f"Memory updated for key: {key}")
             return f"Memory updated for key: {key}"
+
         except OperationalError as message:
             self._logger.exception(message)
             return f"Error: Failed to update memory for key: {key}"
+
+    def delete_memory(self, key: str) -> str:
+        """
+        Delete a memory record with a given key from the database.
+
+        Args:
+            key (str): The key to identify the memory record to be deleted.
+
+        Returns:
+            str: A message indicating the success or failure of the deletion operation.
+
+        Raises:
+            OperationalError: If an error occurs while deleting from the database.
+        """
+        try:
+            query = self.model.delete().where(self.model.key == key)
+            num_deleted = query.execute()
+
+            if num_deleted:
+                self._logger.info(f"Memory deleted for key: {key}")
+                return f"Memory deleted for key: {key}"
+            else:
+                self._logger.warning(f"No memory found for key: {key}")
+                return f"No memory found for key: {key}"
+
+        except OperationalError as message:
+            self._logger.exception(message)
+            return f"Error: Failed to delete memory for key: {key}"
