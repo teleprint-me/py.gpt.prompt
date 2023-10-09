@@ -85,6 +85,10 @@ class SessionManager:
         self.context_window.system_message = message
         self.transcript.system_message = message
 
+    @property
+    def token_count(self) -> Tuple[int, int]:
+        return self.context_window.token_count, self.transcript.token_count
+
     def load(self, system_prompt: ChatModelResponse) -> None:
         self._initialize_managers(system_prompt=system_prompt)
 
@@ -117,3 +121,8 @@ class SessionManager:
             print(message["role"])
             print(message["content"])
             print()
+
+    def print_token_count(self) -> None:
+        print(f"Context is consuming {self.context_window.token_count} tokens.")
+        print(f"Transcript is consuming {self.transcript.token_count} tokens.")
+        print()
