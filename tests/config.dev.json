@@ -4,7 +4,7 @@
     "env": { "path": ".env", "type": "file" },
     "local": { "path": "local", "type": "dir" },
     "cache": { "path": "local/cache", "type": "dir" },
-    "session": { "path": "local/session", "type": "dir" },
+    "sessions": { "path": "local/sessions", "type": "dir" },
     "logs": {
       "general": {
         "path": "local/logs/general.log",
@@ -74,8 +74,8 @@
     "model": {
       "repo_id": "teleprint-me/llama-2-7b-chat-GGUF",
       "filename": "llama-2-7b-chat.GGUF.q5_0.bin",
-      "local": "models/llama-2/llama-2-7b-chat/llama-2-7b-chat.GGUF.q4_0.bin",
-      "n_ctx": 16385,
+      "local": "models/mistralai/Mistral-7B-Instruct-v0.1/Mistral-7B-Instruct-v0.1.GGUF.q4_0.bin",
+      "n_ctx": 8192,
       "n_parts": -1,
       "seed": 1337,
       "f16_kv": true,
@@ -111,7 +111,7 @@
     },
     "system_prompt": {
       "role": "system",
-      "content": "My name is Llama. I am a helpful assistant."
+      "content": "My name is Valerie and I am a helpful assistant."
     }
   },
   "openai": {
