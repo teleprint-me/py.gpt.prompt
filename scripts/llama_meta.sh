@@ -3,6 +3,10 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # This software may be used and distributed according to the terms of the Llama 2 Community License Agreement.
 
+# This script is specifically for downloading the base and chat models.
+# There are 3 sets: The base model, the instruct model, and the python model
+# scripts/llama_meta.sh
+
 read -p "Enter the URL from email: " PRESIGNED_URL
 echo ""
 read -p "Enter the list of models to download without spaces (7B,13B,70B,7B-chat,13B-chat,70B-chat), or press Enter for all: " MODEL_SIZE
