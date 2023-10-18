@@ -1,21 +1,33 @@
 {
   "app": {
-    "provider": "app",
-    "path": {
-      "test": "/tmp",
-      "local": "${HOME}/.local/share/pygptprompt",
-      "cache": "${HOME}/.cache/pygptprompt",
-      "config": "${HOME}/.config/pygptprompt",
-      "logs": "${HOME}/.local/share/pygptprompt/logs"
+    "provider": "pygptprompt",
+    "env": { "path": "${HOME}/.local/pygptprompt/.env", "type": "file" },
+    "local": { "path": "${HOME}/.local/pygptprompt", "type": "dir" },
+    "cache": { "path": "${HOME}/.local/pygptprompt/cache", "type": "dir" },
+    "sessions": {
+      "path": "${HOME}/.local/pygptprompt/sessions",
+      "type": "dir"
     },
-    "log": {
+    "logs": {
       "general": {
-        "level": "INFO",
-        "path": "${HOME}/.local/share/pygptprompt/logs/general.log"
+        "path": "${HOME}/.local/pygptprompt/logs/general.log",
+        "level": "DEBUG",
+        "type": "file"
       },
       "shadow": {
+        "path": "${HOME}/.local/pygptprompt/logs/shadow.log",
         "level": "DEBUG",
-        "path": "${HOME}/.local/share/pygptprompt/logs/shadow.log"
+        "type": "file"
+      }
+    },
+    "database": {
+      "sqlite": {
+        "path": "${HOME}/.local/pygptprompt/sqlite/static.sqlite3",
+        "type": "file"
+      },
+      "chroma": {
+        "path": "${HOME}/.local/pygptprompt/chroma",
+        "type": "dir"
       }
     },
     "access": {
@@ -28,32 +40,23 @@
           "cat",
           "grep",
           "git",
-          "tree",
-          "virtualenv",
-          "poetry",
-          "pytest"
+          "tree"
         ],
         "disallowed_commands": ["rm", "sudo", "su"],
         "disallowed_strings": ["-rf /", ":(){ :|:& };:"],
         "disallowed_chars": ["&", ";", "*", ">", ">>", "|"]
       },
       "file": {
-        "allowed_paths": ["${PWD}", "${HOME}/.cache/pygptprompt"],
-        "disallowed_paths": [".env", "${HOME}/.config/pygptprompt"]
+        "allowed_paths": ["${PWD}", "${HOME}/.local/pygptprompt"],
+        "disallowed_paths": [
+          "${HOME}/.local/pygptprompt/.env",
+          "${HOME}/.local/pygptprompt/config.json"
+        ]
       }
     },
     "style": {
       "italic": "italic",
       "bold": "bold"
-    }
-  },
-  "chroma": {
-    "provider": "chroma",
-    "device": "cpu",
-    "model": {
-      "repo_id": "hkunlp/instructor-large",
-      "class_id": "InstructorEmbeddingFunction",
-      "max_tokens": 256
     }
   },
   "torch": {
@@ -77,8 +80,8 @@
     "model": {
       "repo_id": "teleprint-me/llama-2-7b-chat-GGUF",
       "filename": "llama-2-7b-chat.GGUF.q5_0.bin",
-      "local": "models/ehartford/Samantha-1.11-CodeLlama-34b/Samantha-1.11-CodeLlama-34b.GGUF.q4_1.bin",
-      "n_ctx": 16385,
+      "local": "models/mistralai/Mistral-7B-Instruct-v0.1/Mistral-7B-Instruct-v0.1.GGUF.q4_0.bin",
+      "n_ctx": 8192,
       "n_parts": -1,
       "seed": 1337,
       "f16_kv": true,
@@ -89,7 +92,7 @@
       "embedding": true,
       "n_threads": null,
       "n_batch": 512,
-      "n_gpu_layers": 0,
+      "n_gpu_layers": 20,
       "low_vram": false,
       "last_n_tokens_size": 64,
       "lora_base": null,
@@ -114,7 +117,7 @@
     },
     "system_prompt": {
       "role": "system",
-      "content": "My name is Samantha. I am a helpful assistant."
+      "content": "My name is Valerie and I am a helpful assistant."
     }
   },
   "openai": {
