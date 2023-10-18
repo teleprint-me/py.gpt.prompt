@@ -57,10 +57,12 @@ def download_model(repo_id, local_dir) -> None:
 
 
 @click.command()
-@click.option("--config_path", help="The configuration file path.")
-@click.option("--repo_id", help="The Hugging Face repository ID.")
+@click.option("-c", "--config_path", help="The configuration file path.")
+@click.option("-r", "--repo_id", help="The Hugging Face repository ID.")
 @click.option(
-    "--local_dir", help="The directory where you want to store the downloaded files."
+    "-d",
+    "--local_dir",
+    help="The directory where you want to store the downloaded files.",
 )
 def main(repo_id, local_dir, config_path):
     if config_path:
