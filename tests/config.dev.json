@@ -1,19 +1,31 @@
 {
   "app": {
     "provider": "pygptprompt",
-    "env": { "path": ".env", "type": "file" },
-    "local": { "path": "local", "type": "dir" },
-    "cache": { "path": "local/cache", "type": "dir" },
-    "sessions": { "path": "local/sessions", "type": "dir" },
+    "env": {
+      "path": ".env",
+      "type": "file"
+    },
+    "local": {
+      "path": "local",
+      "type": "dir"
+    },
+    "cache": {
+      "path": "local/cache",
+      "type": "dir"
+    },
+    "sessions": {
+      "path": "local/sessions",
+      "type": "dir"
+    },
     "logs": {
       "general": {
         "path": "local/logs/general.log",
-        "level": "DEBUG",
+        "level": "INFO",
         "type": "file"
       },
       "shadow": {
         "path": "local/logs/shadow.log",
-        "level": "DEBUG",
+        "level": "INFO",
         "type": "file"
       }
     },
@@ -44,8 +56,8 @@
         "disallowed_chars": ["&", ";", "*", ">", ">>", "|"]
       },
       "file": {
-        "allowed_paths": ["${PWD}", "${HOME}/.cache/pygptprompt"],
-        "disallowed_paths": [".env", "${HOME}/.config/pygptprompt"]
+        "allowed_paths": ["${PWD}", "local"],
+        "disallowed_paths": [".env", "local/.env", "local/config.json"]
       }
     },
     "style": {
@@ -148,11 +160,6 @@
         "name": "get_current_weather",
         "description": "Get the current weather in a given location",
         "prompt": "How should I dress for this kind of weather?"
-      },
-      {
-        "name": "query_chroma_collection",
-        "description": "Query Chroma vector database collection based on given parameters",
-        "prompt": "Find documents related to the topic"
       }
     ],
     "definitions": [
@@ -169,28 +176,6 @@
             "unit": { "type": "string", "enum": ["metric", "uscs"] }
           },
           "required": ["location"]
-        }
-      },
-      {
-        "name": "query_chroma_collection",
-        "description": "Query Chroma vector database collection based on given parameters",
-        "parameters": {
-          "type": "object",
-          "properties": {
-            "query_text": {
-              "type": "string",
-              "description": "Text to query the Chroma collection"
-            },
-            "metadata_filter": {
-              "type": "object",
-              "description": "Metadata fields to filter the query"
-            },
-            "n_results": {
-              "type": "integer",
-              "description": "Number of results to retrieve"
-            }
-          },
-          "required": ["query_text"]
         }
       }
     ]
