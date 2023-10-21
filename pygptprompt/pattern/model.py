@@ -61,6 +61,7 @@ class ChatModelResponse(ChatCompletionMessage):
         - content (NotRequired[str]): The content of the message.
         - function_call (NotRequired[str]): The function being called, if applicable.
         - function_args (NotRequired[str]): The arguments for the function call, if applicable.
+        - name (NotRequired[str]): The name of the function, if applicable.
         - user (NotRequired[str]): The user who originated this message, if applicable.
     """
 
@@ -68,6 +69,7 @@ class ChatModelResponse(ChatCompletionMessage):
     content: NotRequired[str]
     function_call: NotRequired[str]
     function_args: NotRequired[str]
+    name: NotRequired[str]
     user: NotRequired[str]
 
 
