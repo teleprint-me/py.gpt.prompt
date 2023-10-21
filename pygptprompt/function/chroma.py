@@ -37,8 +37,8 @@ class ChromaVectorFunction:
 
     def query_collection(
         self,
-        query_texts: Optional[OneOrMany[str]] = None,
-        n_results: int = 10,
+        query_texts: Union[str, List[str]] = None,
+        n_results: int = 5,
         where: Optional[Where] = None,
         where_document: Optional[WhereDocument] = None,
         include: Include = ["metadatas", "documents", "distances"],
