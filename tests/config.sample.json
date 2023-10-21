@@ -1,9 +1,18 @@
 {
   "app": {
     "provider": "pygptprompt",
-    "env": { "path": "${HOME}/.local/pygptprompt/.env", "type": "file" },
-    "local": { "path": "${HOME}/.local/pygptprompt", "type": "dir" },
-    "cache": { "path": "${HOME}/.local/pygptprompt/cache", "type": "dir" },
+    "local": {
+      "path": "${HOME}/.local/pygptprompt/",
+      "type": "dir"
+    },
+    "env": {
+      "path": "${HOME}/.local/pygptprompt/.env",
+      "type": "file"
+    },
+    "cache": {
+      "path": "${HOME}/.local/pygptprompt/cache",
+      "type": "dir"
+    },
     "sessions": {
       "path": "${HOME}/.local/pygptprompt/sessions",
       "type": "dir"
@@ -11,12 +20,12 @@
     "logs": {
       "general": {
         "path": "${HOME}/.local/pygptprompt/logs/general.log",
-        "level": "DEBUG",
+        "level": "INFO",
         "type": "file"
       },
       "shadow": {
         "path": "${HOME}/.local/pygptprompt/logs/shadow.log",
-        "level": "DEBUG",
+        "level": "INFO",
         "type": "file"
       }
     },
@@ -149,56 +158,7 @@
   "function": {
     "provider": "function",
     "call": "auto",
-    "templates": [
-      {
-        "name": "get_current_weather",
-        "description": "Get the current weather in a given location",
-        "prompt": "How should I dress for this kind of weather?"
-      },
-      {
-        "name": "query_chroma_collection",
-        "description": "Query Chroma vector database collection based on given parameters",
-        "prompt": "Find documents related to the topic"
-      }
-    ],
-    "definitions": [
-      {
-        "name": "get_current_weather",
-        "description": "Get the current weather in a given location",
-        "parameters": {
-          "type": "object",
-          "properties": {
-            "location": {
-              "type": "string",
-              "description": "The city and state, e.g. San Francisco, CA"
-            },
-            "unit": { "type": "string", "enum": ["metric", "uscs"] }
-          },
-          "required": ["location"]
-        }
-      },
-      {
-        "name": "query_chroma_collection",
-        "description": "Query Chroma vector database collection based on given parameters",
-        "parameters": {
-          "type": "object",
-          "properties": {
-            "query_text": {
-              "type": "string",
-              "description": "Text to query the Chroma collection"
-            },
-            "metadata_filter": {
-              "type": "object",
-              "description": "Metadata fields to filter the query"
-            },
-            "n_results": {
-              "type": "integer",
-              "description": "Number of results to retrieve"
-            }
-          },
-          "required": ["query_text"]
-        }
-      }
-    ]
+    "templates": [],
+    "definitions": []
   }
 }
