@@ -33,14 +33,51 @@ class FunctionManager:
             )
             return False
 
-        function_message = self.function_factory.query_function(
-            chat_model=self.chat_model,
-            function_result=function_result,
-            messages=session_manager.output(),
+        # Enqueue the function result into the session
+        session_manager.enqueue(message=function_result)
+
+        # Generate a new prompt to the model based on the updated session state
+        new_message = self.chat_model.get_chat_completion(
+            messages=session_manager.output()
         )
-        if function_message is None:
-            self.logger.error("Failed to generate a function response message.")
+        if new_message is None:
+            self.logger.error("Failed to generate a new chat message.")
             return False
 
-        session_manager.enqueue(message=function_message)
+        # Enqueue the new message into the session
+        session_manager.enqueue(message=new_message)
+
         return True  # successfully processed function
+
+    def query_function(
+        self,
+        assistant_message: ChatModelResponse,
+        session_manager: SessionManager,
+    ) -> bool:
+        if not self.process_function(assistant_message, session_manager):
+            return False
+
+        prompt_template = ""
+        prompt_templates = self.config.get_value("function.templates", [])
+
+        for template in prompt_templates:
+            if template.get("name", "") == self.function_factory.function_name:
+                prompt_template = template.get("prompt", "")
+
+        if not prompt_template:
+            self.logger.error(
+                f"Failed to retrieve prompt template for {self.function_factory.function_name}"
+            )
+            return False
+
+        # Prompt the model with the users predefined prompt template
+        prompt_message = ChatModelResponse(role="user", content=prompt_template)
+        session_manager.enqueue(prompt_message)
+
+        message = self.chat_model.get_chat_completion(messages=session_manager.output())
+
+        if not message:
+            return False
+
+        session_manager.enqueue(message)
+        return True
