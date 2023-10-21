@@ -1,5 +1,8 @@
 """
 pygptprompt/cli/chat.py
+
+"The way we intuitively think about things is just not the way the world is. Maybe some day cognitive science will reach the level of physics, in 19th century, and recognize that our intuitive concept of the world isn't the way it works."
+    - Noam Chomsky, MLST - On the Critique of Connections and Cognitive Architecture
 """
 import sys
 import traceback
@@ -12,10 +15,10 @@ from prompt_toolkit import prompt as input
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.factory import FunctionFactory
 from pygptprompt.function.manager import FunctionManager
+from pygptprompt.function.memory import AugmentedMemoryManager
 from pygptprompt.model.factory import ChatModelFactory
 from pygptprompt.model.sequence.session_manager import SessionManager
 from pygptprompt.pattern.model import ChatModel, ChatModelResponse
-from pygptprompt.storage.chroma import ChromaVectorStore
 
 
 @click.command()
@@ -44,10 +47,10 @@ from pygptprompt.storage.chroma import ChromaVectorStore
     help="Enter a chat loop with the model.",
 )
 @click.option(
-    "--embed",
-    "-e",
+    "--memory",
+    "-m",
     is_flag=True,
-    help="Use the chroma vector database while prompting or chatting.",
+    help="Use augmented episodic memory while prompting or chatting.",
 )
 @click.option(
     "--provider",
@@ -61,7 +64,7 @@ def main(
     session_name,
     prompt,
     chat,
-    embed,
+    memory,
     provider,
 ):
     if not (bool(prompt) ^ chat):
@@ -71,8 +74,6 @@ def main(
         )
         sys.exit(1)
 
-    session_name: str = session_name
-
     config = ConfigurationManager(config_path)
 
     logger: Logger = config.get_logger("general", Path(__file__).stem)
@@ -80,7 +81,7 @@ def main(
     logger.info(f"Using Config: {config_path}")
     logger.info(f"Using Prompt: {prompt}")
     logger.info(f"Using Chat: {chat}")
-    logger.info(f"Using Embed: {embed}")
+    logger.info(f"Using Embed: {memory}")
     logger.info(f"Using Provider: {provider}")
 
     model_factory = ChatModelFactory(config)
@@ -89,17 +90,12 @@ def main(
     function_factory = FunctionFactory(config)
     function_manager = FunctionManager(function_factory, config, chat_model)
 
-    # NOTE: Even though telemetry defaults to being off,
-    # Chroma still (annoyingly) sets a UID in the home path.
-    # Chroma will be deprecated in future releases simply because
-    # it does not respect the end user.
-    if embed:
-        vector_store = ChromaVectorStore(
-            collection_name=session_name,
-            config=config,
-            chat_model=chat_model,
-        )
+    if memory:
+        memory_manager = AugmentedMemoryManager(function_factory, config, chat_model)
+        memory_manager.register_episodic_functions()
+        vector_store = memory_manager.register_episodic_memory(session_name)
     else:
+        config.set_value("function.definitions", [])
         vector_store = None
 
     # Initialize System Prompt
@@ -151,7 +147,7 @@ def main(
             # The embeddings are written to sqlite database.
             session_manager.save()
 
-            if embed:
+            if memory:
                 print()  # Add padding to output
                 logger.debug(f"Chroma Heartbeat: {vector_store.get_chroma_heartbeat()}")
                 logger.debug(
@@ -199,8 +195,7 @@ def main(
                     session_manager.enqueue(message=assistant_message)
 
                 print()  # pad assistant output.
-                if embed:
-                    print()  # Add padding to output
+                if memory:
                     logger.debug(
                         f"Chroma Heartbeat: {vector_store.get_chroma_heartbeat()}"
                     )
