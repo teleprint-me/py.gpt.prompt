@@ -3,40 +3,38 @@ pygptprompt/function/lazy.py
 
 This module defines classes and functions related to lazy loading of functions and classes.
 
-# Example
+# Usage Prerequisites
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.lazy import LazyFunctionMapper
 from pygptprompt.function.memory import SQLiteMemoryFunction
 
 config = ConfigurationManager("tests/config.dev.json")
-mapper = LazyFunctionMapper()
 
-mapper.register_class(
+# `LazyFunctionMapper` Usage
+function_mapper = LazyFunctionMapper()
+
+function_mapper.register_class(
     "SQLiteMemoryFunction",
     SQLiteMemoryFunction,
     table_name="test",
     config=config,
 )
 
-mapper.map_class_methods("SQLiteMemoryFunction", ["query_memory", "update_memory", "get_all_keys"])
+function_mapper.map_class_methods("SQLiteMemoryFunction", ["query_memory", "update_memory", "get_all_keys"])
 
-update_memory = mapper.functions["SQLiteMemoryFunction_update_memory"]
+update_memory = function_mapper.functions["SQLiteMemoryFunction_update_memory"]
 print(update_memory("test", "this is just a test"))
 print()
 
-query_memory = mapper.functions["SQLiteMemoryFunction_query_memory"]
+query_memory = function_mapper.functions["SQLiteMemoryFunction_query_memory"]
 print(query_memory("test"))
 print()
 
-get_all_keys = mapper.functions["SQLiteMemoryFunction_get_all_keys"]
+get_all_keys = function_mapper.functions["SQLiteMemoryFunction_get_all_keys"]
 print(get_all_keys())
 print()
 """
 from typing import Any, Callable, Dict, Type
-
-from pygptprompt.function.chroma import ChromaVectorFunction
-from pygptprompt.function.memory import SQLiteMemoryFunction
-from pygptprompt.function.weather import get_current_weather
 
 
 class LazyFunctionWrapper:
@@ -93,12 +91,9 @@ class LazyFunctionMapper:
     """
 
     def __init__(self):
-        self._functions = {"get_current_weather": get_current_weather}
-        self._classes = {
-            "SQLiteMemoryFunction": SQLiteMemoryFunction,
-            "ChromaVectorFunction": ChromaVectorFunction,
-        }
-        self._class_configurations: Dict[str, LazyFunctionWrapper] = {}
+        self._functions = {}
+        self._classes = {}
+        self._class_configurations = {}
 
     @property
     def functions(self) -> Dict[str, Callable]:
@@ -110,6 +105,9 @@ class LazyFunctionMapper:
         """
         return self._functions
 
+    def get_function(self, name: str) -> Callable:
+        return self._functions.get(name)
+
     def register_function(self, function_name: str, function: Callable) -> None:
         """
         Register a function for lazy loading.
@@ -120,17 +118,20 @@ class LazyFunctionMapper:
         """
         self._functions[function_name] = function
 
-    def register_class(self, class_name: str, cls: Type[Any], **init_params) -> None:
+    def register_class(self, class_name: str, cls: Type[Any], *args, **kwargs) -> None:
         """
         Register a class for lazy loading.
 
         Args:
             class_name (str): The name to be used for the registered class.
             cls (Type[Any]): The class to be registered.
-            **init_params: Keyword arguments to be passed to the class constructor.
+            *args: Arguments to be passed to the class constructor.
+            **kwargs: Keyword arguments to be passed to the class constructor.
         """
         self._classes[class_name] = cls
-        self._class_configurations[class_name] = LazyFunctionWrapper(cls, **init_params)
+        self._class_configurations[class_name] = LazyFunctionWrapper(
+            cls, *args, **kwargs
+        )
 
     def instantiate_class(self, class_name: str):
         """
