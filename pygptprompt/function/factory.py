@@ -1,14 +1,13 @@
 """
 pygptprompt/function/factory.py
 """
-import copy
 import json
 import logging
 from typing import Any, Callable, List, Optional, Type
 
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.lazy import LazyFunctionMapper
-from pygptprompt.pattern.model import ChatModel, ChatModelResponse
+from pygptprompt.pattern.model import ChatModelResponse
 
 
 class FunctionFactory:
@@ -36,7 +35,7 @@ class FunctionFactory:
         """
         self.function_mapper.register_function(function_name, function)
 
-    def register_class(self, class_name: str, cls: Type[Any], **init_params) -> None:
+    def register_class(self, class_name: str, cls: Type[Any], *args, **kwargs) -> None:
         """
         Register a class for lazy loading.
 
@@ -45,7 +44,7 @@ class FunctionFactory:
             cls (Type[Any]): The class to be registered.
             **init_params: Keyword arguments to be passed to the class constructor.
         """
-        self.function_mapper.register_class(class_name, cls, **init_params)
+        self.function_mapper.register_class(class_name, cls, *args, **kwargs)
 
     def map_class_methods(self, class_name: str, methods: List[str]) -> None:
         """
@@ -90,7 +89,7 @@ class FunctionFactory:
             Optional[object]: The function specified in the message or None if it doesn't exist.
         """
         self.function_name = message.get("function_call")
-        self.function = self.function_mapper.functions.get(self.function_name)
+        self.function = self.function_mapper.get_function(self.function_name)
         return self.function
 
     def execute_function(
@@ -135,59 +134,6 @@ class FunctionFactory:
             return None
 
         # Return a new ChatModelResponse with the result
-        return ChatModelResponse(role="assistant", content=result)
-
-    def query_function(
-        self,
-        chat_model: ChatModel,
-        function_result: ChatModelResponse,
-        messages: List[ChatModelResponse],
-    ) -> Optional[ChatModelResponse]:
-        """
-        Query the language model with the results of the function execution.
-
-        Args:
-            chat_model (ChatModel): The language model used for chat completions.
-            function_result (ChatModelResponse): The result of the executed function.
-            messages (List[ChatModelResponse]): List of chat completion messages.
-
-        Returns:
-            Optional[ChatModelResponse]: The generated chat completion message, or None if an error occurs.
-        """
-        if function_result is None:
-            return None
-
-        shadow_messages = copy.deepcopy(messages)
-        shadow_messages.append(function_result)
-        prompt_templates: list[dict[str, str]] = self.config.get_value(
-            "function.templates", []
+        return ChatModelResponse(
+            role="function", name=self.function_name, content=result
         )
-
-        prompt_template: str = ""
-
-        for template in prompt_templates:
-            if template.get("name", "") == self.function_name:
-                prompt_template = template.get("prompt", "")
-
-        if not prompt_template:
-            self.logger.error(
-                f"Failed to retrieve prompt template for {self.function_name}"
-            )
-            return None
-
-        # NOTE: Using the "user" role here is a pragmatic decision,
-        # as neither "system" nor "assistant" roles fit this specific use-case.
-        prompt_message = ChatModelResponse(role="user", content=prompt_template)
-        # NOTE: Ensure the prompt message is appended to shadow messages.
-        shadow_messages.append(prompt_message)
-
-        # Log the shadow context
-        if self.logger.getEffectiveLevel() == logging.DEBUG:
-            for casting in shadow_messages:
-                self.logger.debug(f"role: {casting['role']}")
-                self.logger.debug(f"content: {casting['content']}")
-
-        message = chat_model.get_chat_completion(messages=shadow_messages)
-        self.logger.info(f"Chat completion message: {message}")
-
-        return message
