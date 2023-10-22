@@ -11,7 +11,7 @@ highly appreciated.
 To initiate a chat session, run the following command:
 
 ```sh
-python -m pygptprompt.chat [SESSION_NAME] [CONFIG_PATH]
+python -m pygptprompt.cli.chat [CONFIG_PATH] -s [SESSION_NAME]
 ```
 
 This command will initialize a chat session, taking into account the session
@@ -20,8 +20,8 @@ will apply.
 
 ### Important:
 
-In this pre-release, IRC-like commands are not available. Nevertheless, GPT
-model function calling is fully enabled.
+In this release, IRC-like commands are not available. Nevertheless, GPT model
+function calling is fully enabled.
 
 ## Commands and Options
 
@@ -35,17 +35,17 @@ To specify both the session name and configuration file path, enter them as
 arguments:
 
 ```sh
-python -m pygptprompt.chat your_session_name /your/config/path.json
+python -m pygptprompt.cli.chat /your/config/path.json -s your_session_name
 ```
 
 ### Advanced Features
 
 #### Enhanced Memory Capabilities
 
-Use the `--embed` flag to activate GPT model memory features:
+Use the `--memory` flag to activate GPT model augmented memory features:
 
 ```sh
-python -m pygptprompt.chat [SESSION_NAME] [CONFIG_PATH] --embed
+python -m pygptprompt.cli.chat [CONFIG_PATH] -s [SESSION_NAME] -m
 ```
 
 ## Additional CLI Options
@@ -53,15 +53,15 @@ python -m pygptprompt.chat [SESSION_NAME] [CONFIG_PATH] --embed
 Customize your experience with these additional command-line options:
 
 - `--prompt TEXT`: Set an initial prompt.
-- `--embed`: Activate chroma vector database.
+- `--chat`: Activate a chat session.
+- `--memory`: Activate chroma vector database.
 - `--provider TEXT`: Choose between 'openai' and 'llama_cpp' as the model
   provider.
-- `--path_database TEXT`: Define the path for embedding storage.
 
 For a complete list, run:
 
 ```sh
-python -m pygptprompt.chat --help
+python -m pygptprompt.cli.chat --help
 ```
 
 ## Key Shortcuts
@@ -79,22 +79,34 @@ Here are default key shortcuts for easier interaction:
 
 Here's a quick example to guide you through:
 
-```sh
-(.venv) git:(main | Δ) λ python -m pygptprompt.chat your_session_name /your/config/path.json
+```shell
+(.venv) git:(main | Δ) λ python -m pygptprompt.cli.chat tests/config.dev.json -s test2 -p openai -m -c
+2023-10-21 22:45:28,921 - json.py:110 - DEBUG - JSON successfully loaded from tests/config.dev.json
+WARNING:root:Database connection is closed.
+INFO:SQLiteMemoryStore:Table memory_test2 already exists.
 system
 My name is ChatGPT. I am a helpful assistant. I will only use the functions I have been provided with.
+
+user
+Hello, my name is Austin. What's your name?
+
+assistant
+Hello Austin! My name is ChatGPT. How can I assist you today?
 ```
 
 ## Additional Tools and Functionalities
 
 PyGPTPrompt comes packed with a variety of specialized tools and
-functionalities, each residing in its own dedicated module or package:
+functionalities, each residing in its own dedicated module or package. The CLI
+tools are now available within the `pygptprompt/cli` package and can be called
+using `python -m pygptprompt.cli.<module>`.
 
 ### Modules
 
 - `chat.py`: The primary interface for interactive chat sessions.
-- `convert.py`: Converts compatible Hugging Face models to [GGUF](https://github.com/philpax/ggml/blob/gguf-spec/docs/gguf.md) (Georgi Gerganov
-  Unified Format) for `llama.cpp` support.
+- `convert.py`: Converts compatible Hugging Face models to
+  [GGUF](https://github.com/philpax/ggml/blob/gguf-spec/docs/gguf.md) (Georgi
+  Gerganov Unified Format) for `llama.cpp` support.
 - `download.py`: A utility for manually downloading selected models from Hugging
   Face.
 - `embed.py`: Manages vector-based embeddings in the vector database for model
