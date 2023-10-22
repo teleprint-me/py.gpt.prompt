@@ -20,41 +20,48 @@ class FunctionManager:
 
     def process_function(
         self,
-        assistant_message: ChatModelResponse,
+        function_call: ChatModelResponse,
         session_manager: SessionManager,
     ) -> bool:
-        if assistant_message["role"] != "function":
+        if "function_call" not in function_call:
             return False  # not a function, do nothing
 
-        function_result = self.function_factory.execute_function(assistant_message)
+        # 1. Enqueue the assistants function call
+        self.logger.debug(f"Received function message: {function_call}")
+        session_manager.enqueue(function_call)
+
+        # 2. Execute the assistants functions call
+        function_result = self.function_factory.execute_function(function_call)
+        self.logger.debug(f"Function result: {function_result}")
         if function_result is None:
             self.logger.error(
                 f"Function {self.function_factory.function_name} did not return a result."
             )
             return False
 
-        # Enqueue the function result into the session
-        session_manager.enqueue(message=function_result)
+        # 3. Enqueue the function result into the session
+        session_manager.enqueue(function_result)
 
-        # Generate a new prompt to the model based on the updated session state
+        # 4. Generate a new prompt to the model based on the updated session state
         new_message = self.chat_model.get_chat_completion(
             messages=session_manager.output()
         )
+        self.logger.debug(f"New message: {new_message}")
         if new_message is None:
             self.logger.error("Failed to generate a new chat message.")
             return False
 
-        # Enqueue the new message into the session
-        session_manager.enqueue(message=new_message)
+        # 5. Enqueue the new message into the session
+        session_manager.enqueue(new_message)
 
         return True  # successfully processed function
 
     def query_function(
         self,
-        assistant_message: ChatModelResponse,
+        function_call: ChatModelResponse,
         session_manager: SessionManager,
     ) -> bool:
-        if not self.process_function(assistant_message, session_manager):
+        if not self.process_function(function_call, session_manager):
             return False
 
         prompt_template = ""
