@@ -66,15 +66,19 @@ class FunctionFactory:
         Returns:
             dict[str, Any]: A dictionary containing the function arguments. If the function arguments in the message are not valid JSON, prints an error message and returns an empty dictionary.
         """
-        function_args = message.get("function_args")
+        # NOTE: Not all functions require arguments.
+        # This is why we always return a dictionary.
+        function_call = message.get("function_call", {})
+        function_args = function_call.get("arguments")
         if function_args is None:
-            self.logger.error(f"Function arguments is None: {self.function_name}")
+            self.logger.debug(f"Function arguments is None: {self.function_name}")
             return {}
 
         try:
             self.function_args = json.loads(function_args)
             return self.function_args
         except json.JSONDecodeError:
+            # NOTE: This is an edge case that requires graceful handling.
             self.logger.error(f"Invalid function arguments: {function_args}")
             return {}
 
@@ -88,7 +92,8 @@ class FunctionFactory:
         Returns:
             Optional[object]: The function specified in the message or None if it doesn't exist.
         """
-        self.function_name = message.get("function_call")
+        function_call = message.get("function_call")
+        self.function_name = function_call.get("name")
         self.function = self.function_mapper.get_function(self.function_name)
         return self.function
 
@@ -111,12 +116,10 @@ class FunctionFactory:
             return None
 
         # Extract the function arguments
+        # NOTE: We need to handle the edge case if a JSONDecodeError occurred.
+        # We can't block function execution because not all functions require arguments.
+        # JSONDecodeError is an edge case that requires graceful handling.
         function_args = self.get_function_args(message)
-        if not function_args:
-            self.logger.error(
-                f"Invalid function arguments for {message['function_call']}."
-            )
-            return None
 
         try:
             # Log shadow function args
