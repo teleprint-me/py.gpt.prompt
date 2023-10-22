@@ -68,9 +68,12 @@ class SQLiteMemoryFunction:
         try:
             keys = [memory.key for memory in self.model.select(self.model.key)]
 
-            # Format the list of keys into a structured string
-            formatted_keys = "\n".join(keys)
-            return f"Available Memory Keys:\n{formatted_keys}"
+            if keys:
+                # Format the list of keys into a structured string
+                formatted_keys = "\n".join(keys)
+                return f"Available Memory Keys:\n{formatted_keys}"
+            else:
+                return "There are no available memory keys."
 
         except OperationalError as message:
             self._logger.exception(message)
