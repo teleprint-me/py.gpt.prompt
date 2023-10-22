@@ -2,7 +2,7 @@
 pygptprompt/pattern/model.py
 """
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Literal, NotRequired, Protocol, TypedDict, Union
+from typing import List, Literal, NotRequired, Protocol, Required, TypedDict, Union
 
 # Represents a vector in the chat model,
 # which could be either a list of integers or floats.
@@ -29,46 +29,57 @@ class DeltaContent(TypedDict, total=False):
     Represents the delta content which may contain either actual content or a function call.
 
     Attributes:
-        - content (str): The text content.
-        - function_call (Optional[Dict[str, Any]]): Information about a function call.
+        - content: The text content.
+        - function_call: Information about a function call.
     """
 
     content: NotRequired[str]
-    function_call: NotRequired[Dict[str, Any]]
+    function_call: NotRequired[str]
+
+
+class FunctionCall(TypedDict):
+    """
+    Represents the function call which may contain an optional JSON Schema representing arguments.
+
+    Attributes:
+        - name: The name of the function to be called.
+        - arguments: Optional JSON Schema representing arguments to be passed to the function call.
+    """
+
+    name: Required[str]
+    arguments: NotRequired[str]
 
 
 class ChatCompletionMessage(TypedDict):
     """
-    Represents a single completion message from the chat model.
 
     Attributes:
-        - role (Literal): The role of the message (either 'assistant', 'user', or 'system').
-        - content (str): The content of the message.
-        - user (NotRequired[str]): The user who originated this message, if applicable.
+        - role: The role of the message (either 'assistant', 'user', or 'system').
+        - content: The content of the message.
+        - user: The user who originated this message, if applicable.
     """
 
     role: Literal["assistant", "user", "system"]
-    content: str
+    content: Required[str]
     user: NotRequired[str]
 
 
 class ChatModelResponse(ChatCompletionMessage):
     """
-    Extends ChatCompletionMessage to include optional function calls and their arguments.
+    Represents a single completion message from the chat model.
 
     Attributes:
-        - role (Literal): The role of the message. It can be 'assistant', 'user', 'system', or 'function'.
-        - content (NotRequired[str]): The content of the message.
-        - function_call (NotRequired[str]): The function being called, if applicable.
-        - function_args (NotRequired[str]): The arguments for the function call, if applicable.
-        - name (NotRequired[str]): The name of the function, if applicable.
-        - user (NotRequired[str]): The user who originated this message, if applicable.
+        - role: The role of the message. It can be 'assistant', 'user', 'system', or 'function'.
+        - content: The content of the message.
+        - function_call: The function being called, if applicable.
+        - function_args: The arguments for the function call, if applicable.
+        - name: The name of the function, if applicable.
+        - user: The user who originated this message, if applicable.
     """
 
     role: Literal["assistant", "user", "system", "function"]
     content: NotRequired[str]
-    function_call: NotRequired[str]
-    function_args: NotRequired[str]
+    function_call: NotRequired[FunctionCall]
     name: NotRequired[str]
     user: NotRequired[str]
 
