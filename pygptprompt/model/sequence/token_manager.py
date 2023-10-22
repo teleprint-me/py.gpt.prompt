@@ -1,6 +1,7 @@
 """
 pygptprompt/model/token_manager.py
 """
+import json
 from typing import List
 
 from pygptprompt.config.manager import ConfigurationManager
@@ -149,7 +150,11 @@ class TokenManager:
 
         for key, value in message.items():
             if value is not None:
-                sequence += " " + key + " " + value
+                if isinstance(value, dict):
+                    value_str = json.dumps(value)
+                else:
+                    value_str = str(value)
+                sequence += " " + key + " " + value_str
 
         return self.calculate_text_sequence_length(sequence.strip())
 
