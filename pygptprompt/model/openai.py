@@ -19,6 +19,7 @@ from pygptprompt.pattern.model import (
     ChatModelResponse,
     ChatModelTextCompletion,
     DeltaContent,
+    FunctionCall,
 )
 
 
@@ -126,9 +127,12 @@ class OpenAIModel(ChatModel):
         if finish_reason:
             if finish_reason == "function_call":
                 return ChatModelResponse(
-                    role="function",
-                    function_call=function_call_name,
-                    function_args=function_call_args,
+                    role="assistant",
+                    content=None,
+                    function_call=FunctionCall(
+                        name=function_call_name,
+                        arguments=function_call_args,
+                    ),
                 )
             elif finish_reason == "stop":
                 print()  # Add newline to model output
