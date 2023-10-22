@@ -96,8 +96,3 @@ directory for storing the downloaded files.
 
 - If you have an Hugging Face API token and wish to access gated models, ensure
   that the token is placed in the `.env` file as described above.
-
----
-
-Please review this revised content, and let me know if any further adjustments
-or additions are needed.
