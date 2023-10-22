@@ -10,7 +10,7 @@ from logging import Logger
 from pathlib import Path
 
 import click
-from prompt_toolkit import prompt as input
+import prompt_toolkit
 
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.factory import FunctionFactory
@@ -27,49 +27,49 @@ from pygptprompt.pattern.model import ChatModel, ChatModelResponse
     type=click.Path(exists=True),
 )
 @click.option(
-    "--session_name",
+    "--session",
     "-s",
     type=click.STRING,
     default="default",
-    help="Label for the database collection and associated JSON files.",
+    help="Specify a session label for the database collection and JSON files.",
 )
 @click.option(
-    "--prompt",
-    "-v",
+    "--input",
+    "-i",
     type=click.STRING,
     default="",
-    help="Prompt the model with a string.",
+    help="Provide a prompt text for the model.",
 )
 @click.option(
     "--chat",
-    "-x",
+    "-c",
     is_flag=True,
-    help="Enter a chat loop with the model.",
+    help="Enter an interactive chat session with the model.",
 )
 @click.option(
     "--memory",
     "-m",
     is_flag=True,
-    help="Use augmented episodic memory while prompting or chatting.",
+    help="Enable augmented episodic memory mode while interacting.",
 )
 @click.option(
     "--provider",
     "-p",
     type=click.STRING,
     default="llama_cpp",
-    help="Specify the model provider to use. Options are 'openai' for GPT models and 'llama_cpp' for Llama models.",
+    help="Specify the model provider ('openai' or 'llama_cpp').",
 )
 def main(
     config_path,
-    session_name,
-    prompt,
+    session,
+    input,
     chat,
     memory,
     provider,
 ):
-    if not (bool(prompt) ^ chat):
+    if not (bool(input) ^ chat):
         print(
-            "Use either --prompt or --chat, but not both.",
+            "Use either --input or --chat, but not both.",
             "See --help for more information.",
         )
         sys.exit(1)
@@ -77,9 +77,9 @@ def main(
     config = ConfigurationManager(config_path)
 
     logger: Logger = config.get_logger("general", Path(__file__).stem)
-    logger.info(f"Using Session: {session_name}")
+    logger.info(f"Using Session: {session}")
     logger.info(f"Using Config: {config_path}")
-    logger.info(f"Using Prompt: {prompt}")
+    logger.info(f"Using Prompt: {input}")
     logger.info(f"Using Chat: {chat}")
     logger.info(f"Using Embed: {memory}")
     logger.info(f"Using Provider: {provider}")
@@ -93,7 +93,7 @@ def main(
     if memory:
         memory_manager = AugmentedMemoryManager(function_factory, config, chat_model)
         memory_manager.register_episodic_functions()
-        vector_store = memory_manager.register_episodic_memory(session_name)
+        vector_store = memory_manager.register_episodic_memory(session)
     else:
         config.set_value("function.definitions", [])
         vector_store = None
@@ -105,7 +105,7 @@ def main(
     )
 
     session_manager = SessionManager(
-        session_name=session_name,
+        session_name=session,
         provider=provider,
         config=config,
         chat_model=chat_model,
@@ -115,9 +115,9 @@ def main(
     session_manager.load(system_prompt=system_prompt)
 
     try:
-        if prompt:
-            # Create a ChatModelResponse object for the user's prompt
-            user_message = ChatModelResponse(role="user", content=prompt)
+        if input:
+            # Create a ChatModelResponse object for the user's input
+            user_message = ChatModelResponse(role="user", content=input)
 
             # Log and add to context and transcript
             session_manager.enqueue(message=user_message)
@@ -156,20 +156,20 @@ def main(
 
         elif chat:
             # NOTE: Print previous content to stdout if it exists
-            session_manager.print()
+            session_manager.print(["system", "user", "assistant", "function"])
 
             while True:
                 # Manage user message
                 try:
                     print("user")
-                    text_input = input(
+                    user_content = prompt_toolkit.prompt(
                         "> ", multiline=True, wrap_lines=True, prompt_continuation=". "
                     )
                 except (EOFError, KeyboardInterrupt):
                     break
 
                 # Then, in your chat loop for user input:
-                user_message = ChatModelResponse(role="user", content=text_input)
+                user_message = ChatModelResponse(role="user", content=user_content)
 
                 session_manager.enqueue(message=user_message)
 
@@ -187,12 +187,12 @@ def main(
                     messages=session_manager.output()
                 )
 
-                if assistant_message["role"] == "function":
+                if "function_call" in assistant_message:
                     function_manager.process_function(
                         assistant_message, session_manager
                     )
                 else:
-                    session_manager.enqueue(message=assistant_message)
+                    session_manager.enqueue(assistant_message)
 
                 print()  # pad assistant output.
                 if memory:
