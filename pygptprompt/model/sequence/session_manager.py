@@ -114,13 +114,21 @@ class SessionManager:
                 sequence.append(message)
         return sequence
 
-    def print(self, roles: Optional[List[str]] = None) -> None:
-        if roles is None:
-            roles = ["system", "user", "assistant"]
+    def print(
+        self, roles: Optional[List[str]] = None, include_function_calls: bool = False
+    ) -> None:
         for message in self.output(roles=roles):
-            print(message["role"])
-            print(message["content"])
-            print()
+            role = message["role"]
+            content = message.get("content")
+            function_call = message.get("function", {}).get("function_call")
+
+            if content or (include_function_calls and function_call):
+                print(role)
+                if content:
+                    print(content)
+                if include_function_calls and function_call:
+                    print(function_call)
+                print()
 
     def print_token_count(self) -> None:
         print(f"Context is consuming {self.context_window.token_count} tokens.")
