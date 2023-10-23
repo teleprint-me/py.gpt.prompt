@@ -9,8 +9,6 @@ REFERENCE:
     https://docs.python.org/3/library/exceptions.html
 """
 import json
-import logging
-import sys
 from logging import Logger
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol, Union
