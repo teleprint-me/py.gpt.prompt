@@ -5,10 +5,10 @@ from copy import deepcopy
 from logging import Logger
 from typing import Optional
 
-from pygptprompt.json.base import JSONList, JSONMap, JSONTemplate
+from pygptprompt.json.base import JSONBaseTemplate, JSONList, JSONMap
 
 
-class ListTemplate(JSONTemplate):
+class JSONListTemplate(JSONBaseTemplate):
     """
     A template class for managing a list of dictionaries in JSON files.
 
@@ -25,14 +25,14 @@ class ListTemplate(JSONTemplate):
         logger: Optional[Logger] = None,
     ):
         """
-        Initializes the ListTemplate.
+        Initializes the JSONListTemplate.
 
         Args:
             file_path (str): The path to the JSON file that stores the list.
             initial_data (Optional[JSONList]): Optional initial data to populate the list.
             logger (Optional[Logger]): Optional logger for error-handling.
         """
-        super(ListTemplate, self).__init__(file_path, deepcopy(initial_data), logger)
+        super(JSONListTemplate, self).__init__(file_path, initial_data, logger)
 
         if initial_data is None:
             self._data = []

@@ -39,7 +39,7 @@ DecodeError = (
 JSONError = EncodeError + DecodeError
 
 
-class JSONTemplate(Protocol):
+class JSONBaseTemplate(Protocol):
     """
     A base template class for working with JSON files.
 

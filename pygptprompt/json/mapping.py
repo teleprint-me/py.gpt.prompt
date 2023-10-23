@@ -4,10 +4,10 @@ pygptprompt/json/mapping.py
 from logging import Logger
 from typing import Any, Optional
 
-from pygptprompt.json.base import JSONMap, JSONTemplate
+from pygptprompt.json.base import JSONBaseTemplate, JSONMap
 
 
-class MappingTemplate(JSONTemplate):
+class JSONMappingTemplate(JSONBaseTemplate):
     """
     A template class for creating and managing a mapping of key-value pairs.
 
@@ -24,14 +24,14 @@ class MappingTemplate(JSONTemplate):
         logger: Optional[Logger] = None,
     ):
         """
-        Initializes the MappingTemplate.
+        Initializes the JSONMappingTemplate.
 
         Args:
             file_path (str): The path to the JSON file.
             initial_data (Optional[JSONMap]): Optional initial data to populate the mapping.
             logger (Optional[Logger]): Optional logger for error-handling.
         """
-        super(MappingTemplate, self).__init__(file_path, initial_data, logger)
+        super(JSONMappingTemplate, self).__init__(file_path, initial_data, logger)
 
         if initial_data is None:
             self._data = {}
