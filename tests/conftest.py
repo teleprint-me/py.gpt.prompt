@@ -15,7 +15,8 @@ from pygptprompt.model.factory import ChatModelFactory
 from pygptprompt.model.llama_cpp import LlamaCppModel
 from pygptprompt.model.openai import OpenAIModel
 from pygptprompt.pattern.model import ChatModel, ChatModelResponse
-from pygptprompt.session.token import ChatSessionTokenManager
+
+# from pygptprompt.session.token import ChatSessionTokenManager
 
 # from pygptprompt.session.model import SessionModel
 # from pygptprompt.session.policy import SessionPolicy
@@ -254,15 +255,15 @@ def chat_model(chat_model_factory: ChatModelFactory) -> ChatModel:
     return chat_model_factory.create_model(provider="llama_cpp")
 
 
-@pytest.fixture(scope="module")
-def token_manager(
-    config: ConfigurationManager, chat_model: ChatModel
-) -> ChatSessionTokenManager:
-    return ChatSessionTokenManager(
-        provider="llama_cpp",
-        config=config,
-        chat_model=chat_model,
-    )
+# @pytest.fixture(scope="module")
+# def token_manager(
+#     config: ConfigurationManager, chat_model: ChatModel
+# ) -> ChatSessionTokenManager:
+#     return ChatSessionTokenManager(
+#         provider="llama_cpp",
+#         config=config,
+#         chat_model=chat_model,
+#     )
 
 
 # @pytest.fixture(scope="module")
