@@ -8,9 +8,9 @@ from typing import Any, Optional
 
 import dotenv
 
-from pygptprompt.pattern.json import JSONMap
+from pygptprompt.json.base import JSONMap
+from pygptprompt.json.mapping import JSONMappingTemplate
 from pygptprompt.pattern.logger import LOGGER_FORMAT
-from pygptprompt.pattern.mapping import MappingTemplate
 from pygptprompt.pattern.singleton import Singleton
 
 
@@ -35,8 +35,8 @@ class ConfigurationManager(Singleton):
         super(ConfigurationManager, self).__init__()
 
         # Initialize the Configuration map
-        self._map_template = MappingTemplate(
-            file_path=file_path, initial_data=initial_data, logger=logger
+        self._map_template = JSONMappingTemplate(
+            file_path, initial_data=initial_data, logger=logger
         )
         self._map_template.load_json()
 
