@@ -1,5 +1,5 @@
 """
-pygptprompt/pattern/json.py
+pygptprompt/json/base.py
 
 WARNING:
     Be cautious when parsing JSON data from untrusted sources. A malicious JSON string may cause the decoder to consume considerable CPU and memory resources. Limiting the size of data to be parsed is recommended.

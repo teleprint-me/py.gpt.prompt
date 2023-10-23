@@ -1,5 +1,5 @@
 """
-pygptprompt/pattern/list.py
+pygptprompt/json/list.py
 """
 from copy import deepcopy
 from logging import Logger

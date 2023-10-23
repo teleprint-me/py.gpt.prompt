@@ -1,5 +1,5 @@
 """
-pygptprompt/pattern/mapping.py
+pygptprompt/json/mapping.py
 """
 from logging import Logger
 from typing import Any, Optional
