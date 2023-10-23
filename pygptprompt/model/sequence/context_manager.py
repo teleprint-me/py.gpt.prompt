@@ -26,7 +26,7 @@ class ContextWindowManager(SequenceManager):
 
     Attributes:
         logger (Logger): The logger instance for logging messages.
-        list_template (ListTemplate): The template for working with JSON lists.
+        list_template (JSONListTemplate): The template for working with JSON lists.
         token_manager (ContextWindowTokenManager): The token manager for handling chat tokens.
         sequence (List[ChatModelResponse]): The list of ChatModelResponse objects.
 

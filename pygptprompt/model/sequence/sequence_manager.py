@@ -5,8 +5,8 @@ pygptprompt/model/sequence/manager.py
 from typing import Iterator, List, Protocol, Union
 
 from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.json.list import JSONListTemplate
 from pygptprompt.model.sequence.token_manager import TokenManager
-from pygptprompt.pattern.list import ListTemplate
 from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 
 
@@ -26,7 +26,7 @@ class SequenceManager(Protocol):
 
     Attributes:
         logger (Logger): The logger instance for logging messages.
-        list_template (ListTemplate): The template for working with JSON lists.
+        list_template (JSONListTemplate): The template for working with JSON lists.
         token_manager (ContextWindowTokenManager): The token manager for handling chat tokens.
         sequence (List[ChatModelResponse]): The list of ChatModelResponse objects.
 
@@ -66,7 +66,7 @@ class SequenceManager(Protocol):
             provider=provider, config=config, chat_model=chat_model
         )
 
-        self._list_template = ListTemplate(file_path=file_path, logger=self.logger)
+        self._list_template = JSONListTemplate(file_path=file_path, logger=self.logger)
 
     def __len__(self) -> int:
         """Get the length of the sequence."""
