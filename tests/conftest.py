@@ -157,12 +157,12 @@ def temp_json_file(temp_json_path: str, temp_json_data: dict):
 
 
 @pytest.fixture(scope="module")
-def json_template(temp_json_path: str, temp_json_data: dict) -> JSONBaseTemplate:
+def json_base_template(temp_json_path: str, temp_json_data: dict) -> JSONBaseTemplate:
     return JSONBaseTemplate(temp_json_path, temp_json_data)
 
 
 @pytest.fixture(scope="module")
-def json_template_nested(
+def json_base_template_nested(
     temp_json_nested_path: str, temp_json_data: dict
 ) -> JSONBaseTemplate:
     return JSONBaseTemplate(temp_json_nested_path, temp_json_data)
