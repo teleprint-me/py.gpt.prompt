@@ -7,14 +7,13 @@ from typing import List, Union
 
 import pytest
 
-from pygptprompt.config.json import read_json
 from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.json.base import JSONBaseTemplate
+from pygptprompt.json.list import JSONListTemplate
+from pygptprompt.json.mapping import JSONMappingTemplate
 from pygptprompt.model.factory import ChatModelFactory
 from pygptprompt.model.llama_cpp import LlamaCppModel
 from pygptprompt.model.openai import OpenAIModel
-from pygptprompt.pattern.json import JSONTemplate
-from pygptprompt.pattern.list import ListTemplate
-from pygptprompt.pattern.mapping import MappingTemplate
 from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 from pygptprompt.session.token import ChatSessionTokenManager
 
@@ -158,15 +157,15 @@ def temp_json_file(temp_json_path: str, temp_json_data: dict):
 
 
 @pytest.fixture(scope="module")
-def json_template(temp_json_path: str, temp_json_data: dict) -> JSONTemplate:
-    return JSONTemplate(temp_json_path, temp_json_data)
+def json_template(temp_json_path: str, temp_json_data: dict) -> JSONBaseTemplate:
+    return JSONBaseTemplate(temp_json_path, temp_json_data)
 
 
 @pytest.fixture(scope="module")
 def json_template_nested(
     temp_json_nested_path: str, temp_json_data: dict
-) -> JSONTemplate:
-    return JSONTemplate(temp_json_nested_path, temp_json_data)
+) -> JSONBaseTemplate:
+    return JSONBaseTemplate(temp_json_nested_path, temp_json_data)
 
 
 @pytest.fixture
@@ -188,11 +187,11 @@ def temp_json_list(
 
 
 @pytest.fixture(scope="function")
-def list_template(
+def json_list_template(
     temp_json_path: str,
     messages: List[ChatModelResponse],
-) -> ListTemplate:
-    return ListTemplate(temp_json_path, messages)
+) -> JSONListTemplate:
+    return JSONListTemplate(temp_json_path, messages)
 
 
 @pytest.fixture(scope="module")
@@ -216,11 +215,11 @@ def temp_json_map(temp_json_path: str, temp_map_data: dict):
 
 
 @pytest.fixture(scope="module")
-def map_template(
+def json_map_template(
     temp_json_path: str,
     temp_map_data: dict,
-) -> MappingTemplate:
-    return MappingTemplate(temp_json_path, temp_map_data)
+) -> JSONMappingTemplate:
+    return JSONMappingTemplate(temp_json_path, temp_map_data)
 
 
 @pytest.fixture(scope="module")
