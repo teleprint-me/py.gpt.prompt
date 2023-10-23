@@ -4,7 +4,7 @@ pygptprompt/pattern/mapping.py
 from logging import Logger
 from typing import Any, Optional
 
-from pygptprompt.pattern.json import JSONMap, JSONTemplate
+from pygptprompt.json.base import JSONMap, JSONTemplate
 
 
 class MappingTemplate(JSONTemplate):

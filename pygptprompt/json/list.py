@@ -5,7 +5,7 @@ from copy import deepcopy
 from logging import Logger
 from typing import Optional
 
-from pygptprompt.pattern.json import JSONList, JSONMap, JSONTemplate
+from pygptprompt.json.base import JSONList, JSONMap, JSONTemplate
 
 
 class ListTemplate(JSONTemplate):
