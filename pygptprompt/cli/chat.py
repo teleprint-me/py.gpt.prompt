@@ -90,13 +90,12 @@ def main(
     function_factory = FunctionFactory(config)
     function_manager = FunctionManager(function_factory, config, chat_model)
 
+    vector_store = None
+
     if memory:
         memory_manager = AugmentedMemoryManager(function_factory, config, chat_model)
-        memory_manager.register_episodic_functions()
-        vector_store = memory_manager.register_episodic_memory(session)
-    else:
-        config.set_value("function.definitions", [])
-        vector_store = None
+        if memory_manager.register_episodic_functions():
+            vector_store = memory_manager.register_episodic_memory(session)
 
     # Initialize System Prompt
     system_prompt = ChatModelResponse(
@@ -136,10 +135,10 @@ def main(
                 messages=session_manager.output()
             )
 
-            if assistant_message["role"] == "function":
+            if "function_call" in assistant_message:
                 function_manager.process_function(assistant_message, session_manager)
             else:
-                session_manager.enqueue(message=assistant_message)
+                session_manager.enqueue(assistant_message)
 
             # NOTE: We only write messages after the assistants response.
             # The context, transcript, and embedding spaces are encapsulated.
