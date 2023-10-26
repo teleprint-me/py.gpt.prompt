@@ -111,7 +111,7 @@ class JSONBaseTemplate(Protocol):
             self._logger.error(f"Error loading JSON from {self._file_path}: {e}")
             return False
 
-    def save_json(self, data: Optional[JSONData] = None, indent: int = 4) -> bool:
+    def save_json(self, data: Optional[JSONData] = None, indent: int = 2) -> bool:
         """
         Save JSON data to the file.
 
@@ -138,7 +138,7 @@ class JSONBaseTemplate(Protocol):
             self._logger.error(f"Error saving JSON to {self._file_path}: {e}")
             return False
 
-    def backup_json(self, indent: int = 4) -> bool:
+    def backup_json(self, indent: int = 2) -> bool:
         """
         Create a backup of the JSON file.
 
