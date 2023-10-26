@@ -11,10 +11,10 @@ from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.json.base import JSONBaseTemplate
 from pygptprompt.json.list import JSONListTemplate
 from pygptprompt.json.mapping import JSONMappingTemplate
+from pygptprompt.model.base import ChatModel, ChatModelResponse
 from pygptprompt.model.factory import ChatModelFactory
 from pygptprompt.model.llama_cpp import LlamaCppModel
 from pygptprompt.model.openai import OpenAIModel
-from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 
 # from pygptprompt.session.token import ChatSessionTokenManager
 

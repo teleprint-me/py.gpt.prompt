@@ -3,13 +3,13 @@ tests/unit/model/test_llama_cpp.py
 """
 import pytest
 
-from pygptprompt.model.llama_cpp import LlamaCppModel
-from pygptprompt.pattern.model import (
+from pygptprompt.model.base import (
     ChatModel,
     ChatModelEmbedding,
     ChatModelEncoding,
     ChatModelResponse,
 )
+from pygptprompt.model.llama_cpp import LlamaCppModel
 
 
 class TestLlamaCppAPI:

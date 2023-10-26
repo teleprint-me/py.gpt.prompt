@@ -6,13 +6,13 @@ from typing import List
 
 import pytest
 
-from pygptprompt.model.openai import OpenAIModel
-from pygptprompt.pattern.model import (
+from pygptprompt.model.base import (
     ChatModel,
     ChatModelEmbedding,
     ChatModelEncoding,
     ChatModelResponse,
 )
+from pygptprompt.model.openai import OpenAIModel
 
 
 class TestOpenAI:
@@ -49,14 +49,14 @@ class TestOpenAI:
         )
 
         # Check if the role is 'function'
-        assert assistant_message["role"] == "function"
+        assert "function_call" in assistant_message
 
         # Extract the function name and arguments
-        function_name = assistant_message["function_call"]
-        function_args = json.loads(assistant_message["function_args"])
+        function_call = assistant_message["function_call"]
+        function_args = json.loads(function_call["arguments"])
 
         # Check if the function name is 'get_current_weather'
-        assert function_name == "get_current_weather"
+        assert function_call["name"] == "get_current_weather"
 
         # Call the mock function with the extracted arguments
         response = mock_weather_callback(**function_args)
