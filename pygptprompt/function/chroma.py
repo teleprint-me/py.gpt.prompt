@@ -8,7 +8,7 @@ from typing import Dict, List, Optional, Union
 from chromadb.api.types import Include, OneOrMany, Where, WhereDocument
 
 from pygptprompt.config.manager import ConfigurationManager
-from pygptprompt.pattern.model import ChatModel
+from pygptprompt.model.base import ChatModel
 from pygptprompt.storage.chroma import ChromaVectorStore
 
 

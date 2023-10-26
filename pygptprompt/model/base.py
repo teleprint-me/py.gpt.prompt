@@ -1,5 +1,5 @@
 """
-pygptprompt/pattern/model.py
+pygptprompt/model/base.py
 """
 from abc import ABC, abstractmethod
 from typing import List, Literal, NotRequired, Protocol, Required, TypedDict, Union

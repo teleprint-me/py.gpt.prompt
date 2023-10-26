@@ -3,8 +3,8 @@ pygptprompt/function/manager.py
 """
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.factory import FunctionFactory
+from pygptprompt.model.base import ChatModel, ChatModelResponse
 from pygptprompt.model.sequence.session_manager import SessionManager
-from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 
 
 class FunctionManager:

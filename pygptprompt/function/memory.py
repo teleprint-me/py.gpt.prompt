@@ -5,7 +5,7 @@ from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.chroma import ChromaVectorFunction
 from pygptprompt.function.factory import FunctionFactory
 from pygptprompt.function.sqlite import SQLiteMemoryFunction
-from pygptprompt.pattern.model import ChatModel
+from pygptprompt.model.base import ChatModel
 from pygptprompt.storage.chroma import ChromaVectorStore
 
 episodic_function_definitions = [

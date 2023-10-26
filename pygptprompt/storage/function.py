@@ -4,13 +4,13 @@ pygptprompt/storage/function.py
 from logging import Logger
 from typing import Optional
 
-from pygptprompt.pattern.logger import get_default_logger
-from pygptprompt.pattern.model import (
+from pygptprompt.model.base import (
     ChatModel,
     ChatModelDocuments,
     ChatModelEmbedding,
     EmbeddingFunction,
 )
+from pygptprompt.pattern.logger import get_default_logger
 
 
 class VectorStoreEmbeddingFunction(EmbeddingFunction):

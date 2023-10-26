@@ -8,7 +8,7 @@ from chromadb import PersistentClient, Settings
 from chromadb.api.types import Include, OneOrMany, QueryResult, Where, WhereDocument
 
 from pygptprompt.config.manager import ConfigurationManager
-from pygptprompt.pattern.model import ChatModel, ChatModelDocument, ChatModelDocuments
+from pygptprompt.model.base import ChatModel, ChatModelDocument, ChatModelDocuments
 from pygptprompt.storage.function import VectorStoreEmbeddingFunction
 
 

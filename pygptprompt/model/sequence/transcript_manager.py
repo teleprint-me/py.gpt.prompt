@@ -2,8 +2,8 @@
 pygptprompt/model/sequence/transcript.py
 """
 from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.model.base import ChatModel
 from pygptprompt.model.sequence.sequence_manager import SequenceManager
-from pygptprompt.pattern.model import ChatModel
 
 
 class TranscriptManager(SequenceManager):

@@ -4,8 +4,8 @@ pygptprompt/model/sequence/context.py
 from typing import Optional
 
 from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.model.base import ChatModel, ChatModelResponse
 from pygptprompt.model.sequence.sequence_manager import SequenceManager
-from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 from pygptprompt.storage.chroma import ChromaVectorStore
 
 

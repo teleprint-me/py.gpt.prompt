@@ -6,8 +6,8 @@ from typing import Iterator, List, Protocol, Union
 
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.json.list import JSONListTemplate
+from pygptprompt.model.base import ChatModel, ChatModelResponse
 from pygptprompt.model.sequence.token_manager import TokenManager
-from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 
 
 class SequenceManager(Protocol):

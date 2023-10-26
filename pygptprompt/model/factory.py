@@ -2,9 +2,9 @@
 pygptprompt/model/factory.py
 """
 from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.model.base import ChatModel
 from pygptprompt.model.llama_cpp import LlamaCppModel
 from pygptprompt.model.openai import OpenAIModel
-from pygptprompt.pattern.model import ChatModel
 
 
 class ChatModelFactory:

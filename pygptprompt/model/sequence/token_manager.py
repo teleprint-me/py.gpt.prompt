@@ -5,7 +5,7 @@ import json
 from typing import List
 
 from pygptprompt.config.manager import ConfigurationManager
-from pygptprompt.pattern.model import ChatModel, ChatModelResponse
+from pygptprompt.model.base import ChatModel, ChatModelResponse
 
 
 class TokenManager:

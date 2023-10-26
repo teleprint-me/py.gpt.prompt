@@ -9,8 +9,8 @@ import click
 
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.introspection.schema import generate_function_schema
+from pygptprompt.model.base import ChatModel, ChatModelResponse
 from pygptprompt.model.factory import ChatModelFactory
-from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 
 
 def extract_python_code(completion_response: dict) -> str:

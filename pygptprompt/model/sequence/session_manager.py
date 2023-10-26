@@ -4,9 +4,9 @@ pygptprompt/model/sequence/session_manager.py
 from typing import List, Optional, Tuple
 
 from pygptprompt.config.manager import ConfigurationManager
+from pygptprompt.model.base import ChatModel, ChatModelResponse
 from pygptprompt.model.sequence.context_manager import ContextWindowManager
 from pygptprompt.model.sequence.transcript_manager import TranscriptManager
-from pygptprompt.pattern.model import ChatModel, ChatModelResponse
 from pygptprompt.storage.chroma import ChromaVectorStore
 
 

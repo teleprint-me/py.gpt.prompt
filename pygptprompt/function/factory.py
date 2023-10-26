@@ -7,7 +7,7 @@ from typing import Any, Callable, List, Optional, Type
 
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.lazy import LazyFunctionMapper
-from pygptprompt.pattern.model import ChatModelResponse
+from pygptprompt.model.base import ChatModelResponse
 
 
 class FunctionFactory:
