@@ -4,7 +4,7 @@ tests/unit/config/test_json.py
 import json
 import os
 
-from pygptprompt.config.json import dump_json, force_read_json, read_json, write_json
+from pygptprompt.json.utils import dump_json, force_read_json, read_json, write_json
 
 
 class TestJsonFunctions:
