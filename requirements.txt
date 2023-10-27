@@ -2,7 +2,7 @@ aiohttp==3.8.6
 aiosignal==1.3.1
 annotated-types==0.6.0
 anyio==3.7.1
-asttokens==2.4.0
+asttokens==2.4.1
 async-timeout==4.0.3
 attrs==23.1.0
 Babel==2.13.1
@@ -12,6 +12,7 @@ bcrypt==4.0.1
 beautifulsoup4==4.12.2
 black==23.10.1
 blessed==1.20.0
+bpython==0.24
 build==1.0.3
 cachetools==5.3.2
 certifi==2023.7.22
@@ -24,6 +25,8 @@ colorama==0.4.6
 coloredlogs==15.0.1
 comm==0.1.4
 contourpy==1.1.1
+curtsies==0.4.2
+cwcwidth==0.1.9
 cycler==0.12.1
 debugpy==1.8.0
 decorator==5.1.1
@@ -45,6 +48,7 @@ gguf==0.4.5
 ghp-import==2.1.0
 google-auth==2.23.3
 googleapis-common-protos==1.61.0
+greenlet==3.0.1
 griffe==0.36.8
 grpcio==1.59.0
 h11==0.14.0
@@ -102,11 +106,11 @@ opentelemetry-exporter-otlp-proto-grpc==1.20.0
 opentelemetry-proto==1.20.0
 opentelemetry-sdk==1.20.0
 opentelemetry-semantic-conventions==0.41b0
-outcome==1.3.0
+outcome==1.3.0.post0
 overrides==7.4.0
 packaging==23.2
 paginate==0.5.6
-pandas==2.1.1
+pandas==2.1.2
 pandas-stubs==2.1.1.230928
 parso==0.8.3
 pathspec==0.11.2
@@ -146,6 +150,7 @@ python-magic==0.4.27
 python-poppler==0.4.1
 pytz==2023.3.post1
 pyupgrade==3.15.0
+pyxdg==0.28
 PyYAML==6.0.1
 pyyaml_env_tag==0.1
 pyzmq==25.1.1
@@ -155,6 +160,7 @@ requests==2.31.0
 requests-oauthlib==1.3.1
 rich==13.6.0
 rsa==4.9
+safetensors==0.4.0
 scikit-learn==1.3.2
 scipy==1.11.3
 selenium==4.14.0
