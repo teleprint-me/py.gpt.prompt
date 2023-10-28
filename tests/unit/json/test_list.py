@@ -2,7 +2,7 @@
 tests/unit/pattern/list.py
 """
 from pygptprompt.json.list import JSONListTemplate
-from pygptprompt.pattern.model import ChatModelResponse
+from pygptprompt.model.base import ChatModelResponse
 
 
 class TestJSONListTemplate:
