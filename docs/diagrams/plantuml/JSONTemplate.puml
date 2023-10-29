@@ -1,7 +1,7 @@
 @startuml JSONTemplate
 !theme blueprint
 
-class JSONTemplate extends Protocol {
+class JSONBaseTemplate extends Protocol {
     ' A base template class for working with JSON files.
     ' JSONMap = Dict[str, Any]
     ' JSONList = List[JSONMap]
@@ -9,7 +9,7 @@ class JSONTemplate extends Protocol {
     - _file_path: Path
     - _data: Optional[JSONData]
     - _logger: Logger
-    + JSONTemplate(file_path: str, initial_data: Optional[JSONData], logger: Optional[Logger])
+    + JSONBaseTemplate(file_path: str, initial_data: Optional[JSONData], logger: Optional[Logger])
     ' Get the path to the JSON file.
     # Path file_path
     ' Load JSON data from the file into the _data attribute.
@@ -24,11 +24,11 @@ class JSONTemplate extends Protocol {
     + bool make_directory()
 }
 
-class MappingTemplate extends JSONTemplate {
+class JSONMappingTemplate extends JSONBaseTemplate {
     ' A template class for creating and managing a mapping of key-value pairs.
     ' JSONMap = Dict[str, Any]
     - JSONMap _data
-    + MappingTemplate(file_path: str, initial_data: Optional[JSONMap], logger: Optional[Logger])
+    + JSONMappingTemplate(file_path: str, initial_data: Optional[JSONMap], logger: Optional[Logger])
     ' Get a list of all keys in the mapping.
     # List[str] keys
     ' Get the underlying data structure of the mapping.
@@ -51,12 +51,12 @@ class MappingTemplate extends JSONTemplate {
     + bool delete_nested(*keys: str)
 }
 
-class ListTemplate extends JSONTemplate {
+class JSONListTemplate extends JSONBaseTemplate {
     ' A template class for managing a list of dictionaries in JSON files.
     ' JSONMap = Dict[str, Any]
     ' JSONList = List[JSONMap]
     - JSONList _data
-    + ListTemplate(file_path: str, initial_data: Optional[JSONList], logger: Optional[Logger] = None)
+    + JSONListTemplate(file_path: str, initial_data: Optional[JSONList], logger: Optional[Logger] = None)
     ' Return the length of the internal data list.
     # int length
     ' Return a copy of the internal data list or None if empty.
@@ -83,11 +83,11 @@ class ListTemplate extends JSONTemplate {
 }
 
 class ConfigurationManager
-MappingTemplate <|.. ConfigurationManager
+JSONMappingTemplate <|.. ConfigurationManager
 
 class ContextWindowManager
-ListTemplate <|.. ContextWindowManager
+JSONListTemplate <|.. ContextWindowManager
 
 class TranscriptManager
-ListTemplate <|.. TranscriptManager
+JSONListTemplate <|.. TranscriptManager
 @enduml
