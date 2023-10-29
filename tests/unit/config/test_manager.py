@@ -6,8 +6,7 @@ import os
 import pytest
 
 from pygptprompt.config.manager import ConfigurationManager
-from pygptprompt.pattern.json import JSONTemplate
-from pygptprompt.pattern.mapping import MappingTemplate
+from pygptprompt.json.mapping import JSONMappingTemplate
 from pygptprompt.pattern.singleton import Singleton
 
 
@@ -27,8 +26,7 @@ class TestConfigurationManager:
 
     def test_mapping(self, config: ConfigurationManager):
         assert hasattr(config, "_map_template")
-        assert isinstance(config._map_template, JSONTemplate)
-        assert isinstance(config._map_template, MappingTemplate)
+        assert isinstance(config._map_template, JSONMappingTemplate)
 
     def test_configuration(self, config: ConfigurationManager):
         assert os.path.exists(config._map_template.file_path)
@@ -40,7 +38,7 @@ class TestConfigurationManager:
         assert isinstance(config.get_value("app.access.shell.allowed_commands"), list)
 
     def test_evaluate_path_app_path_test(self, config: ConfigurationManager):
-        path = config.evaluate_path("app.path.test", "/default/path")
+        path = config.evaluate_path("app.test", "tests/tmp")
         assert path == "tests/tmp"
 
     def test_evaluate_path_app_path_local(
@@ -49,7 +47,7 @@ class TestConfigurationManager:
         # Simulate the HOME environment variable
         monkeypatch.setenv("HOME", "/home/testuser")
 
-        path = config.evaluate_path("app.path.local", "/default/path")
+        path = config.evaluate_path("app.local", "tests/tmp")
         assert path == "local"
 
     @pytest.mark.private
