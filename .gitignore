@@ -3,6 +3,7 @@
 /cache
 /source
 /models
+/datasets
 /database
 /local
 /logs
