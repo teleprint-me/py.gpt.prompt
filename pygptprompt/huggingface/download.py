@@ -9,7 +9,7 @@ import sys
 from logging import Logger
 from typing import List, Optional
 
-from huggingface_hub import hf_hub_download, model_info
+from huggingface_hub import dataset_info, hf_hub_download, model_info, space_info
 from huggingface_hub.hf_api import HfApi
 from huggingface_hub.utils import (
     EntryNotFoundError,
@@ -22,9 +22,15 @@ from pygptprompt.pattern.logger import get_default_logger
 
 
 class HuggingFaceDownload:
-    def __init__(self, config: ConfigurationManager, logger: Optional[Logger] = None):
-        self.config = config
-        self.token = config.get_environment("HUGGINGFACE_TOKEN")
+    def __init__(
+        self,
+        config: Optional[ConfigurationManager] = None,
+        logger: Optional[Logger] = None,
+    ):
+        self.token = False
+
+        if config:
+            self.token = config.get_environment("HUGGINGFACE_TOKEN")
 
         if logger:
             self._logger = logger
@@ -62,11 +68,9 @@ class HuggingFaceDownload:
         for file_name in file_names:
             model_path = self.download_file(
                 repo_id=repo_id,
-                repo_type=repo_type,
-                filename=file_name,
                 local_dir=local_dir,
-                local_dir_use_symlinks=False,
-                resume_download=True,
+                file_name=file_name,
+                repo_type=repo_type,
             )
             model_paths.append(model_path)
         return model_paths
@@ -82,7 +86,13 @@ class HuggingFaceDownload:
         max_retries = 3
 
         try:
-            metadata = model_info(repo_id)
+            if repo_type == "dataset":
+                metadata = dataset_info(repo_id)
+            elif repo_type == "space":
+                metadata = space_info(repo_id)
+            else:
+                metadata = model_info(repo_id)
+
             file_names = [x.rfilename for x in metadata.siblings]
             self.download_all_files(repo_id, local_dir, file_names, repo_type)
         except (EntryNotFoundError, RepositoryNotFoundError) as e:
