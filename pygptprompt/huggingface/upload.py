@@ -26,21 +26,17 @@ from huggingface_hub.utils import (
     RepositoryNotFoundError,
 )
 
-from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.pattern.logger import get_default_logger
 
 
 class HuggingFaceUpload:
     def __init__(
         self,
-        config: Optional[ConfigurationManager] = None,
+        token: Optional[str] = None,
         logger: Optional[Logger] = None,
     ):
         self.api = HfApi()
         self.token = None
-
-        if config:
-            self.token = config.get_environment("HUGGINGFACE_TOKEN")
 
         if logger:
             self._logger = logger
