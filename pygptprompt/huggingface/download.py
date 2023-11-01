@@ -1,13 +1,23 @@
 """
 pygptprompt/huggingface_hub/download.py
 
-TODO: Work in progress.
+Docs:
+    # NOTE: Manual model downloading is limited and error prone.
+    - https://huggingface.co/docs/hub/models-downloading
+    # NOTE: Automated downloading is recommended for larger models.
+    - https://huggingface.co/docs/huggingface_hub/main/en/package_reference/file_download
+
+User Access Token:
+    - https://huggingface.co/settings/tokens
+
+NOTE: This is still a Work in Progress.
 """
 import logging
 import os
 import sys
 from logging import Logger
-from typing import List, Optional
+from pathlib import Path
+from typing import List, Optional, Union
 
 from huggingface_hub import dataset_info, hf_hub_download, model_info, space_info
 from huggingface_hub.hf_api import HfApi
@@ -17,20 +27,17 @@ from huggingface_hub.utils import (
     RepositoryNotFoundError,
 )
 
-from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.pattern.logger import get_default_logger
 
 
 class HuggingFaceDownload:
     def __init__(
         self,
-        config: Optional[ConfigurationManager] = None,
+        token: Optional[str] = None,
         logger: Optional[Logger] = None,
     ):
-        self.token = False
-
-        if config:
-            self.token = config.get_environment("HUGGINGFACE_TOKEN")
+        self.api = HfApi()
+        self.token = None
 
         if logger:
             self._logger = logger
@@ -39,48 +46,49 @@ class HuggingFaceDownload:
 
     def download_file(
         self,
+        local_file: str,
+        local_path: str,
         repo_id: str,
-        local_dir: str,
-        file_name: List[str],
         repo_type: Optional[str] = None,
     ) -> str:
         model_path = hf_hub_download(
             repo_id=repo_id,
             repo_type=repo_type,
-            filename=file_name,
-            local_dir=local_dir,
+            filename=local_file,
+            local_dir=local_path,
             local_dir_use_symlinks=False,
             resume_download=True,
             token=self.token,
         )
-        self._logger.info(f"Downloaded {file_name} to {model_path}")
+        self._logger.info(f"Downloaded {local_file} to {model_path}")
         return model_path
 
-    def download_all_files(
+    def _download_all_files(
         self,
         repo_id: str,
-        local_dir: str,
-        file_names: List[str],
+        local_path: str,
+        local_files: List[str],
         repo_type: Optional[str] = None,
     ) -> List[str]:
         model_paths = []
-        os.makedirs(local_dir, exist_ok=True)
-        for file_name in file_names:
+        os.makedirs(local_path, exist_ok=True)
+        for local_file in local_files:
             model_path = self.download_file(
+                local_file=local_file,
+                local_path=local_path,
                 repo_id=repo_id,
-                local_dir=local_dir,
-                file_name=file_name,
                 repo_type=repo_type,
             )
             model_paths.append(model_path)
         return model_paths
 
-    def download_repository(
+    def download_folder(
         self,
+        local_path: str,
         repo_id: str,
-        local_dir: str,
         repo_type: Optional[str] = None,
     ) -> None:
+        # NOTE: Consider resetting `retries` to zero if a retry is successful.
         self._logger.info(f"Using {repo_id} to download source data.")
         retries = 0
         max_retries = 3
@@ -93,17 +101,44 @@ class HuggingFaceDownload:
             else:
                 metadata = model_info(repo_id)
 
-            file_names = [x.rfilename for x in metadata.siblings]
-            self.download_all_files(repo_id, local_dir, file_names, repo_type)
+            local_files = [x.rfilename for x in metadata.siblings]
+            self._download_all_files(repo_id, local_path, local_files, repo_type)
         except (EntryNotFoundError, RepositoryNotFoundError) as e:
             self._logger.error(f"Error downloading source: {e}")
             sys.exit(1)
         except LocalEntryNotFoundError as e:
             self._logger.error(f"Error accessing source: {e}")
-            while retries < max_retries and HfApi().is_online():
+            while retries < max_retries and self.api.is_online():
                 self._logger.info("Retrying download...")
                 retries += 1
-                self.download_all_files(repo_id, local_dir, file_names, repo_type)
+                self._download_all_files(repo_id, local_path, local_files, repo_type)
         except Exception as e:
             self._logger.error(f"Error downloading source: {e}")
+            sys.exit(1)
+
+    def download(
+        self,
+        path: Union[str, Path],
+        repo_id: str,
+        repo_type: Optional[str] = None,
+    ):
+        path_obj = Path(path)
+
+        if path_obj.is_file():
+            file_name = path_obj.name
+            local_path = path_obj.parent
+            self.download_file(
+                local_file=file_name,
+                local_path=str(local_path),
+                repo_id=repo_id,
+                repo_type=repo_type,
+            )
+        elif path_obj.is_dir():
+            self.download_folder(
+                local_path=str(path_obj),
+                repo_id=repo_id,
+                repo_type=repo_type,
+            )
+        else:
+            self._logger.error("The specified path is neither a file nor a directory.")
             sys.exit(1)
