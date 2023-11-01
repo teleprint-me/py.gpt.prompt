@@ -55,10 +55,10 @@ def cli():
 def upload_command(repo_id, repo_type, local_path, config_path, api_token):
     if not api_token and config_path:
         config = ConfigurationManager(config_path)
-        api_token = config.get_environment("HUGGINGFACE_TOKEN")
+        api_token = config.get_environment("HUGGINGFACE_WRITE_API")
 
-    upload = HuggingFaceUpload(api_token)
-    upload.upload(local_path, repo_id, repo_type)
+    huggingface = HuggingFaceUpload(api_token)
+    huggingface.upload(local_path, repo_id, repo_type)
 
 
 @cli.command(name="download")
@@ -72,10 +72,10 @@ def upload_command(repo_id, repo_type, local_path, config_path, api_token):
 def download_command(repo_id, repo_type, local_path, config_path, api_token):
     if not api_token and config_path:
         config = ConfigurationManager(config_path)
-        api_token = config.get_environment("HUGGINGFACE_TOKEN")
+        api_token = config.get_environment("HUGGINGFACE_READ_API")
 
-    download = HuggingFaceDownload(api_token)
-    download.download_repository(repo_id, local_path, repo_type)
+    huggingface = HuggingFaceDownload(api_token)
+    huggingface.download(local_path, repo_id, repo_type)
 
 
 if __name__ == "__main__":
