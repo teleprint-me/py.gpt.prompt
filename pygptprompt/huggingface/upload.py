@@ -36,7 +36,7 @@ class HuggingFaceUpload:
         logger: Optional[Logger] = None,
     ):
         self.api = HfApi()
-        self.token = None
+        self.token = token
 
         if logger:
             self._logger = logger
@@ -79,6 +79,20 @@ class HuggingFaceUpload:
             self._logger.info(f"Successfully uploaded folder {local_path} to {repo_id}")
         except Exception as e:
             self._logger.error(f"Error uploading folder: {e}")
+            sys.exit(1)
+
+    def _create_repository(self, repo_id: str, repo_type: str):
+        try:
+            self.api.create_repo(
+                repo_id,
+                token=self.token,
+                exist_ok=True,
+                repo_type=repo_type,
+            )
+            self._logger.info(f"Successfully created {repo_type} for {repo_id}")
+        except Exception as e:
+            self._logger.error(f"Error uploading folder: {e}")
+            sys.exit(1)
 
     def upload(
         self,
@@ -87,6 +101,9 @@ class HuggingFaceUpload:
         repo_type: Optional[str] = None,
     ):
         path_obj = Path(path)
+
+        # NOTE: Create the repository if it doesn't exist.
+        self._create_repository(repo_id, repo_type)
 
         if path_obj.is_file():
             self.upload_file(
