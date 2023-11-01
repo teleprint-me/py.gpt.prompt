@@ -35,35 +35,50 @@ keywords = ["openai", "gpt", "llama", "llama.cpp", "python", "prompt", "automati
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
-click = "^8.1.7"
-python-dotenv = "^1.0.0"
-python-magic = "^0.4.27"
+
+# Core Libraries
 numpy = "^1.26.1"
+
+# Web and Data Retrieval
 requests = "^2.31.0"
 beautifulsoup4 = "^4.12.2"
 feedparser = "^6.0.10"
 html2text = "^2020.1.16"
+
+# Command-line Tools
+click = "^8.1.7"
+python-dotenv = "^1.0.0"
+python-magic = "^0.4.27"
 prompt-toolkit = "^3.0.39"
+
+# Web Automation and Image Processing
 selenium = "^4.14.0"
 opencv-python = "^4.8.1.78"
 pytesseract = "^0.3.10"
-fairscale = "^0.4.13"
-sentencepiece = "^0.1.99"
-python-poppler = "^0.4.1"
-huggingface_hub = "^0.17.3"
-chromadb = "^0.4.15"
-llama-cpp-python = "^0.2.7"
-tiktoken = "^0.5.1"
-openai = {extras = ["embeddings"], version = "^0.28.1"}
-scipy = "1.11.3"
-gguf = "^0.4.5"
-torch = {version = "^2.1.0+cpu", source = "pytorch"}
-rich = "^13.6.0"
-inquirer = "^3.1.3"
+
+# Database and ORM
 peewee = "^3.17.0"
+chromadb = "^0.4.15"
+
+# PyTorch and Extensions
+torch = {version = "^2.1.0+cpu", source = "pytorch"}
+fairscale = "^0.4.13"
+
+# NLP (Natural Language Processing)
+transformers = "^4.34.1"
 safetensors = "^0.4.0"
 
-[tool.poetry.group.dev.dependencies]
+# Byte Pair Encoding (BPE) for NLP
+tiktoken = "^0.5.1"
+
+# AI Models and Embeddings
+openai = {extras = ["embeddings"], version = "^0.28.1"}
+
+# Llama.cpp and Frontend
+llama-cpp-python = "^0.2.7"
+gguf = "^0.4.5"
+
+[tool.poetry.dev-dependencies]
 bpython = "^0.24"
 pre_commit = "^3.5.0"
 pyupgrade = "^3.15.0"
@@ -75,9 +90,9 @@ build = "^1.0.3"
 mkdocs = "^1.5.3"
 mkdocstrings = {version = "^0.23.0", extras = ["python"]}
 mkdocs-material = "^9.4.6"
-ipykernel = "^6.26.0"  # VSCode requires the kernel
-# jupyter = "^1.0.0"  # Only install if you need it
-# pynvim = "^0.4.3"  # Only install if you need it
+ipykernel = "^6.26.0"  # Required for VSCode
+# jupyter = "^1.0.0"  # Install if needed
+# pynvim = "^0.4.3"  # Install if needed
 
 [[tool.poetry.source]]
 name = "pytorch"
