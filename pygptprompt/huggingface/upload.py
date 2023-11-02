@@ -81,7 +81,7 @@ class HuggingFaceUpload:
             self._logger.error(f"Error uploading folder: {e}")
             sys.exit(1)
 
-    def _create_repository(self, repo_id: str, repo_type: str):
+    def _create_repository(self, repo_id: str, repo_type: Optional[str] = None):
         try:
             self.api.create_repo(
                 repo_id,
@@ -89,6 +89,10 @@ class HuggingFaceUpload:
                 exist_ok=True,
                 repo_type=repo_type,
             )
+            # NOTE: This helps the logger output a clean string, e.g.
+            # "Successfully created model..." instead of "Successfully created None..."
+            if repo_type is None:
+                repo_type = "model"
             self._logger.info(f"Successfully created {repo_type} for {repo_id}")
         except Exception as e:
             self._logger.error(f"Error uploading folder: {e}")
