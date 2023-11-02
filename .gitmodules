@@ -1,0 +1,3 @@
+[submodule "submodules/llama.cpp"]
+	path = submodules/llama.cpp
+	url = https://github.com/teleprint-me/llama.cpp.git
