@@ -1,98 +1,90 @@
-# Downloading Models from Hugging Face
+# Interacting with Hugging Face Hub
 
-PyGPTPrompt provides a convenient command-line interface (CLI) tool for
-downloading models from the Hugging Face model hub. This tool allows you to
-access and utilize a wide range of pre-trained models for various natural
-language processing (NLP) tasks. You can easily specify the model you want to
-download and the directory where you want to store the downloaded files.
+PyGPTPrompt offers a comprehensive command-line interface (CLI) for both
+downloading and uploading models, datasets, and spaces to and from the Hugging
+Face Hub. This enhancement allows for greater flexibility in leveraging a wide
+array of pre-trained assets.
+
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Usage](#usage)
+  - [Subcommands](#subcommands)
+- [Options: What's Required and When](#options-whats-required-and-when)
+- [Important Notes](#important-notes)
 
 ## Prerequisites
 
-Before using the `pygptprompt.cli.download` tool, make sure you have the
-following prerequisites:
+The prerequisites remain largely unchanged:
 
-1. **PyGPTPrompt Installation**: Ensure that you have PyGPTPrompt installed on
-   your system. You can follow the installation instructions provided in the
-   [PyGPTPrompt documentation](https://github.com/teleprint-me/py.gpt.prompt/tree/main/docs/install)
-   to set up the environment.
+1. **PyGPTPrompt Installation**: Follow the installation instructions in the
+   [PyGPTPrompt documentation](install/user.md).
 
-2. **Hugging Face Token (Optional)**: If you intend to access gated models on
-   the Hugging Face model hub that require authentication, you must provide an
-   Hugging Face API token. This token should be placed in a `.env` file, and the
-   tool will look for it when accessing the model hub. The path to the `.env`
-   file is sourced from the configuration file, and the configuration file is
-   specified using the `--config_path` option.
+2. **Hugging Face Tokens for Reading and Writing**:
 
-Example of a `config.json` referencing the `.env` file:
+   - **Reading (Conditional)**: The `HUGGINGFACE_READ_API` key is optional for
+     most public models, datasets, or spaces but offers rate-limiting benefits.
+     It becomes mandatory if you're accessing gated content. Store the token in
+     a `.env` file sourced from `config.json` if required.
 
-```json
-{
-  "app": {
-    "provider": "pygptprompt",
-    "local": {
-      "path": "${HOME}/.local/pygptprompt/",
-      "type": "dir"
-    },
-    "env": {
-      "path": "${HOME}/.local/pygptprompt/.env",
-      "type": "file"
-    },
-    // other paths and rules...
-  // other configuration settings...
-}
-```
+   - **Writing (Required)**: To upload models, datasets, or spaces, you will
+     need to use the `HUGGINGFACE_WRITE_API` key for authentication. This is
+     always required for write operations.
 
-The `.env` file should contain your Hugging Face API token:
+Place your Hugging Face API tokens in a `.env` file:
 
 ```dotenv
-HUGGINGFACE_TOKEN=your-api-token-here
+HUGGINGFACE_READ_API=your-read-api-token-here (Optional for public content, Required for gated content)
+HUGGINGFACE_WRITE_API=your-write-api-token-here (Required)
 ```
-
-This separation of concerns protects developers from exposing sensitive data
-during development because the configurations are committed and shared publicly.
 
 ## Usage
 
-To download models from Hugging Face using the `pygptprompt.cli.download` tool,
-follow these steps:
+The CLI tool has been restructured to include subcommands for downloading and
+uploading:
 
 ```sh
-python -m pygptprompt.cli.download [OPTIONS]
+python -m pygptprompt.cli.huggingface_hub [OPTIONS] COMMAND [ARGS]...
 ```
 
-### Options
+### Subcommands
 
-- `-c, --config_path TEXT`: Specifies the path to the configuration file. This
-  file may reference a path to a `.env` file containing the Hugging Face API
-  token, allowing access to gated models. If not provided, the tool will attempt
-  to download models without authentication.
+1. **download**: Downloads models or datasets from the Hugging Face Hub.
+2. **upload**: Uploads models or datasets to the Hugging Face Hub.
 
-- `-r, --repo_id TEXT`: The Hugging Face repository ID of the model you want to
-  download. You can find the repository ID on the Hugging Face model hub. This
-  option is required.
-
-- `-d, --local_dir TEXT`: Specifies the directory where you want to store the
-  downloaded model files. The downloaded files will be organized within this
-  directory. This option is required.
-
-### Example
-
-Here's an example of how to use the `pygptprompt.cli.download` tool to download
-a model:
+#### Download Example
 
 ```sh
-python -m pygptprompt.cli.download -r username/model-name -d /path/to/downloaded/models
+python -m pygptprompt.cli.huggingface_hub download -r smallcloudai/Refact-1_6B-fim -p models/smallcloudai/Refact-1_6B-fim
 ```
 
-In this example, replace `username/model-name` with the repository ID of the
-model you want to download, and `/path/to/downloaded/models` with the desired
-directory for storing the downloaded files.
+#### Upload Example
+
+```sh
+python -m pygptprompt.cli.huggingface_hub upload -c tests/config.dev.json -r teleprint-me/refact-1.6B-fim-gguf -p models/smallcloudai/Refact-1_6B-fim/refact-1.6B-fim-q8_0.gguf
+```
+
+## Options: What's Required and When
+
+Common options for both `download` and `upload`:
+
+- `-p, --local_path TEXT`: The local path for download or upload.
+- `-r, --repo_id TEXT`: The Hugging Face repository ID.
+- `-t, --repo_type TEXT`: The type of repository: `model`, `dataset`, or
+  `space`. Defaults to `model`.
+- `-c, --config_path TEXT`: The path to the configuration file.
+- `-a, --api_token TEXT`: Overrides the API token specified in the configuration
+  file.
+
+### What's Required and When
+
+- `repo_id` and `local_path` are the only required options in most cases.
+- Using the `repo_type` option will be required when interacting with a
+  `dataset` or `space`. Otherwise, it defaults to `model`.
+- The `api_token` option can be used to bypass setting up an `.env` file if you
+  still need to authenticate with the Hugging Face Hub API.
 
 ## Important Notes
 
-- The `pygptprompt.cli.download` tool provides access to models hosted on the
-  Hugging Face model hub. You can explore and find various pre-trained models
-  for different NLP tasks on the Hugging Face website.
-
-- If you have an Hugging Face API token and wish to access gated models, ensure
-  that the token is placed in the `.env` file as described above.
+- You can now upload models and datasets in addition to downloading them,
+  providing a more holistic interaction with the Hugging Face Hub.
