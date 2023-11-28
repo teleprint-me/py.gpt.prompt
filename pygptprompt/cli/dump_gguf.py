@@ -26,7 +26,6 @@ SOFTWARE.
 
 NOTE:
     - This is an exact copy of Georgi Gerganov's gguf dump script.
-    - This script has not been modified in any way, shape, or form.
     - This script is included purely as a convenient utility.
 
 Source: https://github.com/ggerganov/llama.cpp/blob/master/gguf-py/scripts/gguf-dump.py
@@ -34,20 +33,12 @@ Source: https://github.com/ggerganov/llama.cpp/blob/master/gguf-py/scripts/gguf-
 from __future__ import annotations
 
 import argparse
-import os
 import sys
-from pathlib import Path
 from typing import Any
 
 import numpy as np
 
 # Necessary to load the local gguf package
-if (
-    "NO_LOCAL_GGUF" not in os.environ
-    and (Path(__file__).parent.parent.parent / "gguf-py").exists()
-):
-    sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from gguf import GGUFReader, GGUFValueType  # noqa: E402
 
 
