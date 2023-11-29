@@ -19,6 +19,7 @@ import sys
 import time
 import zipfile
 from abc import ABCMeta, abstractmethod
+from collections import OrderedDict
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
@@ -1043,25 +1044,31 @@ def bounded_parallel_map(
             yield result
 
 
-def check_vocab_size(params: Params, vocab: Vocab) -> None:
+def check_vocab_size(params: Params, vocab: Vocab, pad_vocab: bool = False) -> None:
     if params.n_vocab != vocab.vocab_size:
-        assert isinstance(vocab, (BpeVocab, SentencePieceVocab, HfVocab))
-        if params.n_vocab == vocab.vocab_size_base:
+        if params.n_vocab == vocab.vocab_size:
             print(
                 "Ignoring added_tokens.json since model matches vocab size without it."
             )
-            vocab.added_tokens_list = []
-            vocab.vocab_size = vocab.vocab_size_base
+            vocab.added_tokens_dict = OrderedDict()
+            vocab.vocab_size = vocab.vocab_size
+            return
+
+        if pad_vocab and params.n_vocab > vocab.vocab_size:
+            pad_count = params.n_vocab - vocab.vocab_size
+            print(
+                f"Padding vocab with {pad_count} token(s) - <dummy00001> through <dummy{pad_count:05}>"
+            )
+            for i in range(1, (params.n_vocab - vocab.vocab_size) + 1):
+                vocab.added_tokens_dict[f"<dummy{i:05}>"] = -1
+            vocab.vocab_size = params.n_vocab
             return
         msg = f"Vocab size mismatch (model has {params.n_vocab}, but {vocab.fname_tokenizer}"
-        if vocab.fname_added_tokens is not None:
-            msg += f" combined with {vocab.fname_added_tokens}"
         msg += f" has {vocab.vocab_size})."
-        if (
-            vocab.vocab_size < params.n_vocab < vocab.vocab_size + 20
-            and vocab.fname_added_tokens is None
-        ):
+        if vocab.vocab_size < params.n_vocab < vocab.vocab_size + 20:
             msg += f"  Most likely you are missing added_tokens.json (should be in {vocab.fname_tokenizer.parent})."
+        if vocab.vocab_size < params.n_vocab:
+            msg += " Possibly try using the --padvocab option."
         raise Exception(msg)
 
 
@@ -1160,8 +1167,9 @@ class OutputFile:
         vocab: Vocab,
         svocab: gguf.SpecialVocab,
         endianess: gguf.GGUFEndian = gguf.GGUFEndian.LITTLE,
+        pad_vocab: bool = False,
     ) -> None:
-        check_vocab_size(params, vocab)
+        check_vocab_size(params, vocab, pad_vocab)
 
         of = OutputFile(fname_out, endianess=endianess)
 
@@ -1197,8 +1205,9 @@ class OutputFile:
         svocab: gguf.SpecialVocab,
         concurrency: int = DEFAULT_CONCURRENCY,
         endianess: gguf.GGUFEndian = gguf.GGUFEndian.LITTLE,
+        pad_vocab: bool = False,
     ) -> None:
-        check_vocab_size(params, vocab)
+        check_vocab_size(params, vocab, pad_vocab)
 
         of = OutputFile(fname_out, endianess=endianess)
 
@@ -1569,6 +1578,11 @@ def main(args_in: Optional[list[str]] = None) -> None:
         action="store_true",
         help="model is executed on big endian machine",
     )
+    parser.add_argument(
+        "--pad_vocab",
+        action="store_true",
+        help="add pad tokens when model vocab expects more than tokenizer metadata provides",
+    )
 
     args = parser.parse_args(args_in)
     if args.dump_single:
@@ -1619,7 +1633,14 @@ def main(args_in: Optional[list[str]] = None) -> None:
         if not args.outfile:
             raise ValueError("need --outfile if using --vocab-only")
         outfile = args.outfile
-        OutputFile.write_vocab_only(outfile, params, vocab, special_vocab)
+        OutputFile.write_vocab_only(
+            outfile,
+            params,
+            vocab,
+            special_vocab,
+            endianess=endianess,
+            pad_vocab=args.pad_vocab,
+        )
         print(f"Wrote {outfile}")
         return
 
@@ -1644,6 +1665,7 @@ def main(args_in: Optional[list[str]] = None) -> None:
         special_vocab,
         concurrency=args.concurrency,
         endianess=endianess,
+        pad_vocab=args.pad_vocab,
     )
     print(f"Wrote {outfile}")
 
