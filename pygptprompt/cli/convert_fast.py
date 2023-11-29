@@ -21,7 +21,7 @@ import zipfile
 from abc import ABCMeta, abstractmethod
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PathLike
 from typing import (
     IO,
     TYPE_CHECKING,
@@ -36,6 +36,7 @@ from typing import (
 
 import numpy as np
 from sentencepiece import SentencePieceProcessor
+from transformers import AutoTokenizer
 
 if "NO_LOCAL_GGUF" not in os.environ:
     sys.path.insert(1, str(Path(__file__).parent / "gguf-py"))
@@ -481,56 +482,39 @@ class SentencePieceVocab:
 
 
 class HfVocab:
-    def __init__(self, params: Params, fname_tokenizer: Path) -> None:
-        try:
-            from transformers import AutoTokenizer
-        except ImportError as e:
-            raise ImportError(
-                "To use VocabLoader, please install the `transformers` package. "
-                "You can install it with `pip install transformers`."
-            ) from e
-
+    def __init__(
+        self, fname_tokenizer: PathLike, fname_added_tokens: Optional[Path] = None
+    ) -> None:
+        # Load the tokenizer with the option to use the fast version
         self.tokenizer = AutoTokenizer.from_pretrained(
             str(fname_tokenizer), trust_remote_code=True
         )
-        vocab_set = {
-            encoded_tok for encoded_tok, id in self.tokenizer.get_vocab().items()
-        }
 
+        # Initialize lists and dictionaries for added tokens
         self.added_tokens_list = []
         self.added_tokens_dict = dict()
         self.added_tokens_ids = set()
 
+        # Process added tokens
         for tok, tokidx in sorted(
             self.tokenizer.get_added_vocab().items(), key=lambda x: x[1]
         ):
-            if tokidx >= params.n_vocab or tokidx < self.tokenizer.vocab_size:
-                continue
+            # Only consider added tokens that are not in the base vocabulary
+            if tokidx >= self.tokenizer.vocab_size:
+                self.added_tokens_list.append(tok)
+                self.added_tokens_dict[tok] = tokidx
+                self.added_tokens_ids.add(tokidx)
 
-            self.added_tokens_list.append(tok)
-            self.added_tokens_dict[tok] = tokidx
-            self.added_tokens_ids.add(tokidx)
-
-        self.unk_token_id = self.tokenizer.unk_token_id
+        # Store special tokens and their IDs
         self.specials = {
             tok: self.tokenizer.get_vocab()[tok]
             for tok in self.tokenizer.all_special_tokens
         }
-        print(self.specials)
         self.special_ids = set(self.tokenizer.all_special_ids)
-        self.vocab_size_base: int = self.tokenizer.vocab_size
-        self.vocab_size: int = self.vocab_size_base + len(self.added_tokens_list)
-        self.fname_tokenizer = fname_tokenizer
 
-        path_candidate = vocab_check_and_append_path(
-            self.fname_tokenizer,
-            vocab_file="tokenizer.model",
-        )
-        if path_candidate is not None:
-            self.spm = SentencePieceProcessor(str(path_candidate))
-            print(self.spm.vocab_size(), self.vocab_size_base)
-        else:
-            self.spm = None
+        # Set vocabulary sizes
+        self.vocab_size_base = self.tokenizer.vocab_size
+        self.vocab_size = self.vocab_size_base + len(self.added_tokens_list)
 
     def hf_tokens(self) -> Iterable[tuple[bytes, float, gguf.TokenType]]:
         tokenizer = self.tokenizer
