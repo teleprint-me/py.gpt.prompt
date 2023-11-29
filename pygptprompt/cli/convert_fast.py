@@ -21,7 +21,7 @@ import zipfile
 from abc import ABCMeta, abstractmethod
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass
-from pathlib import Path, PathLike
+from pathlib import Path
 from typing import (
     IO,
     TYPE_CHECKING,
@@ -483,11 +483,17 @@ class SentencePieceVocab:
 
 class HfVocab:
     def __init__(
-        self, fname_tokenizer: PathLike, fname_added_tokens: Optional[Path] = None
+        self,
+        fname_tokenizer: Path,
+        fname_added_tokens: Optional[Path] = None,
     ) -> None:
-        # Load the tokenizer with the option to use the fast version
+        print("fname_tokenizer:", fname_tokenizer)
+        # Allow the tokenizer to default to slow or fast versions.
+        # Explicitly set tokenizer to use local paths.
         self.tokenizer = AutoTokenizer.from_pretrained(
-            str(fname_tokenizer), trust_remote_code=True
+            fname_tokenizer,
+            cache_dir=fname_tokenizer,
+            local_files_only=True,
         )
 
         # Initialize lists and dictionaries for added tokens
@@ -515,6 +521,9 @@ class HfVocab:
         # Set vocabulary sizes
         self.vocab_size_base = self.tokenizer.vocab_size
         self.vocab_size = self.vocab_size_base + len(self.added_tokens_list)
+
+        self.fname_tokenizer = fname_tokenizer
+        self.fname_added_tokens = fname_added_tokens
 
     def hf_tokens(self) -> Iterable[Tuple[bytes, float, gguf.TokenType]]:
         reverse_vocab = {
@@ -563,34 +572,6 @@ class HfVocab:
     def all_tokens(self) -> Iterable[tuple[bytes, float, gguf.TokenType]]:
         yield from self.hf_tokens()
         yield from self.added_tokens()
-
-    def get_vocab_type(self) -> str:
-        path_candidates = []
-        vocab_file = "tokenizer.model"
-        path_candidate = vocab_check_and_append_path(self.fname_tokenizer, vocab_file)
-        if path_candidate is not None:
-            return "llama"
-
-        path_candidates.append(path_candidate)
-        vocab_file = "vocab.json"
-        path_candidate = vocab_check_and_append_path(self.fname_tokenizer, vocab_file)
-        if path_candidate is not None:
-            return "gpt2"
-
-        path_candidates.append(path_candidate)
-        vocab_file = "tokenizer.json"
-        path_candidate = vocab_check_and_append_path(self.fname_tokenizer, vocab_file)
-        if path_candidate:
-            if not self.has_newline_token():
-                return "gpt2"
-            else:
-                return "llama"
-
-        path_candidates.append(path_candidate)
-        raise FileNotFoundError(
-            f"Could not find {find_candidates} in {path} or its parent; "
-            "if it's in another directory, pass the directory as --vocab-dir"
-        )
 
     def __repr__(self) -> str:
         return f"<VocabLoader with {self.vocab_size_base} base tokens and {len(self.added_tokens_list)} added tokens>"
@@ -1064,7 +1045,7 @@ def bounded_parallel_map(
 
 def check_vocab_size(params: Params, vocab: Vocab) -> None:
     if params.n_vocab != vocab.vocab_size:
-        assert isinstance(vocab, BpeVocab) or isinstance(vocab, SentencePieceVocab)
+        assert isinstance(vocab, (BpeVocab, SentencePieceVocab, HfVocab))
         if params.n_vocab == vocab.vocab_size_base:
             print(
                 "Ignoring added_tokens.json since model matches vocab size without it."
@@ -1446,23 +1427,16 @@ class VocabFactory:
                 self.files[file] = parent_file_path
 
     def _select_file(self, vocabtype: Optional[str]) -> Path:
-        if vocabtype == "spm":
-            if self.files["tokenizer.model"]:
-                return self.files["tokenizer.model"]
+        if vocabtype in ["spm", "bpe"]:
+            # For SentencePiece and BPE, return specific files as before
+            file_key = "tokenizer.model" if vocabtype == "spm" else "vocab.json"
+            if self.files[file_key]:
+                return self.files[file_key]
             else:
-                raise FileNotFoundError("SentencePiece tokenizer.model not found.")
-        elif vocabtype == "bpe":
-            if self.files["vocab.json"]:
-                return self.files["vocab.json"]
-            else:
-                raise FileNotFoundError("BPE vocab.json not found.")
+                raise FileNotFoundError(f"{vocabtype} {file_key} not found.")
         elif vocabtype == "hfft":
-            if self.files["tokenizer.json"]:
-                return self.files["tokenizer.json"]
-            else:
-                raise FileNotFoundError(
-                    "Hugging Face Fast Tokenizer tokenizer.json not found."
-                )
+            # For Hugging Face Fast Tokenizer, return the directory path instead of a specific file
+            return self.path
         else:
             raise ValueError(f"Unsupported vocabulary type {vocabtype}")
 
