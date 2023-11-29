@@ -516,45 +516,34 @@ class HfVocab:
         self.vocab_size_base = self.tokenizer.vocab_size
         self.vocab_size = self.vocab_size_base + len(self.added_tokens_list)
 
-    def hf_tokens(self) -> Iterable[tuple[bytes, float, gguf.TokenType]]:
-        tokenizer = self.tokenizer
+    def hf_tokens(self) -> Iterable[Tuple[bytes, float, gguf.TokenType]]:
         reverse_vocab = {
-            id: encoded_tok for encoded_tok, id in tokenizer.get_vocab().items()
+            id: encoded_tok for encoded_tok, id in self.tokenizer.get_vocab().items()
         }
-        special_ids = set(tokenizer.all_special_ids)
 
-        for i in range(self.vocab_size_base):
-            if i in self.added_tokens_ids:
+        for token_id in range(self.vocab_size_base):
+            # Skip processing added tokens here
+            if token_id in self.added_tokens_ids:
                 continue
 
-            text = reverse_vocab[i].encode("utf-8")
-            yield text, self.get_token_score(i), self.get_token_type(i)
+            # Convert token text to bytes
+            token_text = reverse_vocab[token_id].encode("utf-8")
 
-    def get_token_type(self, token_id):
-        toktype = gguf.TokenType.NORMAL
+            # Yield token text, score, and type
+            yield token_text, self.get_token_score(token_id), self.get_token_type(
+                token_id, self.special_ids  # Reuse already stored special IDs
+            )
 
-        if self.spm is not None and token_id < self.spm.vocab_size():
-            if self.spm.is_unknown(token_id):
-                toktype = gguf.TokenType.UNKNOWN
-            if self.spm.is_control(token_id):
-                toktype = gguf.TokenType.CONTROL
-            if self.spm.is_unused(token_id):
-                toktype = gguf.TokenType.UNUSED
-            if self.spm.is_byte(token_id):
-                toktype = gguf.TokenType.BYTE
-        else:
-            if token_id == self.unk_token_id:
-                toktype = gguf.TokenType.UNKNOWN
-            if token_id in self.special_ids:
-                toktype = gguf.TokenType.CONTROL
+    def get_token_type(self, token_id: int, special_ids: set) -> gguf.TokenType:
+        # Determine token type based on whether it's a special token
+        return (
+            gguf.TokenType.CONTROL if token_id in special_ids else gguf.TokenType.NORMAL
+        )
 
-        return toktype
-
-    def get_token_score(self, token_id):
-        if self.spm is not None and token_id < self.spm.vocab_size():
-            return self.spm.get_score(token_id)
-        else:
-            return 0.0
+    def get_token_score(self, token_id: int) -> float:
+        # Placeholder for actual logic to determine the token's score
+        # This needs to be implemented based on specific requirements
+        return -1000.0  # Default score
 
     def added_tokens(self) -> Iterable[tuple[bytes, float, gguf.TokenType]]:
         for text in self.added_tokens_list:
