@@ -558,7 +558,7 @@ class HfVocab:
     def added_tokens(self) -> Iterable[tuple[bytes, float, gguf.TokenType]]:
         for text in self.added_tokens_list:
             if text in self.specials:
-                toktype = self.get_token_type(self.specials[text])
+                toktype = self.get_token_type(self.specials[text], self.special_ids)
                 score = self.get_token_score(self.specials[text])
 
             else:
@@ -1130,8 +1130,13 @@ class OutputFile:
             self.gguf.add_tokenizer_model("llama")
         elif isinstance(vocab, BpeVocab):
             self.gguf.add_tokenizer_model("gpt2")
+        elif isinstance(vocab, HfVocab):
+            self.gguf.add_tokenizer_model("llama")
         else:
-            raise ValueError("Unknown vocab type: Not BpeVocab or SentencePieceVocab")
+            raise ValueError(
+                "Unknown vocab type: Not BpeVocab, SentencePieceVocab, or HfVocab"
+            )
+
         self.gguf.add_token_list(tokens)
         self.gguf.add_token_scores(scores)
         self.gguf.add_token_types(toktypes)
