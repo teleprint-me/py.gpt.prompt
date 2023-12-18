@@ -63,12 +63,12 @@ peewee = "^3.17.0"
 chromadb = "^0.4.20"
 
 # PyTorch and Extensions
-torch = {version = "^2.1.0+cpu", source = "pytorch"}
+torch = {version = "^2.1.2+cpu", source = "pytorch"}
 fairscale = "^0.4.13"
 
 # NLP (Natural Language Processing)
-transformers = "^4.36.1"
-safetensors = "^0.4.0"
+transformers = "^4.36.2"
+safetensors = "^0.4.1"
 sentencepiece = "^0.1.99"
 
 # Byte Pair Encoding (BPE) for NLP
@@ -79,7 +79,7 @@ openai = {extras = ["embeddings"], version = "^1.5.0"}
 
 # Llama.cpp and Frontend
 llama-cpp-python = "^0.2.23"
-gguf = "^0.5.1"
+gguf = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
 bpython = "^0.24"
