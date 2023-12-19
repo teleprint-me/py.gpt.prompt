@@ -64,7 +64,7 @@ jedi==0.19.1
 Jinja2==3.1.2
 jupyter_client==8.6.0
 jupyter_core==5.5.1
-kubernetes==28.1.0
+kubernetes==29.0.0a1
 llama_cpp_python==0.2.24
 Markdown==3.5.1
 markdown-it-py==3.0.0
@@ -172,7 +172,7 @@ trio==0.23.2
 trio-websocket==0.11.1
 typer==0.9.0
 typing_extensions==4.9.0
-urllib3==1.26.18
+urllib3==2.1.0
 uvicorn==0.24.0.post1
 uvloop==0.19.0
 virtualenv==20.25.0

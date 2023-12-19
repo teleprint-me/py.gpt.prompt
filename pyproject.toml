@@ -60,7 +60,7 @@ pytesseract = "^0.3.10"
 
 # Database and ORM
 peewee = "^3.17.0"
-chromadb = "^0.4.20"
+chromadb = "^0.4.19"
 
 # PyTorch and Extensions
 torch = {version = "^2.1.2+cpu", source = "pytorch"}
