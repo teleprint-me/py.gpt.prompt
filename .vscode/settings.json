@@ -32,8 +32,9 @@
     "editor.formatOnSave": true,
     "editor.formatOnPaste": false,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": true
+      "source.organizeImports": "explicit"
     }
   },
-  "isort.args": ["--profile", "black"]
+  "isort.args": ["--profile", "black"],
+  "cmake.sourceDirectory": "${workspaceFolder}/submodules/llama.cpp"
 }
