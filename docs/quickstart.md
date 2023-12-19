@@ -1,38 +1,30 @@
-# Quickstart Guide
+# Quickstart Guide for PyGPTPrompt
 
 ## PyGPTPrompt: Prototype Phase
 
-This project is currently in its prototype phase. Some features are still under
-development or may be temporarily disabled. Your patience and feedback are
-highly appreciated.
+This project is currently in its prototype phase, with some features under development or temporarily disabled. I appreciate your patience and any feedback as PyGPTPrompt continues to evolve.
 
 ## Launching the Chat Interface
 
-To initiate a chat session, run the following command:
+Initiate a chat session with this command:
 
 ```sh
 python -m pygptprompt.cli.chat [CONFIG_PATH] -s [SESSION_NAME]
 ```
 
-This command will initialize a chat session, taking into account the session
-name and configuration file path you provide. If omitted, defaults or prompts
-will apply.
+This initializes a chat session using the specified configuration file and session name. Note that a configuration path and session name are currently required.
 
-### Important:
+### Note on IRC-like Commands
 
-In this release, IRC-like commands are not available. Nevertheless, GPT model
-function calling is fully enabled.
+Currently, IRC-like commands are disabled during this refactoring phase. For detailed information on these features, please refer to `docs/features.md`. These commands are designed to streamline interactions, such as fetching web pages, browsing content, or executing a task or command.
 
 ## Commands and Options
 
-The chat interface supports various GPT model functions. Although IRC-like
-commands are currently unavailable, robust interactions are still possible,
-including the ability to recall past information.
+While IRC-like commands are temporarily unavailable, the chat interface still supports robust interactions with GPT models, including memory recall capabilities.
 
 ### Basic Usage
 
-To specify both the session name and configuration file path, enter them as
-arguments:
+To start a session with both session name and configuration path:
 
 ```sh
 python -m pygptprompt.cli.chat /your/config/path.json -s your_session_name
@@ -42,7 +34,7 @@ python -m pygptprompt.cli.chat /your/config/path.json -s your_session_name
 
 #### Enhanced Memory Capabilities
 
-Use the `--memory` flag to activate GPT model augmented memory features:
+Activate augmented memory features with the `--memory` flag:
 
 ```sh
 python -m pygptprompt.cli.chat [CONFIG_PATH] -s [SESSION_NAME] -m
@@ -50,30 +42,49 @@ python -m pygptprompt.cli.chat [CONFIG_PATH] -s [SESSION_NAME] -m
 
 ## Additional CLI Options
 
-Customize your experience with these additional command-line options:
+Customize your chat experience:
 
-- `--prompt TEXT`: Set an initial prompt.
-- `--chat`: Activate a chat session.
-- `--memory`: Activate chroma vector database.
-- `--provider TEXT`: Choose between 'openai' and 'llama_cpp' as the model
-  provider.
+- `--prompt TEXT`: Sets an initial prompt for the session.
+- `--chat`: Activates interactive chat mode.
+- `--memory`: Enables the chroma vector database for enhanced recall.
+- `--provider TEXT`: Choose the model provider (options: 'openai', 'llama_cpp').
 
-For a complete list, run:
+For a full list of options, use:
 
 ```sh
 python -m pygptprompt.cli.chat --help
 ```
 
-## Key Shortcuts
+## Key Shortcuts for Navigation
 
-Here are default key shortcuts for easier interaction:
+- `Ctrl-C`, `Ctrl-D`: Exit the application.
+- `Return`: Insert a new line.
+- `Alt-Return` (Win & Linux) / `Option-Return` (Mac): Send a message.
+- `Up/Down Arrows`: Browse through command history.
+- `Ctrl-Shift-V`: Paste from clipboard.
+- `Tab`: (Future Feature) Will support command and argument auto-complete.
 
-- `Ctrl-C`, `Ctrl-D`: Exit the app.
-- `Return`: Add a new line.
-- `Alt-Return` (Win & Linux) / `Option-Return` (Mac): Submit a message.
-- `Up/Down Arrows`: Navigate command history.
-- `Ctrl-Shift-V`: Paste content.
-- `Tab`: Command and argument auto-complete (under development).
+## Example Interaction
+
+Here's a sample interaction to get you started:
+
+```shell
+(.venv) git:(main | Δ) λ python -m pygptprompt.cli.chat tests/config.dev.json -s test2 -p openai -m -c
+2023-10-21 22:45:28,921 - json.py:110 - DEBUG - JSON successfully loaded from tests/config.dev.json
+...
+system
+My name is ChatGPT. I am a helpful assistant.
+
+user
+Hello, my name is Austin. What's your name?
+
+assistant
+Hello Austin! My name is ChatGPT. How can I assist you today?
+```
+
+## Understanding the Configuration File
+
+For setup details and customization, see `docs/configuration.md`. This document explains the configuration file's role in setting up your chat session.
 
 ## Example Interaction
 
@@ -103,31 +114,26 @@ using `python -m pygptprompt.cli.<module>`.
 
 ### Modules
 
-- `chat.py`: The primary interface for interactive chat sessions.
-- `convert.py`: Converts compatible Hugging Face models to
-  [GGUF](https://github.com/philpax/ggml/blob/gguf-spec/docs/gguf.md) (Georgi
-  Gerganov Unified Format) for `llama.cpp` support.
-- `download.py`: A utility for manually downloading selected models from Hugging
-  Face.
-- `embed.py`: Manages vector-based embeddings in the vector database for model
-  memory recall.
-- `llama.py`: An example script from Facebook Research Labs, intended for future
-  integration to support non-quantized, full-sized models.
-- `ocr.py`: Converts images to text via Optical Character Recognition.
-- `pdf.py`: Transforms PDFs into textual data.
-- `quantize.py`: Provides quantization for converting HF models to GGUF format.
+- **`chat.py`**: Provides an interactive chat interface with models, supporting enhanced conversation flows and memory features.
+- **`huggingface_hub.py`**: Facilitates downloading and uploading models, datasets, and spaces from/to the Hugging Face Hub, streamlining interactions with a wide array of AI assets.
+- **`embed.py`**: Manages vector-based embeddings, enabling augmented episodic memory for models, enhancing recall and context management (Currently a Work in Progress).
+- **`llama.py`**: A module designed for integration with LLaMA models, aiming to support both quantized and non-quantized versions.
+- **`ocr.py`**: Utilizes Optical Character Recognition technology to convert images to text, enabling models to process and interact with image-based data.
+- **`pdf.py`**: Extracts and transforms textual data from PDF files, making it accessible for natural language processing tasks.
+- **`quantize.py`**: Offers quantization tools for GGUF format conversion, optimizing models for use with `llama.cpp`.
 
 ### Packages
 
-- `function`: Enables custom function calls for GPT models. (Support for Llama
-  models is under development.)
-- `model`: A factory module for managing different types of models.
+- **`dump`**: Includes tools like `torch.py` and `gguf` for inspecting various model formats, enabling conversion for unsupported models or deeper inspection for debugging purposes.
+- **`convert`**: Includes tools like `torch_to_gguf.py` for converting various model formats to GGUF, enabling compatibility with `llama.cpp`.
+- **`function`**: Facilitates the implementation of custom function calls within GPT models, enhancing interactivity and functionality. Expansion to support LLaMA models is underway.
+- **`model`**: Acts as a model factory, simplifying the management and utilization of various AI models across different providers and formats.
 
-**Future Developments**:
+### Future Developments
 
-- Uploading and fine-tuning features (`upload.py` and `finetune.py`) are in the
-  roadmap and will be added in upcoming releases. They are currently represented
-  as uncommitted stub files.
+- **Fine-tuning Features**: The addition of `finetune.py` is planned, which will introduce capabilities for model fine-tuning directly through PyGPTPrompt.
+- **Expanded LLaMA Model Support**: Continued development to fully integrate and support LLaMA models, including both quantized and full-sized variants (Currently a Work in Progress).
+- **Memory and Recall Enhancement**: Ongoing improvements to memory mechanisms, aiming to provide more sophisticated and nuanced recall abilities for models.
+- **Interface and Usability Enhancements**: Regular updates to the user interface and overall usability of the tool, ensuring a smooth and intuitive experience.
 
-Feel free to explore these modules to maximize the utility you derive from
-PyGPTPrompt.
+This documentation reflects the current capabilities and future directions of PyGPTPrompt. As the project evolves, further updates and new features will be continuously integrated to enhance its functionality and user experience.
