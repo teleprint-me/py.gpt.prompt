@@ -15,21 +15,15 @@ array of pre-trained assets.
 
 ## Prerequisites
 
-The prerequisites remain largely unchanged:
-
-1. **PyGPTPrompt Installation**: Follow the installation instructions in the
-   [PyGPTPrompt documentation](install/user.md).
+1. **PyGPTPrompt Installation**: Follow the installation instructions in the [PyGPTPrompt documentation](install/user.md).
 
 2. **Hugging Face Tokens for Reading and Writing**:
 
-   - **Reading (Conditional)**: The `HUGGINGFACE_READ_API` key is optional for
-     most public models, datasets, or spaces but offers rate-limiting benefits.
-     It becomes mandatory if you're accessing gated content. Store the token in
-     a `.env` file sourced from `config.json` if required.
+   - **Reading (Conditional)**: The `HUGGINGFACE_READ_API` key is optional for most public models, datasets, or spaces but offers rate-limiting benefits. It becomes mandatory if you're accessing gated content. Store the token in a `.env` file sourced from `config.json` if required.
 
-   - **Writing (Required)**: To upload models, datasets, or spaces, you will
-     need to use the `HUGGINGFACE_WRITE_API` key for authentication. This is
-     always required for write operations.
+   - **Writing (Required)**: To upload models, datasets, or spaces, you will need to use the `HUGGINGFACE_WRITE_API` key for authentication. This is always required for write operations.
+
+   Obtain your Hugging Face API tokens [here](https://huggingface.co/settings/tokens) (registration required).
 
 Place your Hugging Face API tokens in a `.env` file:
 
@@ -54,15 +48,33 @@ python -m pygptprompt.cli.huggingface_hub [OPTIONS] COMMAND [ARGS]...
 
 #### Download Example
 
+To download a repository, use the `-r` and `-p` flags:
+
 ```sh
 python -m pygptprompt.cli.huggingface_hub download -r smallcloudai/Refact-1_6B-fim -p models/smallcloudai/Refact-1_6B-fim
 ```
 
+To specify a file download instead of a directory, use the `-f` flag:
+
+```sh
+python -m pygptprompt.cli.huggingface_hub download -r smallcloudai/Refact-1_6B-fim -p models/smallcloudai/Refact-1_6B-fim/model.safetensors -f
+```
+
+To resume a partially downloaded file, apply the `-d` flag:
+
+```sh
+python -m pygptprompt.cli.huggingface_hub download -r smallcloudai/Refact-1_6B-fim -p models/smallcloudai/Refact-1_6B-fim/model.safetensors -f -d
+```
+
 #### Upload Example
+
+To upload a repository, use the `-c`, `-r`, and `-p` flags:
 
 ```sh
 python -m pygptprompt.cli.huggingface_hub upload -c tests/config.dev.json -r teleprint-me/refact-1.6B-fim-gguf -p models/smallcloudai/Refact-1_6B-fim/refact-1.6B-fim-q8_0.gguf
 ```
+
+Note that the configuration is required for authentication.
 
 ## Options: What's Required and When
 
@@ -84,7 +96,14 @@ Common options for both `download` and `upload`:
 - The `api_token` option can be used to bypass setting up an `.env` file if you
   still need to authenticate with the Hugging Face Hub API.
 
+### New Options
+
+- `-f, --file`: Use this flag to specify that the local path is a file. If not set, the path is treated as a directory.
+- `-d, --resume`: Use this flag to resume downloading partially downloaded files. If not set, the download will start over.
+
 ## Important Notes
 
 - You can now upload models and datasets in addition to downloading them,
   providing a more holistic interaction with the Hugging Face Hub.
+- The `download` subcommand now includes options to specify file downloads (`--file`) and to resume interrupted downloads (`--resume`).
+- Please note that the resume functionality depends on the underlying mechanisms of the `huggingface_hub` library. In some cases, downloads may restart from the beginning if the `-d` flag is not used.
