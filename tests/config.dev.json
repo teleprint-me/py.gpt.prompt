@@ -90,7 +90,7 @@
     "model": {
       "repo_id": "teleprint-me/llama-2-7b-chat-GGUF",
       "filename": "llama-2-7b-chat.GGUF.q5_0.bin",
-      "local": "models/mistralai/Mistral-7B-Instruct-v0.1/Mistral-7B-Instruct-v0.1.q4_0.gguf",
+      "local": "models/mistralai/Mixtral-8x7B-Instruct-v0.1/Mixtral-8x7B-Instruct-v0.1-q4_0.gguf",
       "n_ctx": 4096,
       "n_parts": -1,
       "seed": 1337,
@@ -114,7 +114,7 @@
     },
     "chat_completions": {
       "max_tokens": 1024,
-      "temperature": 0.8,
+      "temperature": 0.0,
       "top_p": 0.95,
       "top_k": 40,
       "stop": [],
@@ -127,7 +127,7 @@
     },
     "system_prompt": {
       "role": "system",
-      "content": "My name is Valerie and I am a helpful assistant."
+      "content": "My name is Mistral. I am a helpful assistant."
     }
   },
   "openai": {
@@ -135,7 +135,7 @@
     "chat_completions": {
       "model": "gpt-3.5-turbo",
       "temperature": 0.0,
-      "max_tokens": 2048,
+      "max_tokens": 1024,
       "top_p": 0.95,
       "n": 1,
       "stop": [],
@@ -148,7 +148,7 @@
     },
     "context": {
       "reserve": 0.2,
-      "length": 16384,
+      "length": 4096,
       "offset": 1024
     },
     "system_prompt": {
