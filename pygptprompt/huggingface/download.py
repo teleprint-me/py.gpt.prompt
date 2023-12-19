@@ -13,7 +13,6 @@ User Access Token:
 NOTE: This is still a Work in Progress.
 """
 import logging
-import os
 import sys
 from logging import Logger
 from pathlib import Path
@@ -37,7 +36,7 @@ class HuggingFaceDownload:
         logger: Optional[Logger] = None,
     ):
         self.api = HfApi()
-        self.token = None
+        self.token = token
 
         if logger:
             self._logger = logger
@@ -50,6 +49,7 @@ class HuggingFaceDownload:
         local_path: str,
         repo_id: str,
         repo_type: Optional[str] = None,
+        resume_download: bool = False,
     ) -> str:
         model_path = hf_hub_download(
             repo_id=repo_id,
@@ -57,7 +57,8 @@ class HuggingFaceDownload:
             filename=local_file,
             local_dir=local_path,
             local_dir_use_symlinks=False,
-            resume_download=True,
+            force_download=False,
+            resume_download=resume_download,
             token=self.token,
         )
         self._logger.info(f"Downloaded {local_file} to {model_path}")
@@ -69,15 +70,16 @@ class HuggingFaceDownload:
         local_path: str,
         local_files: List[str],
         repo_type: Optional[str] = None,
+        resume_download: bool = False,
     ) -> List[str]:
         model_paths = []
-        os.makedirs(local_path, exist_ok=True)
         for local_file in local_files:
             model_path = self.download_file(
                 local_file=local_file,
                 local_path=local_path,
                 repo_id=repo_id,
                 repo_type=repo_type,
+                resume_download=resume_download,
             )
             model_paths.append(model_path)
         return model_paths
@@ -87,6 +89,7 @@ class HuggingFaceDownload:
         local_path: str,
         repo_id: str,
         repo_type: Optional[str] = None,
+        resume_download: bool = False,
     ) -> None:
         # NOTE: Consider resetting `retries` to zero if a retry is successful.
         self._logger.info(f"Using {repo_id} to download source data.")
@@ -102,7 +105,13 @@ class HuggingFaceDownload:
                 metadata = model_info(repo_id)
 
             local_files = [x.rfilename for x in metadata.siblings]
-            self._download_all_files(repo_id, local_path, local_files, repo_type)
+            self._download_all_files(
+                repo_id,
+                local_path,
+                local_files,
+                repo_type,
+                resume_download,
+            )
         except (EntryNotFoundError, RepositoryNotFoundError) as e:
             self._logger.error(f"Error downloading source: {e}")
             sys.exit(1)
@@ -111,7 +120,13 @@ class HuggingFaceDownload:
             while retries < max_retries and self.api.is_online():
                 self._logger.info("Retrying download...")
                 retries += 1
-                self._download_all_files(repo_id, local_path, local_files, repo_type)
+                self._download_all_files(
+                    repo_id,
+                    local_path,
+                    local_files,
+                    repo_type,
+                    resume_download,
+                )
         except Exception as e:
             self._logger.error(f"Error downloading source: {e}")
             sys.exit(1)
@@ -121,10 +136,22 @@ class HuggingFaceDownload:
         path: Union[str, Path],
         repo_id: str,
         repo_type: Optional[str] = None,
+        resume_download: bool = False,
+        is_file: bool = False,
     ):
-        path_obj = Path(path)
+        """
+        Download files or directories from a Hugging Face repository.
+        """
+        # Convert path to a Path object for consistency
+        path_obj = Path(path) if isinstance(path, str) else path
 
-        if path_obj.is_file():
+        # Create the parent directory if it doesn't exist
+        self._logger.info(
+            f"Downloading to {'file' if is_file else 'directory'}: {path_obj}"
+        )
+
+        if is_file:
+            path_obj.parent.mkdir(parents=True, exist_ok=True)
             file_name = path_obj.name
             local_path = path_obj.parent
             self.download_file(
@@ -132,13 +159,13 @@ class HuggingFaceDownload:
                 local_path=str(local_path),
                 repo_id=repo_id,
                 repo_type=repo_type,
+                resume_download=resume_download,
             )
-        elif path_obj.is_dir():
+        else:
+            path_obj.mkdir(parents=True, exist_ok=True)
             self.download_folder(
                 local_path=str(path_obj),
                 repo_id=repo_id,
                 repo_type=repo_type,
+                resume_download=resume_download,
             )
-        else:
-            self._logger.error("The specified path is neither a file nor a directory.")
-            sys.exit(1)
