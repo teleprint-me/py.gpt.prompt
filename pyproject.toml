@@ -37,12 +37,12 @@ keywords = ["openai", "gpt", "llama", "llama.cpp", "python", "prompt", "automati
 python = ">=3.11,<3.12"
 
 # Core Libraries
-numpy = "^1.26.2"
+numpy = "^1.26.3"
 
 # Web and Data Retrieval
 requests = "^2.31.0"
 beautifulsoup4 = "^4.12.2"
-feedparser = "^6.0.10"
+feedparser = "^6.0.11"
 html2text = "^2020.1.16"
 
 # Command-line Tools
@@ -60,13 +60,14 @@ pytesseract = "^0.3.10"
 
 # Database and ORM
 peewee = "^3.17.0"
-chromadb = "^0.4.19"
+chromadb = "^0.4.22"
 
 # PyTorch and Extensions
 torch = {version = "^2.1.2+cpu", source = "pytorch"}
 fairscale = "^0.4.13"
 
 # NLP (Natural Language Processing)
+huggingface-hub = "^0.20.2"
 transformers = "^4.36.2"
 safetensors = "^0.4.1"
 sentencepiece = "^0.1.99"
@@ -75,10 +76,10 @@ sentencepiece = "^0.1.99"
 tiktoken = "^0.5.2"
 
 # AI Models and Embeddings
-openai = {extras = ["embeddings"], version = "^1.5.0"}
+openai = {extras = ["embeddings"], version = "^1.7.2"}
 
 # Llama.cpp and Frontend
-llama-cpp-python = "^0.2.23"
+llama-cpp-python = "^0.2.28"
 gguf = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
@@ -86,13 +87,13 @@ bpython = "^0.24"
 pre_commit = "^3.6.0"
 pyupgrade = "^3.15.0"
 pytest = "^7.4.3"
-black = "^23.12.0"
+black = "^23.12.1"
 isort = "^5.13.2"
 flake8 = "^6.1.0"
 build = "^1.0.3"
 mkdocs = "^1.5.3"
 mkdocstrings = {version = "^0.24.0", extras = ["python"]}
-mkdocs-material = "^9.4.10"
+mkdocs-material = "^9.5.3"
 ipykernel = "^6.27.0"  # Required for VSCode
 # jupyter = "^1.0.0"  # Install if needed
 # pynvim = "^0.4.3"  # Install if needed
