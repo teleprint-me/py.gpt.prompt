@@ -18,15 +18,19 @@ from logging import Logger
 from pathlib import Path
 from typing import List, Optional, Union
 
-from huggingface_hub import dataset_info, hf_hub_download, model_info, space_info
-from huggingface_hub.hf_api import HfApi
+from huggingface_hub import (
+    HfApi,
+    dataset_info,
+    hf_hub_download,
+    login,
+    model_info,
+    space_info,
+)
 from huggingface_hub.utils import (
     EntryNotFoundError,
     LocalEntryNotFoundError,
     RepositoryNotFoundError,
 )
-
-from pygptprompt.pattern.logger import get_default_logger
 
 
 class HuggingFaceDownload:
@@ -35,13 +39,40 @@ class HuggingFaceDownload:
         token: Optional[str] = None,
         logger: Optional[Logger] = None,
     ):
+        """
+        Initializes the HuggingFaceDownload object.
+
+        Args:
+            token (str, optional): The Hugging Face API token for remote authentication.
+            logger (Logger, optional): A custom logger instance for logging, if provided.
+
+        Notes:
+            - The implementation details regarding remote authentication are confusing.
+            - Hugging Face "supports" multiple options for remote authentication, but
+              the actual functionality is unclear.
+            - Despite the `token` argument, HfApi's constructor is not respected for
+              authentication, leading to potential errors.
+            - There were multiple attempts to authenticate, and it's unclear which one
+              will function as expected.
+            - The documentation and implementation details seem to contradict each other,
+              causing frustration and confusion.
+        """
+        # Authenticate with the Hugging Face API using the provided token
+        login(token)
+
+        # Initialize the Hugging Face API client
         self.api = HfApi()
+
+        # Store the token for reference in download_file method
         self.token = token
 
+        # Initialize the logger
         if logger:
             self._logger = logger
         else:
-            self._logger = get_default_logger(self.__class__.__name__, logging.INFO)
+            # If no logger is provided, use a default logger with INFO level
+            self._logger = logging.getLogger(self.__class__.__name__)
+            self._logger.setLevel(logging.INFO)
 
     def download_file(
         self,
@@ -59,7 +90,7 @@ class HuggingFaceDownload:
             local_dir_use_symlinks=False,
             force_download=False,
             resume_download=resume_download,
-            token=self.token,
+            token=self.token,  # This should work, but doesn't because the argument isn't respected!
         )
         self._logger.info(f"Downloaded {local_file} to {model_path}")
         return model_path
