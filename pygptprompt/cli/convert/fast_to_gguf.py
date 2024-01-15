@@ -17,9 +17,10 @@ import signal
 import struct
 import sys
 import time
+import warnings
 import zipfile
 from abc import ABCMeta, abstractmethod
-from collections import OrderedDict
+from argparse import ArgumentParser
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
@@ -37,28 +38,49 @@ from typing import (
 
 import numpy as np
 from sentencepiece import SentencePieceProcessor
-from transformers import AutoTokenizer
 
+try:
+    from transformers import AutoTokenizer
+except ModuleNotFoundError as e:
+    warnings.warn(f"Could not import AutoTokenizer from transformers: {e}")
+
+# If NO_LOCAL_GGUF is not set, try to import gguf from the local gguf-py directory
 if "NO_LOCAL_GGUF" not in os.environ:
-    sys.path.insert(1, str(Path(__file__).parent / "gguf-py"))
-import gguf
+    # Use absolute path to the gguf-py directory
+    gguf_py_dir = str(Path(__file__).resolve().parent / "gguf-py")
+    print(
+        gguf_py_dir
+    )  # NOTE: Remove this once path is verified after changes are completed
+    if gguf_py_dir not in sys.path:
+        sys.path.insert(1, gguf_py_dir)
 
-if TYPE_CHECKING:
-    from typing import TypeAlias
+# Import gguf module
+try:
+    import gguf
+except ModuleNotFoundError as e:
+    print(f"Could not import gguf: {e}")
+    sys.exit(1)
+
+if TYPE_CHECKING:  # NOTE: This isn't necessary.
+    from typing import TypeAlias  # This can technically be omitted.
 
 if hasattr(faulthandler, "register") and hasattr(signal, "SIGUSR1"):
     faulthandler.register(signal.SIGUSR1)
 
+# NOTE: n-dimensional arrays should be directly referenced
 NDArray: TypeAlias = "np.ndarray[Any, Any]"
 
+# Why is this here? LLAMA and GPT are technically the only compatible ARCHs.
 ARCH = gguf.MODEL_ARCH.LLAMA
 
 DEFAULT_CONCURRENCY = 8
+
 #
 # data types
 #
 
 
+# TODO: Clean up and refactor data types
 @dataclass(frozen=True)
 class DataType:
     name: str
@@ -187,7 +209,9 @@ class Params:
     n_ff: int
     n_head: int
     n_head_kv: int
-    f_norm_eps: float
+    f_norm_eps: Optional[float] = None
+    n_experts: Optional[int] = None
+    n_experts_used: Optional[int] = None
 
     rope_scaling_type: Optional[gguf.RopeScalingType] = None
     f_rope_freq_base: Optional[float] = None
@@ -201,7 +225,7 @@ class Params:
     path_model: Optional[Path] = None
 
     @staticmethod
-    def guessed(model: LazyModel) -> Params:
+    def guessed(model: LazyModel) -> "Params":
         # try transformer naming first
         n_vocab, n_embd = (
             model["model.embed_tokens.weight"].shape
@@ -256,7 +280,7 @@ class Params:
         )
 
     @staticmethod
-    def loadHFTransformerJson(model: LazyModel, config_path: Path) -> Params:
+    def load_transformers_config(model: LazyModel, config_path: Path) -> "Params":
         config = json.load(open(config_path))
 
         rope_scaling_type = f_rope_scale = n_orig_ctx = rope_finetuned = None
@@ -284,6 +308,13 @@ class Params:
                 "Suggestion: provide 'config.json' of the model in the same directory containing model files."
             )
 
+        n_experts = None
+        n_experts_used = None
+
+        if "num_local_experts" in config:
+            n_experts = config["num_local_experts"]
+            n_experts_used = config["num_experts_per_tok"]
+
         return Params(
             n_vocab=config["vocab_size"],
             n_embd=config["hidden_size"],
@@ -292,6 +323,8 @@ class Params:
             n_ff=config["intermediate_size"],
             n_head=(n_head := config["num_attention_heads"]),
             n_head_kv=config.get("num_key_value_heads", n_head),
+            n_experts=n_experts,
+            n_experts_used=n_experts_used,
             f_norm_eps=config["rms_norm_eps"],
             f_rope_freq_base=config.get("rope_theta"),
             rope_scaling_type=rope_scaling_type,
@@ -303,11 +336,18 @@ class Params:
     # LLaMA v2 70B params.json
     # {"dim": 8192, "multiple_of": 4096, "ffn_dim_multiplier": 1.3, "n_heads": 64, "n_kv_heads": 8, "n_layers": 80, "norm_eps": 1e-05, "vocab_size": -1}
     @staticmethod
-    def loadOriginalParamsJson(model: LazyModel, config_path: Path) -> Params:
+    def load_torch_params(model: LazyModel, config_path: Path) -> "Params":
         config = json.load(open(config_path))
 
+        n_experts = None
+        n_experts_used = None
+        f_rope_freq_base = None
+
         # hack to determine LLaMA v1 vs v2 vs CodeLlama
-        if config.get("rope_theta") == 1000000:
+        if config.get("moe"):
+            # Mixtral
+            n_ctx = 32768
+        elif config.get("rope_theta") == 1000000:
             # CodeLlama
             n_ctx = 16384
         elif config["norm_eps"] == 1e-05:
@@ -317,27 +357,38 @@ class Params:
             # LLaMA v1
             n_ctx = 2048
 
+        if "layers.0.feed_forward.w1.weight" in model:
+            n_ff = model["layers.0.feed_forward.w1.weight"].shape[0]
+
+        if config.get("moe"):
+            n_ff = model["layers.0.feed_forward.experts.0.w1.weight"].shape[0]
+            n_experts = config["moe"]["num_experts"]
+            n_experts_used = config["moe"]["num_experts_per_tok"]
+            f_rope_freq_base = 1e6
+
         return Params(
             n_vocab=config.get("vocab_size", model["tok_embeddings.weight"].shape[0]),
             n_embd=config["dim"],
             n_layer=config["n_layers"],
             n_ctx=n_ctx,
-            n_ff=model["layers.0.feed_forward.w1.weight"].shape[0],
+            n_ff=n_ff,
             n_head=(n_head := config["n_heads"]),
             n_head_kv=config.get("n_kv_heads", n_head),
+            n_experts=n_experts,
+            n_experts_used=n_experts_used,
             f_norm_eps=config["norm_eps"],
-            f_rope_freq_base=config.get("rope_theta"),
+            f_rope_freq_base=config.get("rope_theta", f_rope_freq_base),
         )
 
     @staticmethod
-    def load(model_plus: ModelPlus) -> Params:
+    def load(model_plus: ModelPlus) -> "Params":
         hf_config_path = model_plus.paths[0].parent / "config.json"
         orig_config_path = model_plus.paths[0].parent / "params.json"
 
         if hf_config_path.exists():
-            params = Params.loadHFTransformerJson(model_plus.model, hf_config_path)
+            params = Params.load_transformers_config(model_plus.model, hf_config_path)
         elif orig_config_path.exists():
-            params = Params.loadOriginalParamsJson(model_plus.model, orig_config_path)
+            params = Params.load_torch_params(model_plus.model, orig_config_path)
         elif model_plus.format != "none":
             params = Params.guessed(model_plus.model)
         else:
@@ -348,12 +399,7 @@ class Params:
         return params
 
 
-#
-# vocab
-#
-
-
-class BpeVocab:
+class BpeVocab:  # GPT
     def __init__(
         self, fname_tokenizer: Path, fname_added_tokens: Optional[Path]
     ) -> None:
@@ -414,7 +460,7 @@ class BpeVocab:
         return f"<BpeVocab with {self.vocab_size_base} base tokens and {len(self.added_tokens_list)} added tokens>"
 
 
-class SentencePieceVocab:
+class SentencePieceVocab:  # LlaMa
     def __init__(
         self, fname_tokenizer: Path, fname_added_tokens: Optional[Path]
     ) -> None:
@@ -575,10 +621,11 @@ class HfVocab:
         yield from self.added_tokens()
 
     def __repr__(self) -> str:
-        return f"<VocabLoader with {self.vocab_size_base} base tokens and {len(self.added_tokens_list)} added tokens>"
+        return f"<HfVocab with {self.vocab_size_base} base tokens and {len(self.added_tokens_list)} added tokens>"
 
 
 Vocab: TypeAlias = "BpeVocab | SentencePieceVocab | HfVocab"
+
 
 #
 # data loading
@@ -728,7 +775,7 @@ class ModelPlus:
     model: LazyModel
     paths: list[Path]  # Where this was read from.
     format: Literal["ggml", "torch", "safetensors", "none"]
-    vocab: Optional[Vocab]  # For GGML models (which have vocab built in), the vocab.
+    vocab: Vocab | None  # For GGML models (which have vocab built in), the vocab.
 
 
 def merge_sharded(models: list[LazyModel]) -> LazyModel:
@@ -788,7 +835,7 @@ def merge_multifile_models(models_plus: list[ModelPlus]) -> ModelPlus:
 
     if any("model.embed_tokens.weight" in mp.model for mp in models_plus):
         # Transformers models put different tensors in different files, but
-        # don't split indivdual tensors between files.
+        # don't split individual tensors between files.
         model: LazyModel = {}
         for mp in models_plus:
             model.update(mp.model)
@@ -909,7 +956,7 @@ class LazyUnpickler(pickle.Unpickler):
         return func(*args)
 
     CLASSES: dict[tuple[str, str], Any] = {
-        # getattr used here as a workaround for mypy not being smart enough to detrmine
+        # getattr used here as a workaround for mypy not being smart enough to determine
         # the staticmethods have a __func__ attribute.
         ("torch._tensor", "_rebuild_from_type_v2"): getattr(
             rebuild_from_type_v2, "__func__"
@@ -1007,7 +1054,7 @@ def bounded_parallel_map(
     func: Callable[[In], Out],
     iterable: Iterable[In],
     concurrency: int,
-    max_workers: Optional[int] = None,
+    max_workers: int | None = None,
     use_processpool_executor: bool = False,
 ) -> Iterable[Out]:
     """Parallel map, but with backpressure.  If the caller doesn't call `next`
@@ -1045,31 +1092,34 @@ def bounded_parallel_map(
 
 
 def check_vocab_size(params: Params, vocab: Vocab, pad_vocab: bool = False) -> None:
-    if params.n_vocab != vocab.vocab_size:
-        if params.n_vocab == vocab.vocab_size:
-            print(
-                "Ignoring added_tokens.json since model matches vocab size without it."
-            )
-            vocab.added_tokens_dict = OrderedDict()
-            vocab.vocab_size = vocab.vocab_size
-            return
+    # Handle special case where the model's vocab size is not set
+    if params.n_vocab == -1:
+        raise ValueError(
+            f"The model's vocab size is set to -1 in params.json. Please update it manually. Maybe {vocab.vocab_size}?"
+        )
 
-        if pad_vocab and params.n_vocab > vocab.vocab_size:
-            pad_count = params.n_vocab - vocab.vocab_size
-            print(
-                f"Padding vocab with {pad_count} token(s) - <dummy00001> through <dummy{pad_count:05}>"
-            )
-            for i in range(1, (params.n_vocab - vocab.vocab_size) + 1):
-                vocab.added_tokens_dict[f"<dummy{i:05}>"] = -1
-            vocab.vocab_size = params.n_vocab
-            return
-        msg = f"Vocab size mismatch (model has {params.n_vocab}, but {vocab.fname_tokenizer}"
-        msg += f" has {vocab.vocab_size})."
-        if vocab.vocab_size < params.n_vocab < vocab.vocab_size + 20:
-            msg += f"  Most likely you are missing added_tokens.json (should be in {vocab.fname_tokenizer.parent})."
-        if vocab.vocab_size < params.n_vocab:
-            msg += " Possibly try using the --padvocab option."
-        raise Exception(msg)
+    # Check for a vocab size mismatch
+    if params.n_vocab == vocab.vocab_size:
+        print("Ignoring added_tokens.json since model matches vocab size without it.")
+        return
+
+    if pad_vocab and params.n_vocab > vocab.vocab_size:
+        pad_count = params.n_vocab - vocab.vocab_size
+        print(
+            f"Padding vocab with {pad_count} token(s) - <dummy00001> through <dummy{pad_count:05}>"
+        )
+        for i in range(1, pad_count + 1):
+            vocab.added_tokens_dict[f"<dummy{i:05}>"] = -1
+        vocab.vocab_size = params.n_vocab
+        return
+
+    msg = f"Vocab size mismatch (model has {params.n_vocab}, but {vocab.fname_tokenizer} has {vocab.vocab_size})."
+    if vocab.vocab_size < params.n_vocab < vocab.vocab_size + 20:
+        msg += f"  Most likely you are missing added_tokens.json (should be in {vocab.fname_tokenizer.parent})."
+    if vocab.vocab_size < params.n_vocab:
+        msg += " Add the --pad-vocab option and try again."
+
+    raise Exception(msg)
 
 
 class OutputFile:
@@ -1097,7 +1147,17 @@ class OutputFile:
         self.gguf.add_rope_dimension_count(params.n_embd // params.n_head)
         self.gguf.add_head_count(params.n_head)
         self.gguf.add_head_count_kv(params.n_head_kv)
+
+        if params.f_norm_eps is None:
+            raise ValueError("f_norm_eps is None")
+
         self.gguf.add_layer_norm_rms_eps(params.f_norm_eps)
+
+        if params.n_experts:
+            self.gguf.add_expert_count(params.n_experts)
+
+        if params.n_experts_used:
+            self.gguf.add_expert_used_count(params.n_experts_used)
 
         if params.f_rope_freq_base is not None:
             self.gguf.add_rope_freq_base(params.f_rope_freq_base)
@@ -1116,27 +1176,44 @@ class OutputFile:
         if params.ftype is not None:
             self.gguf.add_file_type(params.ftype)
 
-    def add_meta_vocab(self, vocab: Vocab) -> None:
+    def handle_tokenizer_model(self, vocab: Vocab) -> str:
+        # Map the vocab types to the supported tokenizer models
+        tokenizer_model = {
+            SentencePieceVocab: "llama",
+            HfVocab: "llama",
+            BpeVocab: "gpt2",
+        }.get(type(vocab))
+
+        # Block if vocab type is not predefined
+        if tokenizer_model is None:
+            raise ValueError("Unknown vocab type: Not supported")
+
+        return tokenizer_model
+
+    def extract_vocabulary_from_model(self, vocab: Vocab) -> Tuple[list, list, list]:
         tokens = []
         scores = []
         toktypes = []
+
         # NOTE: `all_tokens` returns the base vocabulary and added tokens
         for text, score, toktype in vocab.all_tokens():
             tokens.append(text)
             scores.append(score)
             toktypes.append(toktype)
 
-        if isinstance(vocab, SentencePieceVocab):
-            self.gguf.add_tokenizer_model("llama")
-        elif isinstance(vocab, BpeVocab):
-            self.gguf.add_tokenizer_model("gpt2")
-        elif isinstance(vocab, HfVocab):
-            self.gguf.add_tokenizer_model("llama")
-        else:
-            raise ValueError(
-                "Unknown vocab type: Not BpeVocab, SentencePieceVocab, or HfVocab"
-            )
+        return tokens, scores, toktypes
 
+    def add_meta_vocab(self, vocab: Vocab) -> None:
+        # Handle the tokenizer model
+        tokenizer_model = self.handle_tokenizer_model(vocab)
+
+        # Ensure that tokenizer_model is added to the GGUF model
+        self.gguf.add_tokenizer_model(tokenizer_model)
+
+        # Extract model vocabulary for model conversion
+        tokens, scores, toktypes = self.extract_vocabulary_from_model(vocab)
+
+        # Add extracted token information for model conversion
         self.gguf.add_token_list(tokens)
         self.gguf.add_token_scores(scores)
         self.gguf.add_token_types(toktypes)
@@ -1174,7 +1251,7 @@ class OutputFile:
         endianess: gguf.GGUFEndian = gguf.GGUFEndian.LITTLE,
         pad_vocab: bool = False,
     ) -> None:
-        check_vocab_size(params, vocab, pad_vocab)
+        check_vocab_size(params, vocab, pad_vocab=pad_vocab)
 
         of = OutputFile(fname_out, endianess=endianess)
 
@@ -1212,7 +1289,7 @@ class OutputFile:
         endianess: gguf.GGUFEndian = gguf.GGUFEndian.LITTLE,
         pad_vocab: bool = False,
     ) -> None:
-        check_vocab_size(params, vocab, pad_vocab)
+        check_vocab_size(params, vocab, pad_vocab=pad_vocab)
 
         of = OutputFile(fname_out, endianess=endianess)
 
@@ -1258,7 +1335,7 @@ class OutputFile:
         of.close()
 
 
-def pick_output_type(model: LazyModel, output_type_str: Optional[str]) -> GGMLFileType:
+def pick_output_type(model: LazyModel, output_type_str: str | None) -> GGMLFileType:
     wq_type = model[
         gguf.TENSOR_NAMES[gguf.MODEL_TENSOR.ATTN_Q].format(bid=0) + ".weight"
     ].data_type
@@ -1348,7 +1425,7 @@ def convert_model_names(model: LazyModel, params: Params) -> LazyModel:
     return out
 
 
-def nth_multifile_path(path: Path, n: int) -> Optional[Path]:
+def nth_multifile_path(path: Path, n: int) -> Path | None:
     """Given any path belonging to a multi-file model (e.g. foo.bin.1), return
     the nth path in the model.
     """
@@ -1498,7 +1575,7 @@ class VocabFactory:
         return vocab, special_vocab
 
 
-def default_outfile(model_paths: list[Path], file_type: GGMLFileType) -> Path:
+def default_output_file(model_paths: list[Path], file_type: GGMLFileType) -> Path:
     namestr = {
         GGMLFileType.AllF32: "f32",
         GGMLFileType.MostlyF16: "f16",
@@ -1524,72 +1601,116 @@ def do_dump_model(model_plus: ModelPlus) -> None:
         )
 
 
-def main(args_in: Optional[list[str]] = None) -> None:
+def get_argument_parser() -> ArgumentParser:
     output_choices = ["f32", "f16"]
     if np.uint32(1) == np.uint32(1).newbyteorder("<"):
         # We currently only support Q8_0 output on little endian systems.
         output_choices.append("q8_0")
+
     parser = argparse.ArgumentParser(
         description="Convert a LLaMa model to a GGML compatible file"
     )
-    parser.add_argument(
-        "--dump",
-        action="store_true",
-        help="don't convert, just show what's in the model",
-    )
-    parser.add_argument(
-        "--dump-single",
-        action="store_true",
-        help="don't convert, just show what's in a single model file",
-    )
-    parser.add_argument(
-        "--vocab-only", action="store_true", help="extract only the vocab"
-    )
-    parser.add_argument(
-        "--outtype",
-        choices=output_choices,
-        help="output format - note: q8_0 may be very slow (default: f16 or f32 based on input)",
-    )
-    parser.add_argument(
-        "--vocab-dir",
-        type=Path,
-        help="directory containing tokenizer.model, if separate from model file",
-    )
-    parser.add_argument(
-        "--outfile", type=Path, help="path to write to; default: based on input"
-    )
+
     parser.add_argument(
         "model",
         type=Path,
-        help="directory containing model file, or model file itself (*.pth, *.pt, *.bin, *.safetensors)",
+        help="Directory containing the model file or the model file itself (*.pth, *.pt, *.bin)",
     )
+
     parser.add_argument(
-        "--vocabtype",
-        choices=["spm", "bpe", "hfft"],  # hfft: hugging face fast tokenizer
-        help="vocab format (default: spm)",
+        "--awq-path",
+        type=Path,
+        help="Path to the Activation-aware Weight Quantization cache file",
+        default=None,
+    )
+
+    parser.add_argument(
+        "--dump",
+        action="store_true",
+        help="Display the model content without converting it",
+    )
+
+    parser.add_argument(
+        "--dump-single",
+        action="store_true",
+        help="Display the content of a single model file without conversion",
+    )
+
+    parser.add_argument(
+        "--vocab-only",
+        action="store_true",
+        help="Extract and output only the vocabulary",
+    )
+
+    parser.add_argument(
+        "--outtype",
+        choices=output_choices,
+        help="Output format - note: q8_0 may be very slow (default: f16 or f32 based on input)",
+    )
+
+    parser.add_argument(
+        "--vocab-dir",
+        type=Path,
+        help="Directory containing the tokenizer.model, if separate from the model file",
+    )
+
+    parser.add_argument(
+        "--vocab-type",
+        choices=["spm", "bpe", "hfft"],  # hfft: Hugging Face Fast Tokenizer
         default="spm",
+        help="The vocabulary format used to define the tokenizer model (default: spm)",
     )
+
     parser.add_argument(
-        "--ctx", type=int, help="model training context (default: based on input)"
+        "--pad-vocab",
+        action="store_true",
+        help="Add padding tokens when the model's vocabulary size exceeds the tokenizer metadata",
     )
+
+    parser.add_argument(
+        "--outfile",
+        type=Path,
+        help="Specify the path for the output file (default is based on input)",
+    )
+
+    parser.add_argument(
+        "--ctx", type=int, help="Model training context (default is based on input)"
+    )
+
     parser.add_argument(
         "--concurrency",
         type=int,
-        help=f"concurrency used for conversion (default: {DEFAULT_CONCURRENCY})",
+        help=f"Concurrency used for conversion (default: {DEFAULT_CONCURRENCY})",
         default=DEFAULT_CONCURRENCY,
     )
+
     parser.add_argument(
-        "--bigendian",
+        "--big-endian",
         action="store_true",
-        help="model is executed on big endian machine",
-    )
-    parser.add_argument(
-        "--pad_vocab",
-        action="store_true",
-        help="add pad tokens when model vocab expects more than tokenizer metadata provides",
+        help="Indicate that the model is executed on a big-endian machine",
     )
 
-    args = parser.parse_args(args_in)
+    return parser
+
+
+def main(argv: Optional[list[str]] = None) -> None:
+    parser = get_argument_parser()
+    args = parser.parse_args(argv)
+
+    if args.awq_path:
+        sys.path.insert(1, str(Path(__file__).resolve().parent / "awq-py"))
+        from awq.apply_awq import add_scale_weights
+
+        tmp_model_path = args.model / "weighted_model"
+        if tmp_model_path.is_dir():
+            print(f"{tmp_model_path} exists as a weighted model.")
+        else:
+            tmp_model_path.mkdir(parents=True, exist_ok=True)
+            print("Saving new weighted model ...")
+            add_scale_weights(str(args.model), str(args.awq_path), str(tmp_model_path))
+            print(f"Saved weighted model at {tmp_model_path}.")
+        args.model = tmp_model_path
+
     if args.dump_single:
         model_plus = lazy_load_file(args.model)
         do_dump_model(model_plus)
@@ -1605,8 +1726,9 @@ def main(args_in: Optional[list[str]] = None) -> None:
     if args.dump:
         do_dump_model(model_plus)
         return
+
     endianess = gguf.GGUFEndian.LITTLE
-    if args.bigendian:
+    if args.big_endian:
         endianess = gguf.GGUFEndian.BIG
 
     params = Params.load(model_plus)
@@ -1632,7 +1754,7 @@ def main(args_in: Optional[list[str]] = None) -> None:
     model_parent_path = model_plus.paths[0].parent
     vocab_path = Path(args.vocab_dir or args.model or model_parent_path)
     vocab_factory = VocabFactory(vocab_path)
-    vocab, special_vocab = vocab_factory.load_vocab(args.vocabtype, model_parent_path)
+    vocab, special_vocab = vocab_factory.load_vocab(args.vocab_type, model_parent_path)
 
     if args.vocab_only:
         if not args.outfile:
@@ -1656,7 +1778,7 @@ def main(args_in: Optional[list[str]] = None) -> None:
     model = convert_model_names(model, params)
     ftype = pick_output_type(model, args.outtype)
     model = convert_to_output_type(model, ftype)
-    outfile = args.outfile or default_outfile(model_plus.paths, ftype)
+    outfile = args.outfile or default_output_file(model_plus.paths, ftype)
 
     params.ftype = ftype
     print(f"Writing {outfile}, format {ftype}")
@@ -1676,4 +1798,4 @@ def main(args_in: Optional[list[str]] = None) -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])  # Exclude the first element (script name) from sys.argv
