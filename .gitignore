@@ -1,12 +1,7 @@
 # Local
-/sessions
-/cache
-/source
+/data
 /models
-/datasets
-/database
 /local
-/logs
 /config.json
 
 /docs/assets/*
