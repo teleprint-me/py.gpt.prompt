@@ -41,7 +41,7 @@ numpy = "^1.26.3"
 
 # Web and Data Retrieval
 requests = "^2.31.0"
-beautifulsoup4 = "^4.12.2"
+beautifulsoup4 = "^4.12.3"
 feedparser = "^6.0.11"
 html2text = "^2020.1.16"
 
@@ -76,10 +76,10 @@ sentencepiece = "^0.1.99"
 tiktoken = "^0.5.2"
 
 # AI Models and Embeddings
-openai = {extras = ["embeddings"], version = "^1.7.2"}
+openai = {extras = ["embeddings"], version = "^1.8.0"}
 
 # Llama.cpp and Frontend
-llama-cpp-python = "^0.2.28"
+llama-cpp-python = "^0.2.31"
 gguf = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
@@ -93,8 +93,8 @@ flake8 = "^6.1.0"
 build = "^1.0.3"
 mkdocs = "^1.5.3"
 mkdocstrings = {version = "^0.24.0", extras = ["python"]}
-mkdocs-material = "^9.5.3"
-ipykernel = "^6.27.0"  # Required for VSCode
+mkdocs-material = "^9.5.4"
+ipykernel = "^6.29.0"  # Required for VSCode
 # jupyter = "^1.0.0"  # Install if needed
 # pynvim = "^0.4.3"  # Install if needed
 
