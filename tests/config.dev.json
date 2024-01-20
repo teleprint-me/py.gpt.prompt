@@ -90,7 +90,7 @@
     "model": {
       "repo_id": "teleprint-me/llama-2-7b-chat-GGUF",
       "filename": "llama-2-7b-chat.GGUF.q5_0.bin",
-      "local": "models/mistralai/Mixtral-8x7B-Instruct-v0.1/Mixtral-8x7B-Instruct-v0.1-q4_0.gguf",
+      "local": "models/mistralai/Mistral-7B-Instruct-v0.2/ggml-model-q8_0.gguf",
       "n_ctx": 4096,
       "n_parts": -1,
       "seed": 1337,
