@@ -60,12 +60,13 @@ class OpenAIModel(ChatModel):
         """
         self.logger.debug("Entering _extract_content method.")
         self.logger.debug(f"Initial delta: {delta}, content: {content}")
-        # print(delta)
+
         if delta and delta.content:
             token = delta.content
             print(token, end="")
             sys.stdout.flush()
             content += token
+
         return content
 
     def _extract_function_call(
@@ -92,14 +93,12 @@ class OpenAIModel(ChatModel):
             f"function_call_args: {function_call_args}, "
         )
 
-        # NOTE: Keep an eye on this.
-        # function_call may have properties and produce
-        # `ERROR:OpenAIModel:Error generating chat completions: 'function_call' object is not subscriptable`
         if delta and delta.function_call:
             function_call = delta.function_call
             if not function_call_name:
-                function_call_name = function_call.get("name", "")
-            function_call_args += str(function_call.get("arguments", ""))
+                function_call_name = function_call.name
+            function_call_args += str(function_call.arguments)
+
         return function_call_name, function_call_args
 
     def _handle_finish_reason(
