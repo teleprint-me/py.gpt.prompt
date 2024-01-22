@@ -16,28 +16,54 @@ from pygptprompt.model.sequence.context_manager import ContextWindowManager
 class ChatModelChunkProcessor:
     def __init__(
         self,
+        context_file_path: str,
+        provider: str,
+        config: ConfigurationManager,
         chat_model: ChatModel,
-        context_window: ContextWindowManager,
     ):
+        # NOTE: Chat Models can make function calls
         self.chat_model = chat_model
-        self.context_window = context_window
+        # Context Window will keep track of text based sequences
+        self.context_window = self._initialize_context_window(
+            context_file_path=context_file_path,
+            provider=provider,
+            config=config,
+        )
+        # Track messages within the context window
+        self.messages = self._initialize_messages()
 
-    def process_chunk(self, chunk: str) -> str:
-        system_prompt = ChatModelResponse(
+    def _initialize_messages(self) -> List[ChatModelResponse]:
+        self.system_prompt = ChatModelResponse(
             role="system",
             content="System task: Process and repair the given text chunks.",
         )
+        return [self.system_prompt]
 
-        instruct_prompt = ChatModelResponse(
-            role="user", content=f"Repair and summarize the following text:\n\n{chunk}"
+    def _initialize_context_window(
+        self,
+        context_file_path: str,
+        provider: str,
+        config: ConfigurationManager,
+    ):
+        # NOTE: context_window automatically dequeues messages exceeding
+        # chat models max sequence length.
+        return ContextWindowManager(
+            file_path=context_file_path,
+            provider=provider,
+            config=config,
+            chat_model=self.chat_model,
+            vector_store=None,
         )
 
-        chat_model_request = [system_prompt, instruct_prompt]
+    def process_chunk(self, chunk: str, meta_prompt: str) -> str:
+        instruct_prompt = ChatModelResponse(
+            role="user",
+            content=f"Repair and summarize the following text:\n\n{chunk}\n\n{meta_prompt}",
+        )
 
-        chat_model_response = self.chat_model.get_chat_completion(chat_model_request)
-
+        self.messages.append(instruct_prompt)
+        chat_model_response = self.chat_model.get_chat_completion(self.messages)
         self.context_window.enqueue(chat_model_response)
-
         return chat_model_response["content"]
 
 
@@ -45,7 +71,7 @@ class PDFProcessor:
     def __init__(
         self,
         input_file_path: str,
-        output_file_path: str,
+        context_file_path: str,
         chunk_size: int,
         provider: str,
         config: ConfigurationManager,
@@ -57,27 +83,11 @@ class PDFProcessor:
         self.config = config
         # Set the document i/o file paths
         self.input_file_path = input_file_path  # a pdf or directory
-        self.output_file_path = output_file_path  # where the transcript is saved to
         # Set the chunk size
         self.chunk_size = chunk_size
-        # NOTE: Chat Models can make function calls
-        self.chat_model = chat_model
-        # Context Window will keep track of text based sequences
-        context_window = self._initialize_context_window(
-            provider=provider, config=config
-        )
         # Chunk processor assists chat model with document processing
         self.chunk_processor = ChatModelChunkProcessor(
-            chat_model=chat_model, context_window=context_window
-        )
-
-    def _initialize_context_window(self, provider: str, config: ConfigurationManager):
-        return ContextWindowManager(
-            file_path=self.output_file_path,
-            provider=provider,
-            config=self.config,
-            chat_model=self.chat_model,
-            vector_store=None,
+            context_file_path, provider=provider, config=config, chat_model=chat_model
         )
 
     def scan_directory_for_pdfs(self, directory: str) -> List[str]:
@@ -124,13 +134,13 @@ class PDFProcessor:
         ) // self.chunk_size  # Calculate total number of chunks
 
         # Initialize tqdm progress bar
-        with tqdm(total=total_chunks, desc="Processing Chunks") as pbar:
+        with tqdm.tqdm(total=total_chunks, desc="Processing Chunks") as pbar:
             while start < text_length:
                 end = min(start + self.chunk_size, text_length)
                 chunk = text[start:end]
 
                 # Generate dynamic prompt based on metadata
-                prompt = f"PDF ID: {metadata['pdf_id']}, Page: {metadata['page_number']}, Chunk: {len(chunks) + 1}"
+                prompt = f"PDF ID: {metadata['pdf_id']}, Page: {metadata['page_number']}, Chunk: {len(chunk) + 1}"
 
                 # Process the chunk with the model
                 processed_chunk = self.chunk_processor.process_chunk(chunk, prompt)
