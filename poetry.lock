@@ -3120,6 +3120,21 @@ files = [
 ]
 
 [[package]]
+name = "python-poppler"
+version = "0.4.1"
+description = "A Python binding to poppler-cpp"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "python_poppler-0.4.1.tar.gz", hash = "sha256:e6ca5c23ec02350bf2cef85a6bf9f1b261796436db478176f9d24fb14eeecc6a"},
+]
+
+[package.extras]
+dev = ["black", "flake8", "flake8-bugbear"]
+doc = ["gph-import", "sphinx", "sphinx-issues", "sphinx-material"]
+test = ["pytest"]
+
+[[package]]
 name = "pyupgrade"
 version = "3.15.0"
 description = "A tool to automatically upgrade syntax for newer versions."
@@ -4735,4 +4750,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "c0d08b37b3b517b81e184c4b6eba98e08e3db057445f6d8fbe52b796caec73bf"
+content-hash = "cec8648da66b33d31acb173b2bc5d4ee38363f2ffb0408d1192502281867b2a8"
