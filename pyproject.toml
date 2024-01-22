@@ -44,6 +44,7 @@ requests = "^2.31.0"
 beautifulsoup4 = "^4.12.3"
 feedparser = "^6.0.11"
 html2text = "^2020.1.16"
+python-poppler = "^0.4.1"
 
 # Command-line Tools
 click = "^8.1.7"
@@ -52,6 +53,7 @@ python-magic = "^0.4.27"
 prompt-toolkit = "^3.0.43"
 rich = "^13.7.0"
 inquirer = "^3.1.4"
+tqdm = "^4.66.1"
 
 # Web Automation and Image Processing
 selenium = "^4.16.0"
