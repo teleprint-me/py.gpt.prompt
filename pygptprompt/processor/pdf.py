@@ -10,7 +10,7 @@ import tqdm
 
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.model.base import ChatModel, ChatModelResponse
-from pygptprompt.model.sequence.context_manager import ContextWindowManager
+from pygptprompt.model.sequence.session_manager import SessionManager
 
 
 class PDFMetaData(TypedDict):
@@ -36,7 +36,7 @@ class PDFPage(TypedDict):
 class ChatModelChunkProcessor:
     def __init__(
         self,
-        context_file_path: str,
+        session_name: str,
         provider: str,
         config: ConfigurationManager,
         chat_model: ChatModel,
@@ -44,15 +44,15 @@ class ChatModelChunkProcessor:
         # NOTE: Chat Models can make function calls
         self.chat_model = chat_model
         # Context Window will keep track of text based sequences
-        self.context_window = ContextWindowManager(
-            file_path=context_file_path,
+        self.session_manager = SessionManager(
+            session_name=session_name,
             provider=provider,
             config=config,
             chat_model=self.chat_model,
             vector_store=None,
         )
         # Track messages within the context window
-        self.context_window.system_message = ChatModelResponse(
+        self.session_manager.system_message = ChatModelResponse(
             role="system",
             content="System task: Repair and improve the given text segments.",
         )
@@ -85,36 +85,34 @@ class ChatModelChunkProcessor:
 
     def process_chunk(self, page: PDFPage, chunk: PDFPageChunk) -> str:
         instruct_prompt = self._generate_instruction(page, chunk)
-        self.context_window.enqueue(instruct_prompt)
-        # NOTE: The context_window automatically dequeues messages
+        self.session_manager.enqueue(instruct_prompt)
+        # NOTE: The session_manager automatically dequeues messages
         # exceeding chat models max sequence length.
         chat_model_response = self.chat_model.get_chat_completion(
-            self.context_window.sequence
+            self.session_manager.sequence
         )
-        self.context_window.enqueue(chat_model_response)
+        self.session_manager.enqueue(chat_model_response)
         return chat_model_response["content"]
 
 
 class PDFProcessor:
     def __init__(
         self,
-        context_file_path: str,
-        chunk_length: int,
+        session_name: str,
         provider: str,
         config: ConfigurationManager,
         chat_model: ChatModel,
+        chunk_length: int,
     ):
-        # Setup the chat model configuration
-        self.config = config
-        # Set the chunk size
-        self.chunk_length = chunk_length
         # Chunk processor assists chat model with document processing
         self.chunk_processor = ChatModelChunkProcessor(
-            context_file_path,
+            session_name,
             provider,
             config,
             chat_model,
         )
+        # Set the chunk size
+        self.chunk_length = chunk_length
 
     def scan_directory_for_pdfs(self, directory: str) -> List[str]:
         """Get all pdf files from within a given directory"""
@@ -143,7 +141,7 @@ class PDFProcessor:
         )
         return PDFPage(text=page.text(), metadata=metadata)
 
-    def convert_pdf_to_text(self, pdf_path: str) -> List[Dict[str, Any]]:
+    def convert_pdf_to_text(self, pdf_path: str) -> List[PDFPage]:
         """
         Convert a PDF document into a list of dictionaries, where each dictionary contains the text of a page and metadata like pdf_id, page_number, etc.
         """
@@ -191,6 +189,14 @@ class PDFProcessor:
             start = end
 
         return page
+
+    def convert_pages_to_chunks(
+        self, pages: List[PDFPage], chunk_length: int
+    ) -> List[PDFPage]:
+        index = 0
+        while index < len(pages):
+            pages[index] = self.convert_text_to_chunks(pages[index], chunk_length)
+        return pages
 
     def process_pdf_with_chat_model(self, page: PDFPage):
         """
