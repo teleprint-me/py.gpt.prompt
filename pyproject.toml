@@ -69,8 +69,8 @@ torch = {version = "^2.1.2+cpu", source = "pytorch"}
 fairscale = "^0.4.13"
 
 # NLP (Natural Language Processing)
-huggingface-hub = "^0.20.2"
-transformers = "^4.36.2"
+huggingface-hub = "^0.20.3"
+transformers = "^4.37.0"
 safetensors = "^0.4.1"
 sentencepiece = "^0.1.99"
 
@@ -78,10 +78,10 @@ sentencepiece = "^0.1.99"
 tiktoken = "^0.5.2"
 
 # AI Models and Embeddings
-openai = {extras = ["embeddings"], version = "^1.8.0"}
+openai = {extras = ["embeddings"], version = "^1.9.0"}
 
 # Llama.cpp and Frontend
-llama-cpp-python = "^0.2.31"
+llama-cpp-python = "^0.2.32"
 gguf = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
