@@ -44,38 +44,20 @@ class ChatModelChunkProcessor:
         # NOTE: Chat Models can make function calls
         self.chat_model = chat_model
         # Context Window will keep track of text based sequences
-        self.context_window = self._initialize_context_window(
-            context_file_path=context_file_path,
-            provider=provider,
-            config=config,
-        )
-        # Track messages within the context window
-        self.messages = self._initialize_messages()
-
-    def _initialize_messages(self) -> List[ChatModelResponse]:
-        self.system_prompt = ChatModelResponse(
-            role="system",
-            content="System task: Process and repair the given text chunks.",
-        )
-        return [self.system_prompt]
-
-    def _initialize_context_window(
-        self,
-        context_file_path: str,
-        provider: str,
-        config: ConfigurationManager,
-    ):
-        # NOTE: context_window automatically dequeues messages exceeding
-        # chat models max sequence length.
-        return ContextWindowManager(
+        self.context_window = ContextWindowManager(
             file_path=context_file_path,
             provider=provider,
             config=config,
             chat_model=self.chat_model,
             vector_store=None,
         )
+        # Track messages within the context window
+        self.context_window.system_message = ChatModelResponse(
+            role="system",
+            content="System task: Repair and improve the given text segments.",
+        )
 
-    def generate_prompt(self, page: PDFPage, chunk: PDFPageChunk) -> str:
+    def _generate_prompt(self, page: PDFPage, chunk: PDFPageChunk) -> str:
         """
         Generate a prompt based on the provided metadata.
         """
@@ -84,20 +66,31 @@ class ChatModelChunkProcessor:
 
         # Construct a prompt using metadata
         prompt = (
-            f"PDF ID: {page_metadata['id']}, Page: {page_metadata['index']}, "
-            f"Chunk: {chunk_metadata['chunk_index']} out of {chunk_metadata['total_chunks']}"
+            f"PDF ID: {page_metadata.id}, Page: {page_metadata.index}, "
+            f"Chunk: {chunk_metadata.index} out of {chunk_metadata.total}"
         )
         return prompt
 
-    def process_chunk(self, page: PDFPage, chunk: PDFPageChunk) -> str:
-        metadata_prompt = self.generate_prompt(page, chunk)
-        instruct_prompt = ChatModelResponse(
-            role="user",
-            content=f"Repair and summarize the following text:\n\n{chunk.text}\n\n{metadata_prompt}",
+    def _generate_instruction(
+        self, page: PDFPage, chunk: PDFPageChunk
+    ) -> ChatModelResponse:
+        metadata_prompt = self._generate_prompt(page, chunk)
+        instruction = (
+            "Repair and improve the following text segments to make them coherent and complete. "
+            "Focus on clarity and correctness."
+        )
+        return ChatModelResponse(
+            role="user", content=f"{instruction}\n\n{chunk.text}\n\n{metadata_prompt}"
         )
 
-        self.messages.append(instruct_prompt)
-        chat_model_response = self.chat_model.get_chat_completion(self.messages)
+    def process_chunk(self, page: PDFPage, chunk: PDFPageChunk) -> str:
+        instruct_prompt = self._generate_instruction(page, chunk)
+        self.context_window.enqueue(instruct_prompt)
+        # NOTE: The context_window automatically dequeues messages
+        # exceeding chat models max sequence length.
+        chat_model_response = self.chat_model.get_chat_completion(
+            self.context_window.sequence
+        )
         self.context_window.enqueue(chat_model_response)
         return chat_model_response["content"]
 
