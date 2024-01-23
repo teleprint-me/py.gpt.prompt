@@ -88,44 +88,43 @@ def main(
 
     # Create the PDF processor
     processor = PDFProcessor(
-        session_name,
-        max_chunk_length,
-        provider,
-        config,
-        chat_model,
+        session_name=session_name,
+        provider=provider,
+        config=config,
+        chat_model=chat_model,
+        chunk_length=max_chunk_length,
     )
 
     # Convert PDF to text
-    pages: List[PDFPage] = processor.convert_pdf_to_text()
+    pages: List[PDFPage] = processor.convert_pdf_to_text(pdf_path)
     pages = processor.convert_pages_to_chunks(pages, max_chunk_length)
 
     if output:
-        # Save the processed text to the specified output file
+        # If 'output' is specified, write 'page.text' to the output file
+        print("--- Writing Text Chunks ---")
         with open(output, "a+") as text_file:
             for page in pages:
-                text_file.write(page)
+                text_file.write(page.text)
+        print(f"--- Wrote {len(pages)} Pages ---")
     elif view_chunks:
-        # View the raw text chunks without processing by the model
-        click.echo("--- Raw Text Chunks ---")
+        # If 'view_chunks' is specified, iterate over 'pages' and display raw text chunks
+        print("--- Viewing Text Chunks ---")
         for index, page in enumerate(pages):
-            click.echo(f"Page {index + 1} Chunks:")
-            for chunk in page["chunks"]:
-                click.echo(chunk)
-                click.echo("---")
+            print(f"Page {index + 1} Chunks:")
+            for chunk in page.chunks:
+                print(chunk.text)
+                print("---")
     else:
-        # Print the processed text chunks
-        click.echo("--- Processed Text Chunks ---")
+        # If none of the above conditions are met, process the chunks with the chat model
+        print("--- Processing Text Chunks ---")
         for index, page in enumerate(pages):
             # Process the text chunks with the chat model
-            processed_chunks, metadata = processor.chunk_text_with_chat_model(
-                page["text"], page["metadata"]
-            )
-            page["metadata"] = metadata
+            processed_chunks = processor.process_pdf_with_chat_model(page)
 
-            click.echo(f"Page {index + 1} Chunks:")
+            print(f"Page {index + 1} Chunks:")
             for chunk in processed_chunks:
-                click.echo(chunk)
-                click.echo("---")
+                print(chunk.text)
+                print("---")
 
 
 if __name__ == "__main__":
