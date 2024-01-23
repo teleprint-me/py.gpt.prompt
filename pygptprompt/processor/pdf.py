@@ -2,6 +2,7 @@
 pygptprompt/processor/pdf.py
 """
 import os
+from dataclasses import dataclass, field
 from typing import Any, Dict, List, TypedDict
 
 import magic
@@ -13,21 +14,24 @@ from pygptprompt.model.base import ChatModel, ChatModelResponse
 from pygptprompt.model.sequence.session_manager import SessionManager
 
 
-class PDFMetaData(TypedDict):
+@dataclass
+class PDFMetaData:
     id: str
     index: int
     total: int
 
 
-class PDFPageChunk(TypedDict):
+@dataclass
+class PDFPageChunk:
     text: str
     metadata: PDFMetaData
 
 
-class PDFPage(TypedDict):
+@dataclass
+class PDFPage:
     text: str
     metadata: PDFMetaData
-    chunks: List[PDFPageChunk] = []
+    chunks: List[PDFPageChunk] = field(default_factory=list)
 
     def add_chunk(self, chunk: PDFPageChunk):
         self.chunks.append(chunk)
@@ -51,11 +55,12 @@ class ChatModelChunkProcessor:
             chat_model=self.chat_model,
             vector_store=None,
         )
-        # Track messages within the context window
-        self.session_manager.system_message = ChatModelResponse(
+        # Track messages with the session manager
+        system_prompt = ChatModelResponse(
             role="system",
             content="System task: Repair and improve the given text segments.",
         )
+        self.session_manager.load(system_prompt)
 
     def _generate_prompt(self, page: PDFPage, chunk: PDFPageChunk) -> str:
         """
@@ -89,9 +94,10 @@ class ChatModelChunkProcessor:
         # NOTE: The session_manager automatically dequeues messages
         # exceeding chat models max sequence length.
         chat_model_response = self.chat_model.get_chat_completion(
-            self.session_manager.sequence
+            messages=self.session_manager.output()
         )
         self.session_manager.enqueue(chat_model_response)
+        self.session_manager.save()
         return chat_model_response["content"]
 
 
@@ -106,10 +112,10 @@ class PDFProcessor:
     ):
         # Chunk processor assists chat model with document processing
         self.chunk_processor = ChatModelChunkProcessor(
-            session_name,
-            provider,
-            config,
-            chat_model,
+            session_name=session_name,
+            provider=provider,
+            config=config,
+            chat_model=chat_model,
         )
         # Set the chunk size
         self.chunk_length = chunk_length
@@ -148,9 +154,9 @@ class PDFProcessor:
         pages = []
         pdf_document = poppler.load_from_file(file_name=pdf_path)
         pdf_id = pdf_path.split("/")[-1]
-        total_pages = pdf_document.pages()
+        total_pages = pdf_document.pages
 
-        for index in tqdm.tqdm(range(total_pages), desc="Converting PDF"):
+        for index in tqdm.tqdm(range(total_pages), desc="Converting PDF to Text"):
             pdf_data = self._extract_pdf_data(pdf_document, pdf_id, index, total_pages)
             pages.append(pdf_data)
 
@@ -165,8 +171,8 @@ class PDFProcessor:
     ) -> PDFPageChunk:
         metadata = PDFMetaData(
             id=page.metadata.id,
-            chunk_index=chunk_index + 1,
-            total_chunks=total_chunks,
+            index=chunk_index + 1,
+            total=total_chunks,
         )
         return PDFPageChunk(
             text=page_chunk,
@@ -178,7 +184,9 @@ class PDFProcessor:
         text_length = len(page.text)
         total_chunks = (text_length + chunk_length - 1) // chunk_length
 
-        for chunk_index in tqdm.tqdm(range(total_chunks), desc="Converting PDF Page"):
+        for chunk_index in tqdm.tqdm(
+            range(total_chunks), desc="Converting Text to Chunks"
+        ):
             end = min(start + chunk_length, text_length)
             chunk = page.text[start:end]
 
@@ -194,8 +202,14 @@ class PDFProcessor:
         self, pages: List[PDFPage], chunk_length: int
     ) -> List[PDFPage]:
         index = 0
-        while index < len(pages):
-            pages[index] = self.convert_text_to_chunks(pages[index], chunk_length)
+        total_pages = len(pages)
+        with tqdm.tqdm(total=total_pages, desc="Converting Pages to Chunks") as pbar:
+            while index < total_pages:
+                pages[index] = self.convert_text_to_chunks(pages[index], chunk_length)
+                # Update index
+                index += 1  # Do not remove this!
+                # Update tqdm progress bar
+                pbar.update(1)  # Increment by one chunk
         return pages
 
     def process_pdf_with_chat_model(self, page: PDFPage):
