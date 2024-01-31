@@ -81,7 +81,7 @@ tiktoken = "^0.5.2"
 openai = {extras = ["embeddings"], version = "^1.10.0"}
 
 # Llama.cpp and Frontend
-llama-cpp-python = "^0.2.36"
+llama-cpp-python = "^0.2.38"
 gguf = "^0.6.0"
 
 [tool.poetry.dev-dependencies]

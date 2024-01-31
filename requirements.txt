@@ -43,7 +43,7 @@ ghp-import==2.1.0
 google-auth==2.27.0
 googleapis-common-protos==1.62.0
 greenlet==3.0.3
-griffe==0.39.1
+griffe==0.40.0
 grpcio==1.60.0
 h11==0.14.0
 html2text==2020.1.16
@@ -59,14 +59,14 @@ importlib-resources==6.1.1
 iniconfig==2.0.0
 inquirer==3.2.3
 ipykernel==6.29.0
-ipython==8.20.0
+ipython==8.21.0
 isort==5.13.2
 jedi==0.19.1
 Jinja2==3.1.3
 jupyter_client==8.6.0
 jupyter_core==5.7.1
 kubernetes==29.0.0
-llama_cpp_python==0.2.36
+llama_cpp_python==0.2.38
 Markdown==3.5.2
 markdown-it-py==3.0.0
 MarkupSafe==2.1.4
@@ -89,7 +89,7 @@ networkx==3.2.1
 nodeenv==1.8.0
 numpy==1.26.3
 oauthlib==3.2.2
-onnxruntime==1.16.3
+onnxruntime==1.17.0
 openai==1.10.0
 opencv-python==4.9.0.80
 opentelemetry-api==1.22.0
@@ -111,9 +111,9 @@ pathspec==0.12.1
 peewee==3.17.0
 pexpect==4.9.0
 pillow==10.2.0
-platformdirs==4.1.0
+platformdirs==4.2.0
 pluggy==1.4.0
-posthog==3.3.3
+posthog==3.3.4
 pre-commit==3.6.0
 prompt-toolkit==3.0.43
 protobuf==4.25.2
@@ -174,7 +174,7 @@ trio==0.24.0
 trio-websocket==0.11.1
 typer==0.9.0
 typing_extensions==4.9.0
-urllib3==2.1.0
+urllib3==2.2.0
 uvicorn==0.27.0.post1
 uvloop==0.19.0
 virtualenv==20.25.0
