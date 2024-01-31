@@ -22,9 +22,13 @@ from pygptprompt.model.base import (
     ChatModelResponse,
     ChatModelTextCompletion,
     DeltaContent,
+    FunctionCall,
 )
 
 
+# NOTE: llama-cpp-python is now out of sync with
+# openai implementation. This should be remedied sooner
+# than later.
 class LlamaCppModel(ChatModel):
     """
     ChatModel class for interacting with the Llama language model.
@@ -57,6 +61,7 @@ class LlamaCppModel(ChatModel):
             n_batch=config.get_value("llama_cpp.model.n_batch", 512),
             n_gpu_layers=config.get_value("llama_cpp.model.n_gpu_layers", 0),
             low_vram=config.get_value("llama_cpp.model.low_vram", False),
+            chat_format=config.get_value("llama_cpp.model.chat_format", "llama-2"),
             verbose=config.get_value("llama_cpp.model.verbose", False),
             n_parts=config.get_value("llama_cpp.model.n_parts", -1),
             seed=config.get_value("llama_cpp.model.seed", 1337),
@@ -161,6 +166,7 @@ class LlamaCppModel(ChatModel):
             print(token, end="")
             sys.stdout.flush()
             content += token
+
         return content
 
     def _extract_function_call(
@@ -225,8 +231,11 @@ class LlamaCppModel(ChatModel):
             if finish_reason == "function_call":
                 return ChatModelResponse(
                     role="function",
-                    function_call=function_call_name,
-                    function_args=function_call_args,
+                    function_call=FunctionCall(
+                        name=function_call_name,
+                        arguments=function_call_args,
+                    ),
+                    content=None,
                 )
             elif finish_reason == "stop":
                 print()  # Add newline to model output
@@ -288,8 +297,8 @@ class LlamaCppModel(ChatModel):
                 self.logger.debug(f"Returning message: {message}")
                 return message
 
-        # NOTE: The finish reason should be present, but vanished regardless.
-        # The reason for it vanishing is unknown; This is a bug.
+        # NOTE: The finish reason should be present.
+        # If the finish reason vanishes, then something unexpected happened.
         self.logger.debug(f"Generated content: {content}")
         self.logger.debug("Exiting _stream_chat_completion without a finish_reason.")
         # NOTE: There is no message, but content is always generated.
