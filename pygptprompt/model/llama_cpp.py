@@ -1,6 +1,7 @@
 """
 pygptprompt/model/llama_cpp.py
 """
+
 import sys
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Tuple, Union
@@ -13,6 +14,10 @@ from huggingface_hub.utils import (
     RepositoryNotFoundError,
 )
 from llama_cpp import ChatCompletionChunk, Llama
+from rich.console import Console
+from rich.live import Live
+from rich.markdown import Markdown
+from rich.panel import Panel
 
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.model.base import (
@@ -81,6 +86,8 @@ class LlamaCppModel(ChatModel):
             rope_freq_base=config.get_value("llama_cpp.model.rope_freq_base", 10000.0),
             rope_freq_scale=config.get_value("llama_cpp.model.rope_freq_scale", 1.0),
         )
+
+        self.console = Console(color_system="auto")
 
     def _discover_model(self) -> str:
         """
@@ -266,36 +273,47 @@ class LlamaCppModel(ChatModel):
             f"Initial function_call_name: {function_call_name}, function_call_args: {function_call_args}, content: {content}"
         )
 
-        for chunk in response_generator:
-            self.logger.debug(f"Processing chunk: {chunk}")
+        with Live(console=self.console) as stream:
+            for chunk in response_generator:
+                self.logger.debug(f"Processing chunk: {chunk}")
 
-            delta = chunk["choices"][0]["delta"]
-            content = self._extract_content(delta, content)
-            function_call_name, function_call_args = self._extract_function_call(
-                delta, function_call_name, function_call_args
-            )
+                delta = chunk["choices"][0]["delta"]
+                content = self._extract_content(delta, content)
+                function_call_name, function_call_args = self._extract_function_call(
+                    delta, function_call_name, function_call_args
+                )
 
-            self.logger.debug(f"Extracted delta: {delta}")
-            self.logger.debug(f"Current content: {content}")
-            self.logger.debug(
-                f"Current function_call_name: {function_call_name}, function_call_args: {function_call_args}"
-            )
+                self.logger.debug(f"Extracted delta: {delta}")
+                self.logger.debug(f"Current content: {content}")
+                self.logger.debug(
+                    f"Current function_call_name: {function_call_name}, function_call_args: {function_call_args}"
+                )
 
-            finish_reason = chunk["choices"][0]["finish_reason"]
-            self.logger.debug(f"Finish reason: {finish_reason}")
+                finish_reason = chunk["choices"][0]["finish_reason"]
+                self.logger.debug(f"Finish reason: {finish_reason}")
 
-            message = self._handle_finish_reason(
-                finish_reason,
-                function_call_name,
-                function_call_args,
-                content,
-            )
+                message = self._handle_finish_reason(
+                    finish_reason,
+                    function_call_name,
+                    function_call_args,
+                    content,
+                )
 
-            self.logger.debug(f"Generated message: {message}")
+                self.logger.debug(f"Generated message: {message}")
 
-            if message:  # NOTE: Exit early if a finish reason is given.
-                self.logger.debug(f"Returning message: {message}")
-                return message
+                print(message)
+
+                panel = Panel(
+                    Markdown(message),
+                    title=self.config.get_value("llama_cpp.provider"),
+                    title_align="left",
+                    border_style="red",
+                )
+                stream.update(panel, refresh=True)
+
+                if message:  # NOTE: Exit early if a finish reason is given.
+                    self.logger.debug(f"Returning message: {message}")
+                    return message
 
         # NOTE: The finish reason should be present.
         # If the finish reason vanishes, then something unexpected happened.
