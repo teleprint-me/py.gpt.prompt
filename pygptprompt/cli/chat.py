@@ -4,6 +4,7 @@ pygptprompt/cli/chat.py
 "The way we intuitively think about things is just not the way the world is. Maybe some day cognitive science will reach the level of physics, in 19th century, and recognize that our intuitive concept of the world isn't the way it works."
     - Noam Chomsky, MLST - On the Critique of Connections and Cognitive Architecture
 """
+
 import sys
 import traceback
 from logging import Logger
@@ -128,9 +129,6 @@ def main(
             # This is a desirable behavior within the given context.
 
             # Get assistant's response
-            print("assistant")
-
-            # And for assistant output:
             assistant_message = chat_model.get_chat_completion(
                 messages=session_manager.output()
             )
@@ -169,8 +167,8 @@ def main(
 
                 # Then, in your chat loop for user input:
                 user_message = ChatModelResponse(role="user", content=user_content)
-
                 session_manager.enqueue(message=user_message)
+                print()  # Add padding to output
 
                 # NOTE:
                 # We don't want to duplicate user queries, so we skip saving
@@ -178,10 +176,7 @@ def main(
                 # If the script crashes, then the user message is lost.
                 # This is a desirable behavior within the given context.
 
-                print()  # Add padding to output
-                print("assistant")
-
-                # And for assistant output:
+                # Get assistant's response
                 assistant_message = chat_model.get_chat_completion(
                     messages=session_manager.output()
                 )

@@ -154,7 +154,7 @@ class LlamaCppModel(ChatModel):
         self.logger.error("Max retries exceeded. Failed to download the model.")
         sys.exit(1)
 
-    def _extract_content(self, delta: DeltaContent, content: str) -> str:
+    def _extract_content(self, stream: Live, delta: DeltaContent, content: str) -> str:
         """
         Extracts content from the given delta and appends it to the existing content.
 
@@ -170,8 +170,6 @@ class LlamaCppModel(ChatModel):
 
         if delta and "content" in delta and delta["content"]:
             token = delta["content"]
-            print(token, end="")
-            sys.stdout.flush()
             content += token
 
         return content
@@ -245,8 +243,6 @@ class LlamaCppModel(ChatModel):
                     content=None,
                 )
             elif finish_reason == "stop":
-                print()  # Add newline to model output
-                sys.stdout.flush()
                 return ChatModelResponse(role="assistant", content=content)
             else:
                 # Handle unexpected finish_reason
@@ -278,12 +274,13 @@ class LlamaCppModel(ChatModel):
                 self.logger.debug(f"Processing chunk: {chunk}")
 
                 delta = chunk["choices"][0]["delta"]
-                content = self._extract_content(delta, content)
+                self.logger.debug(f"Extracted delta: {delta}")
+
+                content = self._extract_content(stream, delta, content)
                 function_call_name, function_call_args = self._extract_function_call(
                     delta, function_call_name, function_call_args
                 )
 
-                self.logger.debug(f"Extracted delta: {delta}")
                 self.logger.debug(f"Current content: {content}")
                 self.logger.debug(
                     f"Current function_call_name: {function_call_name}, function_call_args: {function_call_args}"
@@ -301,13 +298,11 @@ class LlamaCppModel(ChatModel):
 
                 self.logger.debug(f"Generated message: {message}")
 
-                print(message)
-
                 panel = Panel(
-                    Markdown(message),
+                    Markdown(content),
                     title=self.config.get_value("llama_cpp.provider"),
                     title_align="left",
-                    border_style="red",
+                    border_style="yellow",
                 )
                 stream.update(panel, refresh=True)
 
