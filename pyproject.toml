@@ -52,11 +52,11 @@ python-dotenv = "^1.0.1"
 python-magic = "^0.4.27"
 prompt-toolkit = "^3.0.43"
 rich = "^13.7.0"
-inquirer = "^3.2.3"
+inquirer = "^3.2.4"
 tqdm = "^4.66.2"
 
 # Web Automation and Image Processing
-selenium = "^4.17.2"
+selenium = "^4.18.1"
 opencv-python = "^4.9.0.80"
 pytesseract = "^0.3.10"
 
@@ -70,7 +70,7 @@ fairscale = "^0.4.13"
 
 # NLP (Natural Language Processing)
 huggingface-hub = "^0.20.3"
-transformers = "^4.37.2"
+transformers = "^4.38.0"
 safetensors = "^0.4.2"
 sentencepiece = "^0.1.99"
 
@@ -81,12 +81,12 @@ tiktoken = "^0.6.0"
 openai = {extras = ["embeddings"], version = "^1.12.0"}
 
 # Llama.cpp and Frontend
-llama-cpp-python = "^0.2.44"
+llama-cpp-python = "^0.2.45"
 gguf = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
 bpython = "^0.24"
-pre_commit = "^3.6.1"
+pre_commit = "^3.6.2"
 pyupgrade = "^3.15.0"
 pytest = "^8.0.1"
 black = "^24.2.0"
@@ -95,7 +95,7 @@ flake8 = "^7.0.0"
 build = "^1.0.3"
 mkdocs = "^1.5.3"
 mkdocstrings = {version = "^0.24.0", extras = ["python"]}
-mkdocs-material = "^9.5.9"
+mkdocs-material = "^9.5.10"
 ipykernel = "^6.29.2"  # Required for VSCode
 # jupyter = "^1.0.0"  # Install if needed
 # pynvim = "^0.4.3"  # Install if needed
