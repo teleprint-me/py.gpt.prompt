@@ -96,17 +96,19 @@ class ChromaVectorStore:
 
     def _get_or_create_collection(self):
         try:
-            self.collection = self.chroma_client.create_collection(
-                name=self.collection_name,
-                embedding_function=self.embedding_function,
-            )
-            self.logger.debug(f"Created collection {self.collection_name}")
-        except ValueError:
+            # Attempt to get the collection by name
             self.collection = self.chroma_client.get_collection(
                 name=self.collection_name,
                 embedding_function=self.embedding_function,
             )
             self.logger.debug(f"Loaded collection {self.collection_name}")
+        except ValueError:
+            # If the collection doesn't exist, create it
+            self.collection = self.chroma_client.create_collection(
+                name=self.collection_name,
+                embedding_function=self.embedding_function,
+            )
+            self.logger.debug(f"Created collection {self.collection_name}")
 
     def get_chroma_heartbeat(self) -> int:
         """

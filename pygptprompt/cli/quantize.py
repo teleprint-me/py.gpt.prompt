@@ -70,7 +70,7 @@ def create_output_path(model_input_path, q_type):
     output_path = os.path.dirname(model_input_path)
     model_name = os.path.basename(output_path)
     os.makedirs(output_path, exist_ok=True)
-    output_model = f"{model_name}.GGUF.{q_type}.bin"
+    output_model = f"{model_name}.{q_type}.gguf".lower()
     return os.path.join(output_path, output_model)
 
 

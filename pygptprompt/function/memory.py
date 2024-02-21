@@ -138,7 +138,7 @@ class AugmentedMemoryManager:
 
     def _create_vector_memory(self, table_name: str) -> ChromaVectorStore:
         return ChromaVectorStore(
-            collection_name=table_name,
+            collection_name=f"memory_{table_name}",
             config=self.config,
             chat_model=self.chat_model,
         )

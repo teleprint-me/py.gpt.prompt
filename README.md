@@ -102,7 +102,7 @@ If you have the means and find PyGPTPrompt useful, consider making a donation.
 Your contribution will go directly towards the development and maintenance of
 the project. You can donate using Bitcoin:
 
-[![Bitcoin](https://img.shields.io/badge/Bitcoin-3Q4qSNxpiEcaK3aJDdagzqU9XNyqs8zNrJ-orange)](https://blockstream.info/address/3Q4qSNxpiEcaK3aJDdagzqU9XNyqs8zNrJ)
+[![Bitcoin](https://img.shields.io/badge/Bitcoin-3Di3Dq9i812VBQEJnbowyrcuNwzPwTNRf1-orange)](https://blockstream.info/address/3Di3Dq9i812VBQEJnbowyrcuNwzPwTNRf1)
 
 ### Contribute
 
@@ -113,7 +113,7 @@ contributions are greatly appreciated. Check out the
 
 ## License
 
-    PyGPTPrompt: A Context Window Management System for Automating Prompting with Chat Models.
+    PyGPTPrompt is a library and CLI suite for managing AI models.
     Copyright (C) 2023 Austin Berrio
 
     This program is free software: you can redistribute it and/or modify it under

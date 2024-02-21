@@ -20,11 +20,6 @@ from pathlib import Path
 from typing import Optional, Union
 
 from huggingface_hub.hf_api import HfApi
-from huggingface_hub.utils import (
-    EntryNotFoundError,
-    LocalEntryNotFoundError,
-    RepositoryNotFoundError,
-)
 
 from pygptprompt.pattern.logger import get_default_logger
 

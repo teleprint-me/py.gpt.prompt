@@ -43,7 +43,9 @@ class OpenAIModel(ChatModel):
         """
         self.config = config
         self.logger = config.get_logger("general", self.__class__.__name__)
-        openai.api_key = config.get_environment()
+        self.client = openai.OpenAI(
+            api_key=config.get_environment(),
+        )
 
     def _extract_content(self, delta: DeltaContent, content: str) -> str:
         """
@@ -59,11 +61,12 @@ class OpenAIModel(ChatModel):
         self.logger.debug("Entering _extract_content method.")
         self.logger.debug(f"Initial delta: {delta}, content: {content}")
 
-        if delta and "content" in delta and delta["content"]:
-            token = delta["content"]
+        if delta and delta.content:
+            token = delta.content
             print(token, end="")
             sys.stdout.flush()
             content += token
+
         return content
 
     def _extract_function_call(
@@ -90,11 +93,12 @@ class OpenAIModel(ChatModel):
             f"function_call_args: {function_call_args}, "
         )
 
-        if delta and "function_call" in delta and delta["function_call"]:
-            function_call = delta["function_call"]
+        if delta and delta.function_call:
+            function_call = delta.function_call
             if not function_call_name:
-                function_call_name = function_call.get("name", "")
-            function_call_args += str(function_call.get("arguments", ""))
+                function_call_name = function_call.name
+            function_call_args += str(function_call.arguments)
+
         return function_call_name, function_call_args
 
     def _handle_finish_reason(
@@ -166,7 +170,7 @@ class OpenAIModel(ChatModel):
         for chunk in response_generator:
             self.logger.debug(f"Processing chunk: {chunk}")
 
-            delta = chunk["choices"][0]["delta"]
+            delta = chunk.choices[0].delta
             content = self._extract_content(delta, content)
             function_call_name, function_call_args = self._extract_function_call(
                 delta, function_call_name, function_call_args
@@ -178,7 +182,7 @@ class OpenAIModel(ChatModel):
                 f"Current function_call_name: {function_call_name}, function_call_args: {function_call_args}"
             )
 
-            finish_reason = chunk["choices"][0]["finish_reason"]
+            finish_reason = chunk.choices[0].finish_reason
             self.logger.debug(f"Finish reason: {finish_reason}")
 
             message = self._handle_finish_reason(
@@ -232,7 +236,7 @@ class OpenAIModel(ChatModel):
 
         try:
             # Call the OpenAI API's /v1/chat/completions endpoint
-            response = openai.ChatCompletion.create(
+            response = self.client.chat.completions.create(
                 messages=messages,
                 functions=self.config.get_value("function.definitions", []),
                 function_call=self.config.get_value("function.call", "auto"),
@@ -282,7 +286,7 @@ class OpenAIModel(ChatModel):
 
         try:
             # Call the OpenAI API's /v1/embeddings endpoint
-            embedding: Dict[str, Any] = openai.Embedding.create(
+            embedding: Dict[str, Any] = self.client.embeddings.create(
                 input=input,
                 model=self.config.get_value(
                     "openai.embedding.model", "text-embedding-ada-002"

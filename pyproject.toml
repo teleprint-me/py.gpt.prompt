@@ -26,7 +26,7 @@
 #
 [tool.poetry]
 name = "pygptprompt"
-version = "0.0.41"
+version = "0.0.42"
 description = "PyGPTPrompt: A Context Window Management System for Automating Prompting with Chat Models."
 authors = ["Austin Berrio <aberrio@teleprint.me>"]
 license = "AGPL"
@@ -37,60 +37,66 @@ keywords = ["openai", "gpt", "llama", "llama.cpp", "python", "prompt", "automati
 python = ">=3.11,<3.12"
 
 # Core Libraries
-numpy = "^1.26.1"
+numpy = "^1.26.4"
 
 # Web and Data Retrieval
 requests = "^2.31.0"
-beautifulsoup4 = "^4.12.2"
-feedparser = "^6.0.10"
+beautifulsoup4 = "^4.12.3"
+feedparser = "^6.0.11"
 html2text = "^2020.1.16"
+python-poppler = "^0.4.1"
 
 # Command-line Tools
 click = "^8.1.7"
-python-dotenv = "^1.0.0"
+python-dotenv = "^1.0.1"
 python-magic = "^0.4.27"
-prompt-toolkit = "^3.0.39"
+prompt-toolkit = "^3.0.43"
+rich = "^13.7.0"
+inquirer = "^3.2.4"
+tqdm = "^4.66.2"
 
 # Web Automation and Image Processing
-selenium = "^4.14.0"
-opencv-python = "^4.8.1.78"
+selenium = "^4.18.1"
+opencv-python = "^4.9.0.80"
 pytesseract = "^0.3.10"
 
 # Database and ORM
-peewee = "^3.17.0"
-chromadb = "^0.4.15"
+peewee = "^3.17.1"
+chromadb = "^0.4.22"
 
 # PyTorch and Extensions
-torch = {version = "^2.1.0+cpu", source = "pytorch"}
+torch = {version = "^2.2.0+cpu", source = "pytorch"}
 fairscale = "^0.4.13"
 
 # NLP (Natural Language Processing)
-transformers = "^4.34.1"
-safetensors = "^0.4.0"
+huggingface-hub = "^0.20.3"
+transformers = "^4.38.0"
+safetensors = "^0.4.2"
+sentencepiece = "^0.1.99"
 
 # Byte Pair Encoding (BPE) for NLP
-tiktoken = "^0.5.1"
+tiktoken = "^0.6.0"
 
 # AI Models and Embeddings
-openai = {extras = ["embeddings"], version = "^0.28.1"}
+openai = {extras = ["embeddings"], version = "^1.12.0"}
 
 # Llama.cpp and Frontend
-llama-cpp-python = "^0.2.7"
-gguf = "^0.4.5"
+llama-cpp-python = "^0.2.45"
+gguf = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
 bpython = "^0.24"
-pre_commit = "^3.5.0"
+pre_commit = "^3.6.2"
 pyupgrade = "^3.15.0"
-pytest = "^7.4.3"
-black = "^23.10.1"
-isort = "^5.12.0"
-flake8 = "^6.1.0"
+pytest = "^8.0.1"
+black = "^24.2.0"
+isort = "^5.13.2"
+flake8 = "^7.0.0"
 build = "^1.0.3"
 mkdocs = "^1.5.3"
-mkdocstrings = {version = "^0.23.0", extras = ["python"]}
-mkdocs-material = "^9.4.6"
-ipykernel = "^6.26.0"  # Required for VSCode
+mkdocstrings = {version = "^0.24.0", extras = ["python"]}
+mkdocs-material = "^9.5.10"
+ipykernel = "^6.29.2"  # Required for VSCode
 # jupyter = "^1.0.0"  # Install if needed
 # pynvim = "^0.4.3"  # Install if needed
 

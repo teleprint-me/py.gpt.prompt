@@ -1,12 +1,12 @@
 # pygptprompt/session/policy.py
 import os
 
+from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.pattern.singleton import Singleton
-from pygptprompt.setting.config import GlobalConfiguration
 
 
 class SessionPolicy(Singleton):
-    def __init__(self, config: GlobalConfiguration):
+    def __init__(self, config: ConfigurationManager):
         self.config = config
 
     @staticmethod

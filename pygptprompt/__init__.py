@@ -1,7 +1,7 @@
 """
 pygptprompt/__init__.py
 
-PyGPTPrompt: A Context Window Management System for Automating Prompting with Chat Models.
+PyGPTPrompt is a library and CLI suite for managing AI models.
 Copyright (C) 2023 Austin Berrio
 
 This program is free software: you can redistribute it and/or modify it under
@@ -21,7 +21,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>.
 """
 import os
 
-__version__ = "0.0.41"
+__version__ = "0.0.42"
 __name__ = "pygptprompt"
 __agent__ = f"teleprint-me/{__name__}"
 __source__ = f"https://github.com/{__agent__}"

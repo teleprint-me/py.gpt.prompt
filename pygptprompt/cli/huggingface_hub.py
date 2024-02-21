@@ -68,14 +68,34 @@ def upload_command(repo_id, repo_type, local_path, config_path, api_token):
     prompt="Local path to download",
     help="The local path from which to download files or directories.",
 )
+@click.option(
+    "-f",
+    "--file",
+    is_flag=True,
+    help="Specify this flag if the local path is a file. If not set, the path is treated as a directory.",
+)
+@click.option(
+    "-d",
+    "--resume",
+    is_flag=True,
+    help="Specify this flag to continue downloading partially downloaded files. If not set, the download will start over.",
+)
 @common_options
-def download_command(repo_id, repo_type, local_path, config_path, api_token):
+def download_command(
+    repo_id,
+    repo_type,
+    local_path,
+    resume,
+    file,
+    config_path,
+    api_token,
+):
     if not api_token and config_path:
         config = ConfigurationManager(config_path)
         api_token = config.get_environment("HUGGINGFACE_READ_API")
 
     huggingface = HuggingFaceDownload(api_token)
-    huggingface.download(local_path, repo_id, repo_type)
+    huggingface.download(local_path, repo_id, repo_type, resume, file)
 
 
 if __name__ == "__main__":

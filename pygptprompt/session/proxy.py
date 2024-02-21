@@ -1,4 +1,6 @@
-# pygptprompt/session/proxy.py
+"""
+pygptprompt/session/proxy.py
+"""
 from pygptprompt.session.queue import SessionQueue
 
 

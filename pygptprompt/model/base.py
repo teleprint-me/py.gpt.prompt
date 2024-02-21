@@ -2,7 +2,18 @@
 pygptprompt/model/base.py
 """
 from abc import ABC, abstractmethod
-from typing import List, Literal, NotRequired, Protocol, Required, TypedDict, Union
+from typing import (
+    List,
+    Literal,
+    NotRequired,
+    Protocol,
+    Required,
+    TypedDict,
+    TypeVar,
+    Union,
+)
+
+import numpy as np
 
 # Represents a vector in the chat model,
 # which could be either a list of integers or floats.
@@ -22,6 +33,15 @@ ChatModelDocuments = List[ChatModelDocument]
 
 # Represents a text completion in the chat model.
 ChatModelTextCompletion = str
+
+# Include the new types for Images
+# Images is a list of Image objects
+Image = Union[np.uint, np.int_, np.float_]
+Images = List[Image]
+
+# Define a Generic type for EmbeddingFunction
+Embeddable = Union[ChatModelDocuments, Images]
+D = TypeVar("D", bound=Union[ChatModelDocuments, Images])
 
 
 class DeltaContent(TypedDict, total=False):
@@ -160,7 +180,7 @@ class ChatModel(ABC):
         raise NotImplementedError
 
 
-class EmbeddingFunction(Protocol):
+class EmbeddingFunction(Protocol[D]):
     @abstractmethod
     def __call__(self, texts: ChatModelDocuments) -> ChatModelEmbedding:
         """

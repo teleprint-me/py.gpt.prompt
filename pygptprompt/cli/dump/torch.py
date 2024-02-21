@@ -114,7 +114,9 @@ class TorchReader(TensorReader[Dict[str, torch.Tensor], torch.Tensor]):
         super().__init__(path, suffixes={".pt", ".pth", ".bin"})
 
     def _load_model_files(self) -> List[Dict[str, torch.Tensor]]:
-        return [torch.load(path) for path in self.files]
+        return [
+            torch.load(path, map_location=torch.device("cpu")) for path in self.files
+        ]
 
     def _load_model_tensors(self) -> Dict[str, torch.Tensor]:
         model = {}
