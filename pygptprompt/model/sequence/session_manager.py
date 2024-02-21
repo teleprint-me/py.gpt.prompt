@@ -1,7 +1,11 @@
 """
 pygptprompt/model/sequence/session_manager.py
 """
+
 from typing import List, Optional, Tuple
+
+from rich.markdown import Markdown
+from rich.panel import Panel
 
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.model.base import ChatModel, ChatModelResponse
@@ -123,12 +127,14 @@ class SessionManager:
             function_call = message.get("function", {}).get("function_call")
 
             if content or (include_function_calls and function_call):
-                print(role)
                 if content:
-                    print(content)
+                    message_content = content
                 if include_function_calls and function_call:
-                    print(function_call)
-                print()
+                    message_content = function_call
+                if message_content:
+                    markdown = Markdown(message_content)
+                    panel = Panel(markdown, title=role, title_align="left")
+                    self.chat_model.console.print(panel)
 
     def print_token_count(self) -> None:
         print(f"Context is consuming {self.context_window.token_count} tokens.")
