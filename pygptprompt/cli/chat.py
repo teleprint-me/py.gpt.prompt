@@ -5,6 +5,7 @@ pygptprompt/cli/chat.py
     - Noam Chomsky, MLST - On the Critique of Connections and Cognitive Architecture
 """
 
+import os
 import sys
 import traceback
 from logging import Logger
@@ -12,6 +13,12 @@ from pathlib import Path
 
 import click
 import prompt_toolkit
+from prompt_toolkit import PromptSession
+from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.history import FileHistory
+from prompt_toolkit.key_binding import KeyBindings
+from rich.markdown import Markdown
+from rich.panel import Panel
 
 from pygptprompt.config.manager import ConfigurationManager
 from pygptprompt.function.factory import FunctionFactory
@@ -20,6 +27,35 @@ from pygptprompt.function.memory import AugmentedMemoryManager
 from pygptprompt.model.base import ChatModel, ChatModelResponse
 from pygptprompt.model.factory import ChatModelFactory
 from pygptprompt.model.sequence.session_manager import SessionManager
+
+
+def sweep_console(text: str) -> int:
+    """
+    Removes the specified text from the console by estimating its line coverage
+    and moving the cursor up to 'sweep' these lines from view.
+
+    Args:
+        text (str): The text to be removed from the console.
+
+    Returns:
+        int: The estimated number of lines swept from the console.
+    """
+    # Get the terminal width to estimate line wraps
+    terminal_width, _ = os.get_terminal_size()
+    total_lines_to_sweep = 1  # Start with 1 for the initial line
+    lines = text.split("\n")
+
+    # Calculate the total lines to sweep, including wrapped lines
+    for line in lines:
+        line_wraps = (len(line) // terminal_width) + 1
+        total_lines_to_sweep += line_wraps
+
+    # Use ANSI escape codes to move cursor up and clear lines
+    for _ in range(total_lines_to_sweep):
+        # Move cursor up and return to start of line without deleting
+        print("\x1b[A", end="\r", flush=True)
+
+    return total_lines_to_sweep
 
 
 @click.command()
@@ -154,21 +190,31 @@ def main(
         elif chat:
             # NOTE: Print previous content to stdout if it exists
             session_manager.print(["system", "user", "assistant", "function"])
+            auto_suggest = AutoSuggestFromHistory()
+            cache_path = f"{config.evaluate_path('app.cache')}/{session}.history"
+            session = PromptSession(history=FileHistory(cache_path))
 
             while True:
                 # Manage user message
                 try:
-                    print("user")
-                    user_content = prompt_toolkit.prompt(
-                        "> ", multiline=True, wrap_lines=True, prompt_continuation=". "
-                    )
+                    user_content = session.prompt(
+                        "Prompt: ⌥ + ⏎ | Copy: ⌘ + s (a|s) | Exit: ⌘ + c:\n",
+                        multiline=True,
+                        auto_suggest=auto_suggest,
+                        # key_bindings=key_bindings,  # TODO
+                    ).strip()
                 except (EOFError, KeyboardInterrupt):
                     break
 
-                # Then, in your chat loop for user input:
+                # Clean up and sweep console for user input
+                sweep_console(user_content)
+                # Make user input look pretty
+                panel = Panel(Markdown(user_content), title="user", title_align="left")
+                chat_model.console.print(panel)
+
+                # prepare user input for chat model:
                 user_message = ChatModelResponse(role="user", content=user_content)
                 session_manager.enqueue(message=user_message)
-                print()  # Add padding to output
 
                 # NOTE:
                 # We don't want to duplicate user queries, so we skip saving
