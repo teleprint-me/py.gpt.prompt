@@ -13,10 +13,6 @@
       "path": "${HOME}/.local/pygptprompt/cache",
       "type": "dir"
     },
-    "sessions": {
-      "path": "${HOME}/.local/pygptprompt/sessions",
-      "type": "dir"
-    },
     "logs": {
       "general": {
         "path": "${HOME}/.local/pygptprompt/logs/general.log",
@@ -63,9 +59,23 @@
         ]
       }
     },
-    "style": {
-      "italic": "italic",
-      "bold": "bold"
+    "ui": {
+      "rich": {
+        "console": {
+          "color_system": "auto"
+        },
+        "panel": {
+          "title_align": "left",
+          "style": "none",
+          "border_color": "none"
+        }
+      },
+      "prompt": {
+        "style": {
+          "italic": "italic",
+          "bold": "bold"
+        }
+      }
     }
   },
   "torch": {
@@ -76,22 +86,14 @@
       "options": ["cpu", "cuda", "hip", "mps", "opencl", "vulkan", "lazy"]
     }
   },
-  "huggingface": {
-    "provider": "huggingface",
-    "device": {
-      "triton": false,
-      "type": "cpu",
-      "options": ["cpu", "cuda", "hip", "mps", "opencl", "vulkan", "lazy"]
-    }
-  },
   "llama_cpp": {
     "provider": "llama_cpp",
     "model": {
-      "repo_id": "teleprint-me/llama-2-7b-chat-GGUF",
-      "filename": "llama-2-7b-chat.GGUF.q5_0.bin",
+      "repo_id": "TheBloke/Mistral-7B-Instruct-v0.2-code-ft-GGUF",
+      "filename": "mistral-7b-instruct-v0.2-code-ft.Q4_0.gguf",
       "local": "models/mistralai/Mistral-7B-Instruct-v0.2/ggml-model-q8_0.gguf",
       "chat_format": "llama-2",
-      "n_ctx": 8192,
+      "n_ctx": 16384,
       "n_parts": -1,
       "seed": 1337,
       "f16_kv": true,
@@ -113,21 +115,25 @@
       "verbose": false
     },
     "chat_completions": {
-      "max_tokens": 1024,
-      "temperature": 0.0,
-      "top_p": 0.95,
-      "top_k": 40,
-      "stop": [],
-      "repeat_penalty": 1.1
+      "top_k": 50,
+      "top_p": 0.9,
+      "min_p": 0.1,
+      "temperature": 0.7,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0,
+      "repeat_penalty": 1.1,
+      "logit_bias": null,
+      "max_tokens": -1,
+      "stop": []
     },
     "context": {
       "reserve": 0.1,
-      "length": 8192,
+      "length": 16384,
       "offset": 1024
     },
     "system_prompt": {
       "role": "system",
-      "content": "My name is Mistral. I am a helpful assistant. I will only use the functions I have been provided with."
+      "content": "My name is Mistral. I am a State of the Art Large Language Model designed to assist you."
     }
   },
   "openai": {
@@ -135,7 +141,7 @@
     "chat_completions": {
       "model": "gpt-3.5-turbo",
       "temperature": 0.0,
-      "max_tokens": 1024,
+      "max_tokens": 2048,
       "top_p": 0.95,
       "n": 1,
       "stop": [],
@@ -148,12 +154,12 @@
     },
     "context": {
       "reserve": 0.2,
-      "length": 4096,
-      "offset": 1024
+      "length": 16384,
+      "offset": 2048
     },
     "system_prompt": {
       "role": "system",
-      "content": "My name is ChatGPT. I am a helpful assistant. I will only use the functions I have been provided with."
+      "content": "My name is ChatGPT. I am a State of the Art Large Language Model designed to assist you. I will only use the functions I have been provided with."
     }
   },
   "function": {
