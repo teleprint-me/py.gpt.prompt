@@ -4,11 +4,15 @@ pygptprompt/model/openai.py
 "Embrace the journey of discovery and evolution in the world of software development, and remember that adaptability is key to staying resilient in the face of change."
     - OpenAI's GPT-3.5
 """
-import sys
+
 from typing import Any, Dict, Iterator, List, Tuple, Union
 
 import openai
 from llama_cpp import ChatCompletionChunk
+from rich.console import Console
+from rich.live import Live
+from rich.markdown import Markdown
+from rich.panel import Panel
 from tiktoken import Encoding, encoding_for_model
 
 from pygptprompt.config.manager import ConfigurationManager
@@ -47,6 +51,13 @@ class OpenAIModel(ChatModel):
             api_key=config.get_environment(),
         )
 
+        self.console = Console(
+            color_system=self.config.get_value(
+                "app.ui.rich.console.color_system",
+                "auto",
+            ),
+        )
+
     def _extract_content(self, delta: DeltaContent, content: str) -> str:
         """
         Extracts content from the given delta and appends it to the existing content.
@@ -63,8 +74,6 @@ class OpenAIModel(ChatModel):
 
         if delta and delta.content:
             token = delta.content
-            print(token, end="")
-            sys.stdout.flush()
             content += token
 
         return content
@@ -139,8 +148,6 @@ class OpenAIModel(ChatModel):
                     ),
                 )
             elif finish_reason == "stop":
-                print()  # Add newline to model output
-                sys.stdout.flush()
                 return ChatModelResponse(role="assistant", content=content)
             else:
                 # Handle unexpected finish_reason
@@ -167,36 +174,51 @@ class OpenAIModel(ChatModel):
             f"Initial function_call_name: {function_call_name}, function_call_args: {function_call_args}, content: {content}"
         )
 
-        for chunk in response_generator:
-            self.logger.debug(f"Processing chunk: {chunk}")
+        with Live(console=self.console) as stream:
+            for chunk in response_generator:
+                self.logger.debug(f"Processing chunk: {chunk}")
 
-            delta = chunk.choices[0].delta
-            content = self._extract_content(delta, content)
-            function_call_name, function_call_args = self._extract_function_call(
-                delta, function_call_name, function_call_args
-            )
+                delta = chunk.choices[0].delta
+                content = self._extract_content(delta, content)
+                function_call_name, function_call_args = self._extract_function_call(
+                    delta, function_call_name, function_call_args
+                )
 
-            self.logger.debug(f"Extracted delta: {delta}")
-            self.logger.debug(f"Current content: {content}")
-            self.logger.debug(
-                f"Current function_call_name: {function_call_name}, function_call_args: {function_call_args}"
-            )
+                self.logger.debug(f"Extracted delta: {delta}")
+                self.logger.debug(f"Current content: {content}")
+                self.logger.debug(
+                    f"Current function_call_name: {function_call_name}, function_call_args: {function_call_args}"
+                )
 
-            finish_reason = chunk.choices[0].finish_reason
-            self.logger.debug(f"Finish reason: {finish_reason}")
+                finish_reason = chunk.choices[0].finish_reason
+                self.logger.debug(f"Finish reason: {finish_reason}")
 
-            message = self._handle_finish_reason(
-                finish_reason,
-                function_call_name,
-                function_call_args,
-                content,
-            )
+                message = self._handle_finish_reason(
+                    finish_reason,
+                    function_call_name,
+                    function_call_args,
+                    content,
+                )
 
-            self.logger.debug(f"Generated message: {message}")
+                self.logger.debug(f"Generated message: {message}")
 
-            if message:  # NOTE: Exit early if a finish reason is given.
-                self.logger.debug(f"Returning message: {message}")
-                return message
+                panel = Panel(
+                    Markdown(content),
+                    title=self.config.get_value("openai.provider"),
+                    title_align=self.config.get_value(
+                        "app.ui.rich.panel.title_align",
+                        "left",
+                    ),
+                    border_style=self.config.get_value(
+                        "app.ui.rich.panel.border_color",
+                        "none",
+                    ),
+                )
+                stream.update(panel, refresh=True)
+
+                if message:  # NOTE: Exit early if a finish reason is given.
+                    self.logger.debug(f"Returning message: {message}")
+                    return message
 
         # NOTE: The finish reason should be present.
         # If the finish reason vanishes, then something unexpected happened.
