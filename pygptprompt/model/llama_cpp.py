@@ -87,7 +87,12 @@ class LlamaCppModel(ChatModel):
             rope_freq_scale=config.get_value("llama_cpp.model.rope_freq_scale", 1.0),
         )
 
-        self.console = Console(color_system="auto")
+        self.console = Console(
+            color_system=self.config.get_value(
+                "app.ui.rich.console.color_system",
+                "auto",
+            ),
+        )
 
     def _discover_model(self) -> str:
         """
@@ -154,7 +159,7 @@ class LlamaCppModel(ChatModel):
         self.logger.error("Max retries exceeded. Failed to download the model.")
         sys.exit(1)
 
-    def _extract_content(self, stream: Live, delta: DeltaContent, content: str) -> str:
+    def _extract_content(self, delta: DeltaContent, content: str) -> str:
         """
         Extracts content from the given delta and appends it to the existing content.
 
@@ -276,7 +281,7 @@ class LlamaCppModel(ChatModel):
                 delta = chunk["choices"][0]["delta"]
                 self.logger.debug(f"Extracted delta: {delta}")
 
-                content = self._extract_content(stream, delta, content)
+                content = self._extract_content(delta, content)
                 function_call_name, function_call_args = self._extract_function_call(
                     delta, function_call_name, function_call_args
                 )
@@ -301,8 +306,14 @@ class LlamaCppModel(ChatModel):
                 panel = Panel(
                     Markdown(content),
                     title=self.config.get_value("llama_cpp.provider"),
-                    title_align="left",
-                    border_style="yellow",
+                    title_align=self.config.get_value(
+                        "app.ui.rich.panel.title_align",
+                        "left",
+                    ),
+                    border_style=self.config.get_value(
+                        "app.ui.rich.panel.border_color",
+                        "none",
+                    ),
                 )
                 stream.update(panel, refresh=True)
 
@@ -352,19 +363,29 @@ class LlamaCppModel(ChatModel):
                 messages=messages,
                 functions=self.config.get_value("function.definitions", []),
                 function_call=self.config.get_value("function.call", "auto"),
-                max_tokens=self.config.get_value(
-                    "llama_cpp.chat_completions.max_tokens", 1024
-                ),
+                top_k=self.config.get_value("llama_cpp.chat_completions.top_k", 50),
+                top_p=self.config.get_value("llama_cpp.chat_completions.top_p", 0.9),
+                min_p=self.config.get_value("llama_cpp.chat_completions.min_p", 0.1),
                 temperature=self.config.get_value(
-                    "llama_cpp.chat_completions.temperature", 0.8
+                    "llama_cpp.chat_completions.temperature", 0.7
                 ),
-                top_p=self.config.get_value("llama_cpp.chat_completions.top_p", 0.95),
-                top_k=self.config.get_value("llama_cpp.chat_completions.top_k", 40),
-                stream=True,
-                stop=self.config.get_value("llama_cpp.chat_completions.stop", []),
+                presence_penalty=self.config.get_value(
+                    "llama_cpp.chat_completions.presence_penalty", 0.0
+                ),
+                frequency_penalty=self.config.get_value(
+                    "llama_cpp.chat_completions.frequency_penalty", 0.0
+                ),
                 repeat_penalty=self.config.get_value(
                     "llama_cpp.chat_completions.repeat_penalty", 1.1
                 ),
+                logit_bias=self.config.get_value(
+                    "llama_cpp.chat_completions.logit_bias", None
+                ),
+                max_tokens=self.config.get_value(
+                    "llama_cpp.chat_completions.max_tokens", -1
+                ),
+                stop=self.config.get_value("llama_cpp.chat_completions.stop", []),
+                stream=True,
             )
             return self._stream_chat_completion(response)
         except Exception as e:
