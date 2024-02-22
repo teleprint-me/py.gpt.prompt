@@ -1,20 +1,18 @@
 """
 pygptprompt/cli/chat.py
-
-"The way we intuitively think about things is just not the way the world is. Maybe some day cognitive science will reach the level of physics, in 19th century, and recognize that our intuitive concept of the world isn't the way it works."
-    - Noam Chomsky, MLST - On the Critique of Connections and Cognitive Architecture
 """
 
 import os
+import re
 import sys
 import traceback
 from logging import Logger
 from pathlib import Path
 
 import click
-import prompt_toolkit
 from prompt_toolkit import PromptSession
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.clipboard.pyperclip import PyperclipClipboard
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.key_binding import KeyBindings
 from rich.markdown import Markdown
@@ -27,6 +25,33 @@ from pygptprompt.function.memory import AugmentedMemoryManager
 from pygptprompt.model.base import ChatModel, ChatModelResponse
 from pygptprompt.model.factory import ChatModelFactory
 from pygptprompt.model.sequence.session_manager import SessionManager
+
+
+def key_bindings(session: SessionManager) -> KeyBindings:
+    kb = KeyBindings()
+    clipboard = PyperclipClipboard()
+
+    @kb.add("c-s", "a")
+    def _(event):
+        """Copy the entire last message to the system clipboard."""
+        if session.context_window.sequence:
+            last_message_content = session.context_window.sequence[-1][
+                "content"
+            ].strip()
+            clipboard.set_text(last_message_content)
+
+    @kb.add("c-s", "s")
+    def _(event):
+        """Copy only code snippets from the last message to the system clipboard."""
+        if session.context_window.sequence:
+            last_message_content = session.context_window.sequence[-1][
+                "content"
+            ].strip()
+            code_snippets = re.findall(r"```(.*?)```", last_message_content, re.DOTALL)
+            snippets_content = "\n\n".join(code_snippets)
+            clipboard.set_text(snippets_content)
+
+    return kb
 
 
 def sweep_console(text: str) -> int:
@@ -201,7 +226,7 @@ def main(
                         "Prompt: ⌥ + ⏎ | Copy: ⌘ + s (a|s) | Exit: ⌘ + c:\n",
                         multiline=True,
                         auto_suggest=auto_suggest,
-                        # key_bindings=key_bindings,  # TODO
+                        key_bindings=key_bindings(session_manager),
                     ).strip()
                 except (EOFError, KeyboardInterrupt):
                     break
