@@ -40,7 +40,7 @@ class SessionManager:
         chat_model: ChatModel,
         vector_store: Optional[ChromaVectorStore] = None,
     ) -> Tuple[ContextWindowManager, TranscriptManager]:
-        file_path = f"{config.evaluate_path('app.sessions')}/{session_name}_{{}}.json"
+        file_path = f"{config.evaluate_path('app.cache')}/{session_name}_{{}}.json"
 
         context_window = ContextWindowManager(
             file_path=file_path.format("context"),
