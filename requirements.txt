@@ -130,6 +130,7 @@ pyflakes==3.2.0
 Pygments==2.17.2
 -e git+ssh://git@github.com/teleprint-me/py.gpt.prompt.git@39b1c4e51047939df98857335da0cc0cbc0813d8#egg=pygptprompt
 pymdown-extensions==10.7
+pyperclip==1.8.2
 PyPika==0.48.9
 pyproject_hooks==1.0.0
 PySocks==1.7.1
