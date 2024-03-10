@@ -6,7 +6,9 @@ import sys
 from typing import Any
 
 import numpy as np
-from gguf import GGUFReader, GGUFValueType
+
+from pygptprompt.gguf.constants import GGUFValueType
+from pygptprompt.gguf.gguf_reader import GGUFReader
 
 
 def get_file_host_endian(reader: GGUFReader) -> tuple[str, str]:
