@@ -25,12 +25,29 @@ from typing import IO, Any, Callable, Iterable, Literal, TypeAlias, TypeVar
 
 import numpy as np
 
-import pygptprompt.gguf as gguf
+from pygptprompt.gguf.constants import (
+    MODEL_ARCH,
+    MODEL_ARCH_NAMES,
+    MODEL_TENSOR,
+    MODEL_TENSOR_SKIP,
+    TENSOR_NAMES,
+    GGMLQuantizationType,
+    GGUFEndian,
+    RopeScalingType,
+    TokenType,
+)
+from pygptprompt.gguf.gguf_writer import GGUFWriter
+from pygptprompt.gguf.tensor_mapping import TensorNameMap
+from pygptprompt.gguf.vocab.bpe import BpeVocab
+from pygptprompt.gguf.vocab.factory import Vocab, VocabFactory
+from pygptprompt.gguf.vocab.hf import HfVocab
+from pygptprompt.gguf.vocab.sp import SentencePieceVocab
+from pygptprompt.gguf.vocab.special import SpecialVocab
 
 if hasattr(faulthandler, "register") and hasattr(signal, "SIGUSR1"):
     faulthandler.register(signal.SIGUSR1)
 
-ARCH = gguf.MODEL_ARCH.LLAMA
+ARCH = MODEL_ARCH.LLAMA
 
 DEFAULT_CONCURRENCY = 8
 
@@ -70,7 +87,7 @@ DT_BF16 = UnquantizedDataType(
 class QuantizedDataType(DataType):
     block_size: int
     quantized_dtype: np.dtype[Any]
-    ggml_type: gguf.GGMLQuantizationType
+    ggml_type: GGMLQuantizationType
 
     def quantize(self, arr: np.ndarray) -> np.ndarray:
         raise NotImplementedError(f"Quantization for {self.name} not implemented")
@@ -110,7 +127,7 @@ DT_Q8_0 = Q8_0QuantizedDataType(
     "Q8_0",
     dtype=np.dtype(np.float32),
     valid_conversions=[],
-    ggml_type=gguf.GGMLQuantizationType.Q8_0,
+    ggml_type=GGMLQuantizationType.Q8_0,
     block_size=32,
     quantized_dtype=np.dtype([("d", "<f2"), ("qs", "i1", (32,))]),
 )
@@ -171,7 +188,7 @@ class Params:
     n_experts_used: int | None = None
     f_norm_eps: float | None = None
 
-    rope_scaling_type: gguf.RopeScalingType | None = None
+    rope_scaling_type: RopeScalingType | None = None
     f_rope_freq_base: float | None = None
     f_rope_scale: float | None = None
     n_orig_ctx: int | None = None
@@ -248,9 +265,9 @@ class Params:
             rope_factor = rope_scaling.get("factor")
             f_rope_scale = rope_factor
             if typ == "linear":
-                rope_scaling_type = gguf.RopeScalingType.LINEAR
+                rope_scaling_type = RopeScalingType.LINEAR
             elif typ == "yarn":
-                rope_scaling_type = gguf.RopeScalingType.YARN
+                rope_scaling_type = RopeScalingType.YARN
                 n_orig_ctx = rope_scaling["original_max_position_embeddings"]
                 rope_finetuned = rope_scaling["finetuned"]
             else:
@@ -379,14 +396,18 @@ class Tensor(metaclass=ABCMeta):
 
     @abstractmethod
     def astype(self, data_type: DataType) -> Tensor: ...
+
     @abstractmethod
     def permute(self, n_head: int, n_head_kv: int) -> Tensor: ...
+
     @abstractmethod
     def permute_part(
         self, n_part: int, n_head: int, n_head_kv: int
     ) -> UnquantizedTensor: ...
+
     @abstractmethod
     def part(self, n_part: int) -> UnquantizedTensor: ...
+
     @abstractmethod
     def to_ggml(self) -> GGMLCompatibleTensor: ...
 
@@ -846,11 +867,9 @@ def check_vocab_size(params: Params, vocab: Vocab, pad_vocab: bool = False) -> N
 
 class OutputFile:
     def __init__(
-        self, fname_out: Path, endianess: gguf.GGUFEndian = gguf.GGUFEndian.LITTLE
+        self, fname_out: Path, endianess: GGUFEndian = GGUFEndian.LITTLE
     ) -> None:
-        self.gguf = gguf.GGUFWriter(
-            fname_out, gguf.MODEL_ARCH_NAMES[ARCH], endianess=endianess
-        )
+        self.gguf = GGUFWriter(fname_out, MODEL_ARCH_NAMES[ARCH], endianess=endianess)
 
     def add_meta_arch(self, params: Params) -> None:
         name = "LLaMA"
@@ -914,7 +933,7 @@ class OutputFile:
 
     def extract_vocabulary_from_model(
         self, vocab: Vocab
-    ) -> tuple[list[bytes], list[float], list[gguf.TokenType]]:
+    ) -> tuple[list[bytes], list[float], list[TokenType]]:
         tokens = []
         scores = []
         toktypes = []
@@ -944,7 +963,7 @@ class OutputFile:
         self.gguf.add_token_scores(scores)
         self.gguf.add_token_types(toktypes)
 
-    def add_meta_special_vocab(self, svocab: gguf.SpecialVocab) -> None:
+    def add_meta_special_vocab(self, svocab: SpecialVocab) -> None:
         svocab.add_to_gguf(self.gguf)
 
     def add_tensor_info(self, name: str, tensor: LazyTensor) -> None:
@@ -973,8 +992,8 @@ class OutputFile:
         fname_out: Path,
         params: Params,
         vocab: Vocab,
-        svocab: gguf.SpecialVocab,
-        endianess: gguf.GGUFEndian = gguf.GGUFEndian.LITTLE,
+        svocab: SpecialVocab,
+        endianess: GGUFEndian = GGUFEndian.LITTLE,
         pad_vocab: bool = False,
     ) -> None:
         check_vocab_size(params, vocab, pad_vocab=pad_vocab)
@@ -1010,9 +1029,9 @@ class OutputFile:
         params: Params,
         model: LazyModel,
         vocab: Vocab,
-        svocab: gguf.SpecialVocab,
+        svocab: SpecialVocab,
         concurrency: int = DEFAULT_CONCURRENCY,
-        endianess: gguf.GGUFEndian = gguf.GGUFEndian.LITTLE,
+        endianess: GGUFEndian = GGUFEndian.LITTLE,
         pad_vocab: bool = False,
     ) -> None:
         check_vocab_size(params, vocab, pad_vocab=pad_vocab)
@@ -1063,7 +1082,7 @@ class OutputFile:
 
 def pick_output_type(model: LazyModel, output_type_str: str | None) -> GGMLFileType:
     wq_type = model[
-        gguf.TENSOR_NAMES[gguf.MODEL_TENSOR.ATTN_Q].format(bid=0) + ".weight"
+        TENSOR_NAMES[MODEL_TENSOR.ATTN_Q].format(bid=0) + ".weight"
     ].data_type
 
     if output_type_str == "f32" or (output_type_str is None and wq_type == DT_F32):
@@ -1092,8 +1111,8 @@ def convert_to_output_type(model: LazyModel, output_type: GGMLFileType) -> LazyM
 def convert_model_names(
     model: LazyModel, params: Params, skip_unknown: bool
 ) -> LazyModel:
-    tmap = gguf.TensorNameMap(ARCH, params.n_layer)
-    should_skip: set[gguf.MODEL_TENSOR] = set(gguf.MODEL_TENSOR_SKIP.get(ARCH, []))
+    tmap = TensorNameMap(ARCH, params.n_layer)
+    should_skip: set[MODEL_TENSOR] = set(MODEL_TENSOR_SKIP.get(ARCH, []))
 
     tmp = model
 
@@ -1344,9 +1363,9 @@ def main(args_in: list[str] | None = None) -> None:
     if args.dump:
         do_dump_model(model_plus)
         return
-    endianess = gguf.GGUFEndian.LITTLE
+    endianess = GGUFEndian.LITTLE
     if args.big_endian:
-        endianess = gguf.GGUFEndian.BIG
+        endianess = GGUFEndian.BIG
 
     params = Params.load(model_plus)
     if params.n_ctx == -1:
@@ -1370,7 +1389,7 @@ def main(args_in: list[str] | None = None) -> None:
 
     model_parent_path = model_plus.paths[0].parent
     vocab_path = Path(args.vocab_dir or args.model or model_parent_path)
-    vocab_factory = gguf.vocab.VocabFactory(vocab_path)
+    vocab_factory = VocabFactory(vocab_path)
     vocab, special_vocab = vocab_factory.load_vocab(
         args.vocab_type.split(","), model_parent_path
     )
