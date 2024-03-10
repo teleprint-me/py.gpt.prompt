@@ -10,7 +10,8 @@ from typing import Any, Literal, NamedTuple, TypeVar, Union
 
 import numpy as np
 import numpy.typing as npt
-from gguf.constants import (
+
+from .constants import (
     GGML_QUANT_SIZES,
     GGUF_DEFAULT_ALIGNMENT,
     GGUF_MAGIC,
@@ -293,4 +294,6 @@ class GGUFReader:
                     field=field,
                 )
             )
+        self.tensors = tensors
+        self.tensors = tensors
         self.tensors = tensors
