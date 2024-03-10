@@ -1,7 +1,3 @@
-#
-# GGUF file reading/modification support. For API usage information,
-# please see the files scripts/ for some fairly simple examples.
-#
 from __future__ import annotations
 
 import os
@@ -11,7 +7,7 @@ from typing import Any, Literal, NamedTuple, TypeVar, Union
 import numpy as np
 import numpy.typing as npt
 
-from .constants import (
+from pygptprompt.gguf.constants import (
     GGML_QUANT_SIZES,
     GGUF_DEFAULT_ALIGNMENT,
     GGUF_MAGIC,
@@ -294,6 +290,4 @@ class GGUFReader:
                     field=field,
                 )
             )
-        self.tensors = tensors
-        self.tensors = tensors
         self.tensors = tensors
