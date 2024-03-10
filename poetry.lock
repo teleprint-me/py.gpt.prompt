@@ -937,20 +937,6 @@ ssh = ["paramiko"]
 tqdm = ["tqdm"]
 
 [[package]]
-name = "gguf"
-version = "0.6.0"
-description = "Read and write ML models in GGUF for GGML"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "gguf-0.6.0-py3-none-any.whl", hash = "sha256:7ef6d0cf27b3cc4f11397140be7cf45b5904b751331ea9453839a17004f06762"},
-    {file = "gguf-0.6.0.tar.gz", hash = "sha256:b2e22eaba2a106c1ad148186a14ad9f29c429351686fe9d7ce16df39a0607e65"},
-]
-
-[package.dependencies]
-numpy = ">=1.17"
-
-[[package]]
 name = "ghp-import"
 version = "2.1.0"
 description = "Copy your docs directly to the gh-pages branch."
@@ -4829,4 +4815,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "6a4613da0966b0752d413d3ce17757686c01904acf8fd8be98534469c4b90c92"
+content-hash = "5d1d901357c3d5317cdd37d19ec087c7fc1f1239b052f9f18e48fbce4aa95da4"
