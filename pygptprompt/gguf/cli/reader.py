@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
-import sys
-from pathlib import Path
-from gguf.gguf_reader import GGUFReader
+import argparse
 
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
+from pygptprompt.gguf.gguf_reader import GGUFReader
 
 
 def read_gguf_file(gguf_file_path):
@@ -34,12 +31,17 @@ def read_gguf_file(gguf_file_path):
         shape_str = "x".join(map(str, tensor.shape))
         size_str = str(tensor.n_elements)
         quantization_str = tensor.tensor_type.name
-        print(tensor_info_format.format(tensor.name, shape_str, size_str, quantization_str))
+        print(
+            tensor_info_format.format(
+                tensor.name, shape_str, size_str, quantization_str
+            )
+        )
 
 
-if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print("Usage: reader.py <path_to_gguf_file>")
-        sys.exit(1)
-    gguf_file_path = sys.argv[1]
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("gguf_file_path", help="File path to the GGUF model file.")
+    args = parser.parse_args()
+
+    gguf_file_path = args.gguf_file_path
     read_gguf_file(gguf_file_path)
