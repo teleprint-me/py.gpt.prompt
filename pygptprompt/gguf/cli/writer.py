@@ -1,13 +1,7 @@
 #!/usr/bin/env python3
-import sys
-from pathlib import Path
-
 import numpy as np
 
-# Necessary to load the local gguf package
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from gguf import GGUFWriter  # noqa: E402
+from pygptprompt.gguf.gguf_writer import GGUFWriter
 
 
 # Example usage:
@@ -36,5 +30,5 @@ def writer_example() -> None:
     gguf_writer.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     writer_example()
