@@ -10,7 +10,7 @@ from typing import IO, Any, Sequence
 
 import numpy as np
 
-from .constants import (
+from pygptprompt.gguf.constants import (
     GGUF_DEFAULT_ALIGNMENT,
     GGUF_MAGIC,
     GGUF_VERSION,
