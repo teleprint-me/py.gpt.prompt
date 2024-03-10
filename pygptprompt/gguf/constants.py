@@ -697,7 +697,11 @@ class GGUFValueType(IntEnum):
             return GGUFValueType.BOOL
         elif isinstance(val, int):
             return GGUFValueType.INT32
-        # TODO: need help with 64-bit types in Python
+        # TODO: Figure out how to handle 64-bit and 32-bit precision
+        # NOTE: Python float and int are 64-bit by default,
+        # but they're handled here as if they're 32-bit.
+        # These details are handled by Python itself.
+        # There are hacky ways to handle this, but I believe it's possible.
         else:
             print("Unknown type:", type(val))
             sys.exit()
