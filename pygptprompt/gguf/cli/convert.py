@@ -30,8 +30,6 @@ import pygptprompt.gguf as gguf
 if hasattr(faulthandler, "register") and hasattr(signal, "SIGUSR1"):
     faulthandler.register(signal.SIGUSR1)
 
-NDArray: TypeAlias = "np.ndarray[Any, Any]"
-
 ARCH = gguf.MODEL_ARCH.LLAMA
 
 DEFAULT_CONCURRENCY = 8
@@ -74,7 +72,7 @@ class QuantizedDataType(DataType):
     quantized_dtype: np.dtype[Any]
     ggml_type: gguf.GGMLQuantizationType
 
-    def quantize(self, arr: NDArray) -> NDArray:
+    def quantize(self, arr: np.ndarray) -> np.ndarray:
         raise NotImplementedError(f"Quantization for {self.name} not implemented")
 
     def elements_to_bytes(self, n_elements: int) -> int:
@@ -87,7 +85,7 @@ class QuantizedDataType(DataType):
 @dataclass(frozen=True)
 class Q8_0QuantizedDataType(QuantizedDataType):
     # Mini Q8_0 quantization in Python!
-    def quantize(self, arr: NDArray) -> NDArray:
+    def quantize(self, arr: np.ndarray) -> np.ndarray:
         assert (
             arr.size % self.block_size == 0 and arr.size != 0
         ), f"Bad array size {arr.size}"
@@ -96,7 +94,7 @@ class Q8_0QuantizedDataType(QuantizedDataType):
         blocks = arr.reshape((n_blocks, self.block_size))
         # Much faster implementation of block quantization contributed by @Cebtenzzre
 
-        def quantize_blocks_q8_0(blocks: NDArray) -> Iterable[tuple[Any, Any]]:
+        def quantize_blocks_q8_0(blocks: np.ndarray) -> Iterable[tuple[Any, Any]]:
             d = abs(blocks).max(axis=1) / np.float32(127)
             with np.errstate(divide="ignore"):
                 qs = (blocks / d[:, None]).round()
@@ -365,7 +363,7 @@ class Params:
 #
 
 
-def permute(weights: NDArray, n_head: int, n_head_kv: int) -> NDArray:
+def permute(weights: np.ndarray, n_head: int, n_head_kv: int) -> np.ndarray:
     # print( "permute debug " + str(weights.shape[0]) + " x " + str(weights.shape[1]) + " nhead " + str(n_head) + " nheadkv " + str(n_kv_head) )
     if n_head_kv is not None and n_head != n_head_kv:
         n_head = n_head_kv
@@ -393,7 +391,7 @@ class Tensor(metaclass=ABCMeta):
     def to_ggml(self) -> GGMLCompatibleTensor: ...
 
 
-def bf16_to_fp32(bf16_arr: np.ndarray[Any, np.dtype[np.uint16]]) -> NDArray:
+def bf16_to_fp32(bf16_arr: np.ndarray[Any, np.dtype[np.uint16]]) -> np.ndarray:
     assert (
         bf16_arr.dtype == np.uint16
     ), f"Input array should be of dtype uint16, but got {bf16_arr.dtype}"
@@ -402,7 +400,7 @@ def bf16_to_fp32(bf16_arr: np.ndarray[Any, np.dtype[np.uint16]]) -> NDArray:
 
 
 class UnquantizedTensor(Tensor):
-    def __init__(self, ndarray: NDArray) -> None:
+    def __init__(self, ndarray: np.ndarray) -> None:
         assert isinstance(ndarray, np.ndarray)
         self.ndarray = ndarray
         self.data_type = NUMPY_TYPE_TO_DATA_TYPE[ndarray.dtype]
@@ -434,7 +432,7 @@ class UnquantizedTensor(Tensor):
 
 def load_unquantized(
     lazy_tensor: LazyTensor, expected_dtype: Any = None, convert: bool = False
-) -> NDArray:
+) -> np.ndarray:
     tensor = lazy_tensor.load()
     assert isinstance(tensor, UnquantizedTensor)
 
@@ -530,7 +528,7 @@ def merge_sharded(models: list[LazyModel]) -> LazyModel:
 
         def load() -> UnquantizedTensor:
             ndarrays = [load_unquantized(tensor) for tensor in lazy_tensors]
-            concatenated: NDArray = np.concatenate(ndarrays, axis=axis)
+            concatenated: np.ndarray = np.concatenate(ndarrays, axis=axis)
             return UnquantizedTensor(concatenated)
 
         description = (
@@ -620,7 +618,7 @@ class LazyStorageKind:
 
 @dataclass
 class LazyStorage:
-    load: Callable[[int, int], NDArray]
+    load: Callable[[int, int], np.ndarray]
     kind: LazyStorageKind
     description: str
 
@@ -639,7 +637,7 @@ class LazyUnpickler(pickle.Unpickler):
         filename = f"{self.data_base_path}/{filename_stem}"
         info = self.zip_file.getinfo(filename)
 
-        def load(offset: int, elm_count: int) -> NDArray:
+        def load(offset: int, elm_count: int) -> np.ndarray:
             dtype = data_type.dtype
             fp = self.zip_file.open(info)
             fp.seek(offset * dtype.itemsize)
@@ -993,13 +991,13 @@ class OutputFile:
         of.close()
 
     @staticmethod
-    def do_item(item: tuple[str, LazyTensor]) -> tuple[DataType, NDArray]:
+    def do_item(item: tuple[str, LazyTensor]) -> tuple[DataType, np.ndarray]:
         name, lazy_tensor = item
         tensor = lazy_tensor.load().to_ggml()
         return (lazy_tensor.data_type, tensor.ndarray)
 
     @staticmethod
-    def maybe_do_quantize(item: tuple[DataType, NDArray]) -> NDArray:
+    def maybe_do_quantize(item: tuple[DataType, np.ndarray]) -> np.ndarray:
         dt, arr = item
         if not isinstance(dt, QuantizedDataType):
             return arr
