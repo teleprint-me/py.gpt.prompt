@@ -1,6 +1,7 @@
 """
 gguf_metadata.py - example file to extract metadata from a language model
 """
+
 import argparse
 import ctypes
 import logging
@@ -61,7 +62,7 @@ def main():
 
     args = parser.parse_args()
 
-    # NOTE: pathlib.Path is not compatible with the Llama class
+    # FIXME: pathlib.Path is not compatible with the Llama class
     # We still need it to simplify getting the model file name from the path.
     model_path = Path(args.model_path)
     key = args.key
