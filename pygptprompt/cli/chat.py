@@ -27,15 +27,15 @@ from pygptprompt.model.factory import ChatModelFactory
 from pygptprompt.model.sequence.session_manager import SessionManager
 
 
-def key_bindings(session: SessionManager) -> KeyBindings:
+def key_bindings(session_manager: SessionManager) -> KeyBindings:
     kb = KeyBindings()
     clipboard = PyperclipClipboard()
 
     @kb.add("c-s", "a")
     def _(event):
         """Copy the entire last message to the system clipboard."""
-        if session.context_window.sequence:
-            last_message_content = session.context_window.sequence[-1][
+        if session_manager.context_window.sequence:
+            last_message_content = session_manager.context_window.sequence[-1][
                 "content"
             ].strip()
             clipboard.set_text(last_message_content)
@@ -43,8 +43,8 @@ def key_bindings(session: SessionManager) -> KeyBindings:
     @kb.add("c-s", "s")
     def _(event):
         """Copy only code snippets from the last message to the system clipboard."""
-        if session.context_window.sequence:
-            last_message_content = session.context_window.sequence[-1][
+        if session_manager.context_window.sequence:
+            last_message_content = session_manager.context_window.sequence[-1][
                 "content"
             ].strip()
             code_snippets = re.findall(r"```(.*?)```", last_message_content, re.DOTALL)
@@ -89,11 +89,11 @@ def sweep_console(text: str) -> int:
     type=click.Path(exists=True),
 )
 @click.option(
-    "--session",
+    "--session-name",
     "-s",
     type=click.STRING,
     default="default",
-    help="Specify a session label for the database collection and JSON files.",
+    help="Specify a session name for the database collection and JSON files.",
 )
 @click.option(
     "--input",
@@ -123,7 +123,7 @@ def sweep_console(text: str) -> int:
 )
 def main(
     config_path,
-    session,
+    session_name,
     input,
     chat,
     memory,
@@ -139,7 +139,7 @@ def main(
     config = ConfigurationManager(config_path)
 
     logger: Logger = config.get_logger("general", Path(__file__).stem)
-    logger.info(f"Using Session: {session}")
+    logger.info(f"Using Session: {session_name}")
     logger.info(f"Using Config: {config_path}")
     logger.info(f"Using Prompt: {input}")
     logger.info(f"Using Chat: {chat}")
@@ -157,7 +157,7 @@ def main(
     if memory:
         memory_manager = AugmentedMemoryManager(function_factory, config, chat_model)
         if memory_manager.register_episodic_functions():
-            vector_store = memory_manager.register_episodic_memory(session)
+            vector_store = memory_manager.register_episodic_memory(session_name)
 
     # Initialize System Prompt
     system_prompt = ChatModelResponse(
@@ -166,7 +166,7 @@ def main(
     )
 
     session_manager = SessionManager(
-        session_name=session,
+        session_name=session_name,
         provider=provider,
         config=config,
         chat_model=chat_model,
@@ -213,16 +213,17 @@ def main(
                 )
 
         elif chat:
+            auto_suggest = AutoSuggestFromHistory()
+            cache_path = f"{config.evaluate_path('app.cache')}/{session_name}.history"
+            prompt_session = PromptSession(history=FileHistory(cache_path))
+
             # NOTE: Print previous content to stdout if it exists
             session_manager.print(["system", "user", "assistant", "function"])
-            auto_suggest = AutoSuggestFromHistory()
-            cache_path = f"{config.evaluate_path('app.cache')}/{session}.history"
-            session = PromptSession(history=FileHistory(cache_path))
 
             while True:
                 # Manage user message
                 try:
-                    user_content = session.prompt(
+                    user_content = prompt_session.prompt(
                         "Prompt: ⌥ + ⏎ | Copy: ⌘ + s (a|s) | Exit: ⌘ + c:\n",
                         multiline=True,
                         auto_suggest=auto_suggest,
