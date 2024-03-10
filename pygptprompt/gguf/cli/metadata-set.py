@@ -1,17 +1,8 @@
 #!/usr/bin/env python3
 import argparse
-import os
 import sys
-from pathlib import Path
 
-# Necessary to load the local gguf package
-if (
-    "NO_LOCAL_GGUF" not in os.environ
-    and (Path(__file__).parent.parent.parent / "gguf-py").exists()
-):
-    sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from gguf import GGUFReader  # noqa: E402
+from pygptprompt.gguf.gguf_reader import GGUFReader
 
 
 def minimal_example(filename: str) -> None:
