@@ -82,21 +82,25 @@ tiktoken = "^0.6.0"
 openai = {extras = ["embeddings"], version = "^1.12.0"}
 
 # Llama.cpp and Frontend
-llama-cpp-python = "^0.2.45"
+# planned deprecation: llama-cpp-python will be completely removed in the future
+# llama-cpp-python will be superceded by the llama.cpp server for the interim
+# custom support will be implemented gradually over time favoring a completions api.
+llama-cpp-python = "^0.2.46"
+# planned support: gguf support will continue
 gguf = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
 bpython = "^0.24"
 pre_commit = "^3.6.2"
 pyupgrade = "^3.15.0"
-pytest = "^8.0.1"
+pytest = "^8.1.1"
 black = "^24.2.0"
 isort = "^5.13.2"
 flake8 = "^7.0.0"
 build = "^1.0.3"
 mkdocs = "^1.5.3"
 mkdocstrings = {version = "^0.24.0", extras = ["python"]}
-mkdocs-material = "^9.5.10"
+mkdocs-material = "^9.5.13"
 ipykernel = "^6.29.2"  # Required for VSCode
 # jupyter = "^1.0.0"  # Install if needed
 # pynvim = "^0.4.3"  # Install if needed
