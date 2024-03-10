@@ -1,7 +1,7 @@
 import json
 import os
 import sys
-from pathlib.path import Path
+from pathlib import Path
 from typing import Any, Callable
 
 from pygptprompt.gguf.gguf_writer import GGUFWriter

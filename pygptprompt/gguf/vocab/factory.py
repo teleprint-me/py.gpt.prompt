@@ -1,4 +1,4 @@
-from pathlib.path import Path
+from pathlib import Path
 from typing import TypeAlias
 
 from pygptprompt.gguf.vocab.bpe import BpeVocab

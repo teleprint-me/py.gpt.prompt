@@ -1,5 +1,5 @@
 import json
-from pathlib.path import Path
+from pathlib import Path
 from typing import Iterable
 
 from pygptprompt.gguf.constants import TokenType
