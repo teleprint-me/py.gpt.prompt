@@ -1,48 +1,24 @@
 """
 gguf_chat_template.py - example file to extract the chat template from the models metadata
 """
+
 from __future__ import annotations
 
 import argparse
 import logging
-import sys
-from pathlib import Path
 
 import jinja2
+
+from pygptprompt.gguf.constants import Keys
+from pygptprompt.gguf.gguf_reader import GGUFReader
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def get_vendor_gguf_path():
-    root_dir = Path(__file__).resolve().parent.parent.parent
-    gguf_py_dir = root_dir / "vendor/llama.cpp/gguf-py"
-    logger.info(f"Using Vendor Release: {gguf_py_dir}")
-    return str(gguf_py_dir)
-
-
-try:
-    import gguf
-
-    logger.info("GGUF: Successfully imported GGUF.")
-except ImportError:
-    logger.warning("GGUF is not installed. Attempting to fallback to vendor release.")
-    gguf_py_dir = get_vendor_gguf_path()
-
-    # Insert the path for import availability
-    sys.path.insert(1, gguf_py_dir)
-
-    try:
-        import gguf
-
-        logger.info("GGUF: Successfully referring to vendor release")
-    except ImportError:
-        logger.error("GGUF: Package not found in vendor release.")
-
-
 def get_chat_template(model_file: str) -> str:
-    reader = gguf.GGUFReader(model_file)
+    reader = GGUFReader(model_file)
 
     # Available keys
     logger.info("Detected model metadata!")
@@ -51,7 +27,7 @@ def get_chat_template(model_file: str) -> str:
         logger.info(key)
 
     # Access the 'chat_template' field directly using its key
-    chat_template_field = reader.fields.get(gguf.Keys.Tokenizer.CHAT_TEMPLATE)
+    chat_template_field = reader.fields.get(Keys.Tokenizer.CHAT_TEMPLATE)
 
     if chat_template_field:
         # Extract the chat template string from the field
