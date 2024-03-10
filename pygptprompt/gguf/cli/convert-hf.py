@@ -28,13 +28,12 @@ import torch
 if TYPE_CHECKING:
     from torch import Tensor
 
-if "NO_LOCAL_GGUF" not in os.environ:
-    sys.path.insert(1, str(Path(__file__).parent / "gguf-py"))
-import gguf
-
+import pygptprompt.gguf as gguf
 from pygptprompt.cli.convert.torch_to_gguf import HfVocab
 
-###### MODEL DEFINITIONS ######
+#####################
+# MODEL DEFINITIONS #
+#####################
 
 
 class SentencePieceTokenTypes(IntEnum):
