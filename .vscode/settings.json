@@ -1,4 +1,9 @@
 {
+  "cSpell.diagnosticLevel": "Hint",
+  "workbench.colorCustomizations": {
+    "editorHint.foreground": "#55ff00",
+    "editorHint.border": "#00aaff"
+  },
   "editor.defaultFormatter": null,
   "editor.stickyTabStops": true,
   "editor.tabCompletion": "on",
