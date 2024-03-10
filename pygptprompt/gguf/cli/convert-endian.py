@@ -2,14 +2,15 @@
 from __future__ import annotations
 
 import argparse
-import os
 import sys
-from pathlib import Path
 
 import numpy as np
 
+from pygptprompt.gguf.constants import GGMLQuantizationType
+from pygptprompt.gguf.gguf_reader import GGUFReader
 
-def convert_byteorder(reader: gguf.GGUFReader, args: argparse.Namespace) -> None:
+
+def convert_byteorder(reader: GGUFReader, args: argparse.Namespace) -> None:
     if np.uint32(1) == np.uint32(1).newbyteorder("<"):
         # Host is little endian
         host_endian = "little"
@@ -32,9 +33,9 @@ def convert_byteorder(reader: gguf.GGUFReader, args: argparse.Namespace) -> None
     print("* Checking tensors for conversion compatibility")
     for tensor in reader.tensors:
         if tensor.tensor_type not in (
-            gguf.GGMLQuantizationType.F32,
-            gguf.GGMLQuantizationType.F16,
-            gguf.GGMLQuantizationType.Q8_0,
+            GGMLQuantizationType.F32,
+            GGMLQuantizationType.F16,
+            GGMLQuantizationType.Q8_0,
         ):
             raise ValueError(
                 f"Cannot handle type {tensor.tensor_type.name} for tensor {repr(tensor.name)}"
@@ -75,7 +76,7 @@ def convert_byteorder(reader: gguf.GGUFReader, args: argparse.Namespace) -> None
         tensor_type = tensor.tensor_type
         for part in tensor.field.parts:
             part.byteswap(inplace=True)
-        if tensor_type != gguf.GGMLQuantizationType.Q8_0:
+        if tensor_type != GGMLQuantizationType.Q8_0:
             tensor.data.byteswap(inplace=True)
             print()
             continue
@@ -114,7 +115,7 @@ def main() -> None:
     )
     args = parser.parse_args(None if len(sys.argv) > 1 else ["--help"])
     print(f"* Loading: {args.model}")
-    reader = gguf.GGUFReader(args.model, "r" if args.dry_run else "r+")
+    reader = GGUFReader(args.model, "r" if args.dry_run else "r+")
     convert_byteorder(reader, args)
 
 
