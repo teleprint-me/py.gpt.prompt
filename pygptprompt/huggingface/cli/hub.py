@@ -3,11 +3,12 @@ pygptprompt/cli/huggingface_hub.py
 
 NOTE: This is still a Work in Progress.
 """
+
 import click
 
 from pygptprompt.config.manager import ConfigurationManager
-from pygptprompt.huggingface.download import HuggingFaceDownload
-from pygptprompt.huggingface.upload import HuggingFaceUpload
+from pygptprompt.huggingface.hub.download import HuggingFaceDownload
+from pygptprompt.huggingface.hub.upload import HuggingFaceUpload
 
 
 def common_options(command_func):
