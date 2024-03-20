@@ -74,19 +74,19 @@ huggingface-hub = "^0.20.3"
 transformers = "^4.38.0"
 safetensors = "^0.4.2"
 sentencepiece = "^0.1.99"
+peft = "^0.9.0"
 
 # Byte Pair Encoding (BPE) for NLP
 tiktoken = "^0.6.0"
 
 # AI Models and Embeddings
-openai = {extras = ["embeddings"], version = "^1.14.1"}
+openai = {extras = ["embeddings"], version = "^1.14.2"}
 
 # Llama.cpp and Frontend
 # planned deprecation: llama-cpp-python will be completely removed in the future
 # llama-cpp-python will be superceded by the llama.cpp server for the interim
 # custom support will be implemented gradually over time favoring a completions api.
-llama-cpp-python = "^0.2.46"
-peft = "^0.9.0"
+llama-cpp-python = "^0.2.57"
 
 [tool.poetry.dev-dependencies]
 bpython = "^0.24"
