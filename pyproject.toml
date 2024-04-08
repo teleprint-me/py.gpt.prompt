@@ -87,6 +87,7 @@ openai = {extras = ["embeddings"], version = "^1.16.2"}
 # llama-cpp-python will be superceded by the llama.cpp server for the interim
 # custom support will be implemented gradually over time favoring a completions api.
 llama-cpp-python = "^0.2.60"
+diffusers = "^0.27.2"
 
 [tool.poetry.dev-dependencies]
 bpython = "^0.24"
