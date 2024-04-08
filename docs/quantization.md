@@ -5,23 +5,23 @@
 To download the model, use the following command:
 
 ```sh
-python -m pygptprompt.cli.huggingface_hub download -r ehartford/Samantha-1.11-CodeLlama-34b -p models/ehartford/Samantha-1.11-CodeLlama-34b
+python -m pygptprompt.huggingface.cli.hub download -r mistralai/Mistral-7B-Instruct-v0.2 -p models/mistralai/Mistral-7B-Instruct-v0.2
 ```
 
-- This command utilizes the `pygptprompt.cli.huggingface_hub download` Python module to fetch the model data.
-- `-r` specifies the repository ID of the model you want to download, in this case, "ehartford/Samantha-1.11-CodeLlama-34b."
+- This command utilizes the `pygptprompt.huggingface.cli.hub download` Python module to fetch the model data.
+- `-r` specifies the repository ID of the model you want to download, in this case, "mistralai/Mistral-7B-Instruct-v0.2."
 - `-p` indicates the local path where the downloaded model will be stored.
 
 ## Step 2: Convert the Model
 
-After downloading, convert the model using the `torch_to_gguf.py` script with the following command:
+After downloading, convert the model using the `convert.py` script with the following command:
 
 ```sh
-python -m pygptprompt.cli.convert.torch_to_gguf models/ehartford/Samantha-1.11-CodeLlama-34b --outtype f16
+python -m pygptprompt.gguf.cli.convert models/mistralai/Mistral-7B-Instruct-v0.2 --outtype f16
 ```
 
-- This command uses the `torch_to_gguf.py` script to convert the downloaded model.
-- `models/ehartford/Samantha-1.11-CodeLlama-34b` specifies the path to the downloaded model directory.
+- This command uses the `convert.py` script to convert the downloaded model.
+- `models/mistralai/Mistral-7B-Instruct-v0.2` specifies the path to the downloaded model directory.
 - `--outtype f16` indicates that the converted model should use 16-bit floating-point precision.
 
 ## Step 3: Quantize the Model
@@ -29,15 +29,15 @@ python -m pygptprompt.cli.convert.torch_to_gguf models/ehartford/Samantha-1.11-C
 Quantize the converted model using the following command:
 
 ```sh
-python -m pygptprompt.cli.quantize models/ehartford/Samantha-1.11-CodeLlama-34b/ggml-model-f16.gguf --q_type q4_1
+python -m pygptprompt.cli.quantize models/mistralai/Mistral-7B-Instruct-v0.2/ggml-model-f16.gguf --q_type q4_0
 ```
 
-- This command employs the `pygptprompt.quantize` module to perform quantization
+- This command employs the `pygptprompt.cli.quantize` module to perform quantization
   on the converted model.
-- `models/ehartford/Samantha-1.11-CodeLlama-34b/ggml-model-f16.gguf` specifies
+- `models/mistralai/Mistral-7B-Instruct-v0.2/ggml-model-f16.gguf` specifies
   the path to the converted model file.
-- `--q_type q4_1` indicates the type of quantization to be applied, in this
-  case, `q4_1`.
+- `--q_type q4_0` indicates the type of quantization to be applied, in this
+  case, `q4_0`.
 
 These commands provide a clear sequence for downloading, converting, and
 quantizing the model, with each step contributing to reducing the model's size
@@ -59,12 +59,12 @@ To configure your model for use with the `llama_cpp` provider, you'll need to mo
        "model": {
          "repo_id": "teleprint-me/llama-2-7b-chat-GGUF",
          "filename": "llama-2-7b-chat.GGUF.q5_0.bin",
-         "local": "models/ehartford/Samantha-1.11-CodeLlama-34b/Samantha-1.11-CodeLlama-34b.GGUF.q4_1.bin",
+         "local": "models/mistralai/Mistral-7B-Instruct-v0.2/Mistral-7B-Instruct-v0.2.GGUF.q4_0.bin",
          // Other properties...
        },
        "system_prompt": {
          "role": "system",
-         "content": "My name is Samantha. I am a helpful assistant."
+         "content": "My name is Mistral. I am a helpful assistant."
        }
        // Other properties...
      }
@@ -107,15 +107,15 @@ steps:
 
    ```
    2023-09-12 00:06:18,161 - INFO - json.py:68 - JSON successfully loaded into memory
-   2023-09-12 00:06:18,161 - INFO - llama_cpp.py:91 - Using local model at models/ehartford/Samantha-1.11-CodeLlama-34b/Samantha-1.11-CodeLlama-34b.GGUF.q4_1.bin
+   2023-09-12 00:06:18,161 - INFO - llama_cpp.py:91 - Using local model at models/mistralai/Mistral-7B-Instruct-v0.2/Mistral-7B-Instruct-v0.2.GGUF.q4_0.bin
    system
-   My name is Samantha. I am a helpful assistant.
+   My name is Mistral. I am a helpful assistant.
 
    user
    >
    ```
 
-4. You can now start interacting with Samantha by typing your questions or
+4. You can now start interacting with Mistral by typing your questions or
    prompts after the `>` symbol. For example:
 
    ```
@@ -123,7 +123,7 @@ steps:
    > Hello! What's your name?
    ```
 
-   Samantha will respond to your questions and prompts based on the configured
+   Mistral will respond to your questions and prompts based on the configured
    model and settings.
 
 5. When you're done with the chat, remember to deactivate the virtual
