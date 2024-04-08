@@ -38,7 +38,7 @@ The CLI tool has been restructured to include subcommands for downloading and
 uploading:
 
 ```sh
-python -m pygptprompt.cli.huggingface_hub [OPTIONS] COMMAND [ARGS]...
+python -m pygptprompt.huggingface.cli.hub [OPTIONS] COMMAND [ARGS]...
 ```
 
 ### Subcommands
@@ -51,19 +51,19 @@ python -m pygptprompt.cli.huggingface_hub [OPTIONS] COMMAND [ARGS]...
 To download a repository, use the `-r` and `-p` flags:
 
 ```sh
-python -m pygptprompt.cli.huggingface_hub download -r smallcloudai/Refact-1_6B-fim -p models/smallcloudai/Refact-1_6B-fim
+python -m pygptprompt.huggingface.cli.hub download -r smallcloudai/Refact-1_6B-fim -p models/smallcloudai/Refact-1_6B-fim
 ```
 
 To specify a file download instead of a directory, use the `-f` flag:
 
 ```sh
-python -m pygptprompt.cli.huggingface_hub download -r smallcloudai/Refact-1_6B-fim -p models/smallcloudai/Refact-1_6B-fim/model.safetensors -f
+python -m pygptprompt.huggingface.cli.hub download -r smallcloudai/Refact-1_6B-fim -p models/smallcloudai/Refact-1_6B-fim/model.safetensors -f
 ```
 
 To resume a partially downloaded file, apply the `-d` flag:
 
 ```sh
-python -m pygptprompt.cli.huggingface_hub download -r smallcloudai/Refact-1_6B-fim -p models/smallcloudai/Refact-1_6B-fim/model.safetensors -f -d
+python -m pygptprompt.huggingface.cli.hub download -r smallcloudai/Refact-1_6B-fim -p models/smallcloudai/Refact-1_6B-fim/model.safetensors -f -d
 ```
 
 #### Upload Example
@@ -71,7 +71,7 @@ python -m pygptprompt.cli.huggingface_hub download -r smallcloudai/Refact-1_6B-f
 To upload a repository, use the `-c`, `-r`, and `-p` flags:
 
 ```sh
-python -m pygptprompt.cli.huggingface_hub upload -c tests/config.dev.json -r teleprint-me/refact-1.6B-fim-gguf -p models/smallcloudai/Refact-1_6B-fim/refact-1.6B-fim-q8_0.gguf
+python -m pygptprompt.huggingface.cli.hub upload -c tests/config.dev.json -r teleprint-me/refact-1.6B-fim-gguf -p models/smallcloudai/Refact-1_6B-fim/refact-1.6B-fim-q8_0.gguf
 ```
 
 Note that the configuration is required for authentication.
