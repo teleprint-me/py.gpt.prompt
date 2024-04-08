@@ -43,7 +43,7 @@ numpy = "^1.26.4"
 requests = "^2.31.0"
 beautifulsoup4 = "^4.12.3"
 feedparser = "^6.0.11"
-html2text = "^2020.1.16"
+html2text = "^2024.2.26"
 python-poppler = "^0.4.1"
 
 # Command-line Tools
@@ -51,56 +51,56 @@ click = "^8.1.7"
 python-dotenv = "^1.0.1"
 python-magic = "^0.4.27"
 prompt-toolkit = "^3.0.43"
-rich = "^13.7.0"
+rich = "^13.7.1"
 inquirer = "^3.2.4"
 tqdm = "^4.66.2"
 pyperclip = "^1.8.2"
 
 # Web Automation and Image Processing
-selenium = "^4.18.1"
+selenium = "^4.19.0"
 opencv-python = "^4.9.0.80"
 pytesseract = "^0.3.10"
 
 # Database and ORM
 peewee = "^3.17.1"
-chromadb = "^0.4.22"
+chromadb = "^0.4.24"
 
 # PyTorch and Extensions
-torch = {version = "^2.2.0+cpu", source = "pytorch"}
+torch = {version = "^2.2.2+cpu", source = "pytorch"}
 fairscale = "^0.4.13"
 
 # NLP (Natural Language Processing)
-huggingface-hub = "^0.20.3"
-transformers = "^4.38.0"
+huggingface-hub = "^0.22.2"
+transformers = "^4.39.3"
 safetensors = "^0.4.2"
-sentencepiece = "^0.1.99"
-peft = "^0.9.0"
+sentencepiece = "^0.2.0"
+peft = "^0.10.0"
 
 # Byte Pair Encoding (BPE) for NLP
 tiktoken = "^0.6.0"
 
 # AI Models and Embeddings
-openai = {extras = ["embeddings"], version = "^1.14.2"}
+openai = {extras = ["embeddings"], version = "^1.16.2"}
 
 # Llama.cpp and Frontend
 # planned deprecation: llama-cpp-python will be completely removed in the future
 # llama-cpp-python will be superceded by the llama.cpp server for the interim
 # custom support will be implemented gradually over time favoring a completions api.
-llama-cpp-python = "^0.2.57"
+llama-cpp-python = "^0.2.60"
 
 [tool.poetry.dev-dependencies]
 bpython = "^0.24"
-pre_commit = "^3.6.2"
-pyupgrade = "^3.15.0"
+pre_commit = "^3.7.0"
+pyupgrade = "^3.15.2"
 pytest = "^8.1.1"
 black = "^24.3.0"
 isort = "^5.13.2"
 flake8 = "^7.0.0"
-build = "^1.0.3"
+build = "^1.2.1"
 mkdocs = "^1.5.3"
-mkdocstrings = {version = "^0.24.0", extras = ["python"]}
-mkdocs-material = "^9.5.14"
-ipykernel = "^6.29.2"  # Required for VSCode
+mkdocstrings = {version = "^0.24.3", extras = ["python"]}
+mkdocs-material = "^9.5.17"
+ipykernel = "^6.29.4"  # Required for VSCode
 # jupyter = "^1.0.0"  # Install if needed
 # pynvim = "^0.4.3"  # Install if needed
 
