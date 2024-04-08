@@ -59,7 +59,7 @@ To configure your model for use with the `llama_cpp` provider, you'll need to mo
        "model": {
          "repo_id": "teleprint-me/llama-2-7b-chat-GGUF",
          "filename": "llama-2-7b-chat.GGUF.q5_0.bin",
-         "local": "models/mistralai/Mistral-7B-Instruct-v0.2/Mistral-7B-Instruct-v0.2.GGUF.q4_0.bin",
+         "local": "models/mistralai/Mistral-7B-Instruct-v0.2/mistral-7b-instruct-v0.2.q4_0.gguf",
          // Other properties...
        },
        "system_prompt": {
@@ -107,7 +107,7 @@ steps:
 
    ```
    2023-09-12 00:06:18,161 - INFO - json.py:68 - JSON successfully loaded into memory
-   2023-09-12 00:06:18,161 - INFO - llama_cpp.py:91 - Using local model at models/mistralai/Mistral-7B-Instruct-v0.2/Mistral-7B-Instruct-v0.2.GGUF.q4_0.bin
+   2023-09-12 00:06:18,161 - INFO - llama_cpp.py:91 - Using local model at models/mistralai/Mistral-7B-Instruct-v0.2/mistral-7b-instruct-v0.2.q4_0.gguf
    system
    My name is Mistral. I am a helpful assistant.
 
