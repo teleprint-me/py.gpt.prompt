@@ -34,7 +34,7 @@ readme = "README.md"
 keywords = ["openai", "gpt", "llama", "llama.cpp", "python", "prompt", "automation", "api"]
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.12"
+python = ">=3.11"
 
 # Core Libraries
 numpy = "^1.26.4"
@@ -57,22 +57,22 @@ tqdm = "^4.66.2"
 pyperclip = "^1.8.2"
 
 # Web Automation and Image Processing
-selenium = "^4.19.0"
+selenium = "^4.20.0"
 opencv-python = "^4.9.0.80"
 pytesseract = "^0.3.10"
 
 # Database and ORM
-peewee = "^3.17.1"
-chromadb = "^0.4.24"
+peewee = "^3.17.3"
+chromadb = "^0.5.0"
 
 # PyTorch and Extensions
-torch = {version = "^2.2.2+cpu", source = "pytorch"}
+torch = {version = "^2.3.0+cpu", source = "pytorch"}
 fairscale = "^0.4.13"
 
 # NLP (Natural Language Processing)
 huggingface-hub = "^0.22.2"
-transformers = "^4.39.3"
-safetensors = "^0.4.2"
+transformers = "^4.40.1"
+safetensors = "^0.4.3"
 sentencepiece = "^0.2.0"
 peft = "^0.10.0"
 
@@ -80,27 +80,27 @@ peft = "^0.10.0"
 tiktoken = "^0.6.0"
 
 # AI Models and Embeddings
-openai = {extras = ["embeddings"], version = "^1.16.2"}
+openai = {extras = ["embeddings"], version = "^1.24.0"}
 
 # Llama.cpp and Frontend
 # planned deprecation: llama-cpp-python will be completely removed in the future
 # llama-cpp-python will be superceded by the llama.cpp server for the interim
 # custom support will be implemented gradually over time favoring a completions api.
-llama-cpp-python = "^0.2.60"
+llama-cpp-python = "^0.2.65"
 diffusers = "^0.27.2"
 
 [tool.poetry.dev-dependencies]
 bpython = "^0.24"
 pre_commit = "^3.7.0"
 pyupgrade = "^3.15.2"
-pytest = "^8.1.1"
-black = "^24.3.0"
+pytest = "^8.2.0"
+black = "^24.4.2"
 isort = "^5.13.2"
 flake8 = "^7.0.0"
 build = "^1.2.1"
-mkdocs = "^1.5.3"
-mkdocstrings = {version = "^0.24.3", extras = ["python"]}
-mkdocs-material = "^9.5.17"
+mkdocs = "^1.6.0"
+mkdocstrings = {version = "^0.25.0", extras = ["python"]}
+mkdocs-material = "^9.5.20"
 ipykernel = "^6.29.4"  # Required for VSCode
 # jupyter = "^1.0.0"  # Install if needed
 # pynvim = "^0.4.3"  # Install if needed
