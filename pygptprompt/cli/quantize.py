@@ -31,6 +31,7 @@ NOTE:
 
 Source: https://github.com/abetlen/llama-cpp-python/blob/main/examples/low_level_api/quantize.py
 """
+
 import logging
 import os
 
@@ -70,7 +71,7 @@ def create_output_path(model_input_path, q_type):
     output_path = os.path.dirname(model_input_path)
     model_name = os.path.basename(output_path)
     os.makedirs(output_path, exist_ok=True)
-    output_model = f"{model_name}.{q_type}.gguf".lower()
+    output_model = f"{model_name}-{q_type}.gguf".lower()
     return os.path.join(output_path, output_model)
 
 
