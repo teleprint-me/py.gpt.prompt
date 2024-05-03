@@ -53,7 +53,7 @@ python-magic = "^0.4.27"
 prompt-toolkit = "^3.0.43"
 rich = "^13.7.1"
 inquirer = "^3.2.4"
-tqdm = "^4.66.2"
+tqdm = "^4.66.3"
 pyperclip = "^1.8.2"
 
 # Web Automation and Image Processing
