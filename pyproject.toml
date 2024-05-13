@@ -53,7 +53,7 @@ python-magic = "^0.4.27"
 prompt-toolkit = "^3.0.43"
 rich = "^13.7.1"
 inquirer = "^3.2.4"
-tqdm = "^4.66.3"
+tqdm = "^4.66.4"
 pyperclip = "^1.8.2"
 
 # Web Automation and Image Processing
@@ -62,7 +62,7 @@ opencv-python = "^4.9.0.80"
 pytesseract = "^0.3.10"
 
 # Database and ORM
-peewee = "^3.17.3"
+peewee = "^3.17.5"
 chromadb = "^0.5.0"
 
 # PyTorch and Extensions
@@ -70,8 +70,8 @@ torch = {version = "^2.3.0+cpu", source = "pytorch"}
 fairscale = "^0.4.13"
 
 # NLP (Natural Language Processing)
-huggingface-hub = "^0.22.2"
-transformers = "^4.40.1"
+huggingface-hub = "^0.23.0"
+transformers = "^4.40.2"
 safetensors = "^0.4.3"
 sentencepiece = "^0.2.0"
 peft = "^0.10.0"
@@ -80,18 +80,18 @@ peft = "^0.10.0"
 tiktoken = "^0.6.0"
 
 # AI Models and Embeddings
-openai = {extras = ["embeddings"], version = "^1.24.0"}
+openai = {extras = ["embeddings"], version = "^1.28.2"}
 
 # Llama.cpp and Frontend
 # planned deprecation: llama-cpp-python will be completely removed in the future
 # llama-cpp-python will be superceded by the llama.cpp server for the interim
 # custom support will be implemented gradually over time favoring a completions api.
-llama-cpp-python = "^0.2.65"
+llama-cpp-python = "^0.2.74"
 diffusers = "^0.27.2"
 
 [tool.poetry.dev-dependencies]
 bpython = "^0.24"
-pre_commit = "^3.7.0"
+pre_commit = "^3.7.1"
 pyupgrade = "^3.15.2"
 pytest = "^8.2.0"
 black = "^24.4.2"
@@ -99,8 +99,8 @@ isort = "^5.13.2"
 flake8 = "^7.0.0"
 build = "^1.2.1"
 mkdocs = "^1.6.0"
-mkdocstrings = {version = "^0.25.0", extras = ["python"]}
-mkdocs-material = "^9.5.20"
+mkdocstrings = {version = "^0.25.1", extras = ["python"]}
+mkdocs-material = "^9.5.22"
 ipykernel = "^6.29.4"  # Required for VSCode
 # jupyter = "^1.0.0"  # Install if needed
 # pynvim = "^0.4.3"  # Install if needed
