@@ -19,9 +19,10 @@ with this program. If not, see <https://www.gnu.org/licenses/>.
 "There is a stubbornness about me that never can bear to be frightened at the will of others. My courage always rises at every attempt to intimidate me."
   - Jane Austen, Pride and Prejudice
 """
+
 import os
 
-__version__ = "0.0.42"
+__version__ = "0.0.43"
 __name__ = "pygptprompt"
 __agent__ = f"teleprint-me/{__name__}"
 __source__ = f"https://github.com/{__agent__}"
